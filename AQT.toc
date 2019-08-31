@@ -1,0 +1,17 @@
+## Interface: 11302
+## Title: Aiue's Quest Tracker
+## Notes: Quest Tracking Frame
+## Author: Aiue
+## Version: @project-version@
+## SavedVariables: AQTCFG
+## OptionalDeps: LibPrism-1.0
+
+#@no-lib-strip@
+libs\LibStub\LibStub.lua
+libs\CallBackHandler-1.0\CallBackHandler-1.0.xml
+libs\AceAddon-3.0\AceAddon-3.0.xml
+libs\AceEvent-3.0\AceEvent-3.0.xml
+libs\LibPrism-1.0\lib.xml
+#@end-no-lib-strip
+
+AQT.lua
