@@ -8,10 +8,12 @@
 
 #@no-lib-strip@
 libs\LibStub\LibStub.lua
-libs\CallBackHandler-1.0\CallBackHandler-1.0.xml
+libs\CallbackHandler-1.0\CallbackHandler-1.0\CallBackHandler-1.0.xml
 libs\AceAddon-3.0\AceAddon-3.0.xml
 libs\AceEvent-3.0\AceEvent-3.0.xml
-libs\LibPrism-1.0\lib.xml
+#libs\LibPrism-1.0\lib.xml
 #@end-no-lib-strip
 
-AQT.lua
+Core.lua
+GUI.lua
+Config.lua
