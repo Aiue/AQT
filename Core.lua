@@ -8,6 +8,7 @@ function AQT:OnInitialize()
 end
 
 function AQT:OnEnable()
+   st.gui:OnEnable()
 end
 
 function AQT:OnDisable()
