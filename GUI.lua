@@ -8,14 +8,16 @@ local tinsert,tremove,tsort = table.insert,table.remove,table.sort
 
 local recycler = {}
 
-local function getAvailableName(name)
+local function getAvailableName(name) -- Version for debug purposes.
    if not _G[name] then return name else
       local count = string.match(name, "%d+")
-      if not count then count = 0 end -- !!!RE!!! Cache this to avoid lots of recursions when we already have a whole bunch of frames.
+      if not count then count = 0 end
       count = count + 1
       return getAvailableName(string.sub(name, string.find(name, "%a+")) .. tostring(count))
    end
 end
+
+--local function getAvailableName(name) return nil end
 
 local gui = CreateFrame("Frame", getAvailableName("AQTParent"), UIParent)
 st.gui = gui
@@ -44,9 +46,10 @@ function gui:OnEnable()
    gui.scrollFrame:SetScrollChild(gui.scrollChild)
    gui.scrollChild:SetPoint("TOPLEFT", gui.scrollFrame)
    gui.scrollChild:SetPoint("TOPRIGHT", gui.scrollFrame)
+   gui.scrollChild.children = {}
 
    function gui.scrollChild:UpdateSize()
-      local h = gui.title:GetHeight() + gui.title.container:GetHeight()
+      local h = gui.title:GetHeight() + (gui.title.container:IsShown() and gui.title.container:GetHeight() or 0)
       gui.scrollChild:SetHeight(h)
 
       gui:SetHeight((h + st.cfg.padding*2) > st.cfg.maxHeight and st.cfg.maxHeight or (h + st.cfg.padding*2))
@@ -72,10 +75,11 @@ function gui:OnEnable()
    gui:SetWidth(st.cfg.maxWidth) --!!!RE!!!
 
    gui.title = guiFunc.New(gui.scrollChild)
-   gui.title.text:SetText("AQT")
-   gui.title.counter:SetText("|cff00ff000/20|r")
+   gui.title.text:SetText("Quests")
+   gui.title.counter:SetText("|cff00ff000/" .. tostring(MAX_QUESTLOG_QUESTS) .. "|r")
    gui.title:SetPoint("TOPLEFT", gui.scrollChild, "TOPLEFT")
    gui.title:SetPoint("TOPRIGHT", gui.scrollChild, "TOPRIGHT")
+   gui.title.button.isClickButton = true
    gui.title:Update()
 end
 
@@ -92,31 +96,39 @@ function guiFunc:Release(recursed)
       v:Release(true)
    end
 
-   if not recursed then
-      parent:RelinkChildren()
-   end
-
    self.text:SetText("")
    self.counter:SetText("")
-   self.container:SetHeight(0)
+   self.button.isClickButton = nil
+   self.button:Hide()
    self.container:Show()
 
    for k,v in ipairs(parent.children) do
       if self == v then tinsert(recycler, tremove(parent.children, k)) end
    end
+
+   if not recursed then
+      parent:RelinkChildren()
+      parent:UpdateSize(true)
+   end
 end
 
 function guiFunc:UnlinkChildren()
    for k,v in ipairs(self.children) do
-      self:SetPoint("TOPLEFT", nil)
+      v:SetPoint("TOPLEFT", nil)
+      v:SetPoint("TOPRIGHT", nil)
    end
 end
 
 function guiFunc:RelinkChildren()
    self:UnlinkChildren() -- While we shouldn't get any circular links, play it safe and unlink everything first
    for k,v in ipairs(self.children) do
-      if k == 1 then v:SetPoint("TOPLEFT", self.container, "TOPLEFT")
-      else v:SetPoint("TOPLEFT", self.children[k-1], "BOTTOMLEFT") end
+      if k == 1 then
+	 v:SetPoint("TOPLEFT", self.container, "TOPLEFT")
+	 v:SetPoint("TOPRIGHT", self.container, "TOPRIGHT")
+      else
+	 v:SetPoint("TOPLEFT", self.children[k-1].container, "BOTTOMLEFT") 
+	 v:SetPoint("TOPRIGHT", self.children[k-1].container, "BOTTOMRIGHT")
+      end
    end
 end
 
@@ -128,7 +140,7 @@ function guiFunc:New()
       object = CreateFrame("Frame", getAvailableName("AQTRow"), self)
       object.button = CreateFrame("Button", getAvailableName("AQTButton"), object)
       object.button:SetPoint("TOPLEFT", object)
-      object.button:SetSize(16,16)
+      object.button:SetSize(12,12)
       object.text = object:CreateFontString(getAvailableName("AQTText"), object)
       object.text:SetFontObject(gui.font)
       object.text:SetJustifyH("LEFT")
@@ -137,13 +149,14 @@ function guiFunc:New()
       object.counter:SetFontObject(gui.font)
       object.counter:SetJustifyH("RIGHT")
       object.counter:SetPoint("TOPRIGHT", object)
-      object.text:SetPoint("TOPRIGHT", object.counter, "TOPLEFT")
-      object.container = CreateFrame("Frame", getAvailableName("AQTContainer"), object) -- Optionally only create this when actually needed.
+      object.container = CreateFrame("Frame", getAvailableName("AQTContainer"), object)
+      object.container:SetPoint("TOPLEFT", object, "BOTTOMLEFT")
+      object.container:SetPoint("TOPRIGHT", object, "BOTTOMRIGHT")
       object.children = {}
       setmetatable(object, mt)
    end
    object:ButtonCheck()
-   tinsert(object, self.children)
+   tinsert(self.children, object)
    if self ~= gui.scrollChild then self:Update() end
    return object
 end
@@ -151,21 +164,23 @@ end
 function guiFunc:Update()
    self:Sort()
    self:ButtonCheck()
-   self:UpdateSize()
+   self:UpdateSize(true) --!!!RE!!! Might want to NOT call this always. Only most of the time. Probably best to break it out and only call it when we actually need to.
 end
 
 function guiFunc:ButtonCheck()
-   if #self.children > 0 then
-      if self.container:IsShown() then
-	 self.button:SetNormalTexture([[Interface\BUTTONS\UI-HideButton-Up]])
+   if self.button.isClickButton then
+      if #self.children > 0 then
+	 if self.container:IsShown() then
+	    self.button:SetNormalTexture([[Interface\BUTTONS\UI-MinusButton-Up]])
+	 else
+	    self.button:SetNormalTexture([[Interface\BUTTONS\UI-PlusButton-Up]])
+	 end
+	 self.button:Show()
+	 --also enable scripts? ..although hiding it should be enough
       else
-	 self.button:SetNormalTexture([[Interface\BUTTONS\UI-PlusButton-Up]])
+	 self.button:Hide()
+	 --also disable scripts?
       end
-      self.button:Show()
-      --also enable scripts? ..although hiding it should be enough
-   else
-      self.button:Hide()
-      --also disable scripts?
    end
    -- Interface\\BUTTONS\\UI-HideButton-[Disabled|Down|Up]
    -- Interface\\BUTTONS\\UI-PlusButton-[Disabled|Down|Hilight|Up]
@@ -176,17 +191,18 @@ function guiFunc:Sort()
    self:RelinkChildren()
 end
 
-function guiFunc:UpdateSize()
+function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for some of these things. Particularly useful for fontstrings.
    local h,w = 0,0 -- Do I need width? ...possibly
    for k,v in ipairs(self.children) do
-      local th,ch = v.text:GetHeight(),v.counter:GetHeight()
-      h = h + (th > ch and th or ch) + v.container:GetHeight()
+--      local th,ch = v.text:GetHeight(),v.counter:GetHeight()
+--      h = h + (th > ch and th or ch) + (v.container:IsShown() and v.container:GetHeight() or 0)
+      h = h + v:GetHeight() + (v.container:IsShown() and v.container:GetHeight() or 0)
    end
 
-   self.container:SetHeight(h)
+   self.container:SetHeight(self.container:IsShown() and (h > 0 and h or .1)) -- Need to make sure height is > 0 or it won't serve as an anchor.
 
    local th,ch = self.text:GetHeight(),self.counter:GetHeight()
    self:SetHeight(th > ch and th or ch)
 
-   self:GetParent():UpdateSize() -- gui.scrollChild will have its own function, so no need for a base case
+   if recurse then self:GetParent():UpdateSize(true) end -- gui.scrollChild will have its own function, so no need for a base case
 end
