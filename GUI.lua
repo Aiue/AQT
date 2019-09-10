@@ -44,8 +44,18 @@ function gui:OnEnable()
 
    gui.scrollChild = CreateFrame("Frame", getAvailableName("AQTScrollChild"), gui.scrollFrame)
    gui.scrollFrame:SetScrollChild(gui.scrollChild)
-   gui.scrollChild:SetPoint("TOPLEFT", gui.scrollFrame)
-   gui.scrollChild:SetPoint("TOPRIGHT", gui.scrollFrame)
+   gui.scrollFrame:SetScript("OnSizeChanged", function(self, width, height)
+				self:GetScrollChild():SetWidth(width)
+   end)
+   gui.scrollFrame:EnableMouseWheel(true)
+   gui.scrollFrame:SetScript("OnMOuseWheel", function(self, delta)
+				local pos = self:GetVerticalScroll()
+				local setpos
+				if pos-delta < 0 then setpos = 0
+				elseif pos-delta > self:GetVerticalScrollRange() then setpos = self:GetVerticalScrollRange()
+				else setpos = pos-delta end
+				self:SetVerticalScroll(setpos)
+   end)
    gui.scrollChild.children = {}
 
    function gui.scrollChild:UpdateSize()
@@ -96,15 +106,19 @@ function guiFunc:Release(recursed)
       v:Release(true)
    end
 
+   local found
+
+   for k,v in ipairs(parent.children) do
+      if self == v then tinsert(recycler, tremove(parent.children, k));found = true end
+   end
+
+   if not found then print("Could not find what we're trying to release..");print(self.text:GetText()) end
+
    self.text:SetText("")
    self.counter:SetText("")
    self.button.isClickButton = nil
    self.button:Hide()
    self.container:Show()
-
-   for k,v in ipairs(parent.children) do
-      if self == v then tinsert(recycler, tremove(parent.children, k)) end
-   end
 
    if not recursed then
       parent:RelinkChildren()
@@ -144,7 +158,8 @@ function guiFunc:New()
       object.text = object:CreateFontString(getAvailableName("AQTText"), object)
       object.text:SetFontObject(gui.font)
       object.text:SetJustifyH("LEFT")
-      object.text:SetPoint("TOPLEFT", object.button, "TOPRIGHT")
+      object.text:SetPoint("TOPLEFT", object.button, "TOPRIGHT", -10)
+      object.text:SetWordWrap(true)
       object.counter = object:CreateFontString(getAvailableName("AQTCounter"), object)
       object.counter:SetFontObject(gui.font)
       object.counter:SetJustifyH("RIGHT")
