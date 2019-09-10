@@ -96,6 +96,7 @@ function AQT:CheckQuestForUpdates(index)
 	 self:Pour("Quest Complete: " .. qTitle, 0, 1, 0)
       end
    end
+   if GetNumQuestLeaderBoards(index) == 0 then qComplete = 1 end -- Special handling
    q.title = qTitle
    q.level = qLevel
    q.complete = qComplete
@@ -118,6 +119,10 @@ function AQT:CheckObjectives(index) --!!!RE!!! Did most of this while my mind wa
 
       if oType == "monster" then
 	 text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_MONSTERS_KILLED, "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
+	 if not have then -- Some of these objectives apparently do not follow this string pattern.
+	    text,have,need = string.match(oText, "^(.+): (%d+)/(%d+)$")
+	 end
+	 if not have or not need then error("STILL can't parse the damn string? Figure out what's wrong.") end --!!!RE!!! Remove this if this error isn't thrown at some point soon.
       elseif oType == "item" then
 	 text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_ITEMS_NEEDED, "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
       elseif oType == "object" then
@@ -264,6 +269,7 @@ function AQT:CollapseHeaders(collapsedheaders)
 end
 
 function AQT:QuestLogUpdate(...)
+   print("QLU")
    local collapsedheaders = {}
    self:ExpandHeaders(collapsedheaders)
 
