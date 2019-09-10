@@ -71,7 +71,6 @@ function AQT:SetQuestTitle(id)
 end
 
 function AQT:RemoveQuest(id)
-   print("Removing quest?")
    local q = QuestCache[id]
    for k,v in pairs(q.objectives) do
       if v.uiObject then v.uiObject:Release() end
@@ -264,7 +263,6 @@ function AQT:CollapseHeaders(collapsedheaders)
 end
 
 function AQT:QuestLogUpdate(...)
-   print("QLU")
    local collapsedheaders = {}
    self:ExpandHeaders(collapsedheaders)
 
