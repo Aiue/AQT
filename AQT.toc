@@ -6,6 +6,7 @@
 ## SavedVariables: AQTCFG
 ## OptionalDeps: LibPrism-1.0
 ## X-Curse-Project-ID: 67669
+## X-WoWI-ID: 25280
 
 #@no-lib-strip@
 libs\LibStub\LibStub.lua
