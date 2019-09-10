@@ -5,6 +5,7 @@
 ## Version: @project-version@
 ## SavedVariables: AQTCFG
 ## OptionalDeps: LibPrism-1.0
+## X-Curse-Project-ID: 67669
 
 #@no-lib-strip@
 libs\LibStub\LibStub.lua
