@@ -48,6 +48,7 @@ function AQT:AddQuest(header, index)
    }
    self:SetQuestTitle(qID)
    self:CheckObjectives(index)
+   HeaderCache[header].uiObject:Sort()
 end
 
 function AQT:SetQuestTitle(id)
@@ -222,6 +223,7 @@ function AQT:AddHeader(name)
    header.uiObject.text:SetText(name)
    header.complete = 0
    header.uiObject:UpdateSize(true)
+   st.gui.title:Sort()
 end
 
 function AQT:RemoveHeader(name)

@@ -187,6 +187,9 @@ function guiFunc:ButtonCheck()
 end
 
 function guiFunc:Sort()
+   tsort(self.children, function(a,b)
+	    return (a.text:GetText() and a.text:GetText() or "") < (b.text:GetText() and b.text:GetText() or "")
+   end)
    --sortfunc, followed by
    self:RelinkChildren()
 end
