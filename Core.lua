@@ -72,9 +72,10 @@ end
 
 function AQT:RemoveQuest(id)
    local q = QuestCache[id]
-   for k,v in pairs(q.objectives) do
-      if v.uiObject then v.uiObject:Release() end
-   end
+-- Should be redundant, since it will recurse regardless.
+--   for k,v in pairs(q.objectives) do
+--      if v.uiObject then v.uiObject:Release() end
+--   end
    q.uiObject:Release()
    QuestCache[id] = nil
 end

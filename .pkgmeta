@@ -40,6 +40,4 @@ externals:
     libs/LibSharedMedia-3.0:
         url: svn://svn.wowace.com/wow/libsharedmedia-3-0/mainline/trunk
         tag: latest
-    libs/LibPrism-3.0:
-        url: git://git.wowace.com/wow/libprism-1-0/mainline.git
-        tag: latest
+    libs/LibPrism-1.0: url: https://github.com/Aiue/LibPrism
