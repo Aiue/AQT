@@ -101,9 +101,9 @@ local mt = {
 
 function guiFunc:Release(recursed)
    local parent = self:GetParent()
-   for k,v in ipairs(self.children) do
-      v:SetPoint("TOPLEFT", nil)
-      v:Release(true)
+   while #self.children > 0 do
+      self.children[1]:SetPoint("TOPLEFT", nil)
+      self.children[1]:Release(true)
    end
 
    local found

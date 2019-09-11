@@ -16,6 +16,7 @@ function AQT:OnInitialize()
 end
 
 function AQT:OnEnable()
+   st.initConfig()
    st.gui:OnEnable()
    self:RegisterEvent("QUEST_LOG_UPDATE", "QuestLogUpdate")
    self:RegisterEvent("PLAYER_LEVEL_UP", "PlayerLevelUp")

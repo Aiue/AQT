@@ -2,7 +2,9 @@ local _,st = ...
 
 local AQT = LibStub("AceAddon-3.0"):GetAddon("AQT")
 
-st.cfg = {
+local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+
+local defaults = {
    backdrop = {
       background = {
 	 name = "Blizzard Tooltip",
@@ -47,3 +49,22 @@ st.cfg = {
    posX = -5,
    posY = -200,
 }
+
+local function clearDefunct(cfg, def) -- Clear any defunct config values on load. Currently highly experimental.
+   if not cfg or not def then
+      cfg = AQTCFG
+      def = defaults
+   end
+   for k,v in pairs(cfg) do
+      if not def[k] then cfg[k] = nil
+      elseif type(v) == "table" then
+	 if type(def[k] == "table" then clearDefunct(v, def[k]
+	 else cfg[k] = nil end
+      end
+   end
+end
+
+function st.initConfig()
+   if not AQTCFG then AQTCFG = {} end
+   st.cfg = defaults -- Should be removed once I've actually written some of the other stuff properly. Just need it to not break things while I work on other stuff.
+end
