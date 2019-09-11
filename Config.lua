@@ -58,7 +58,7 @@ local function clearDefunct(cfg, def) -- Clear any defunct config values on load
    for k,v in pairs(cfg) do
       if not def[k] then cfg[k] = nil
       elseif type(v) == "table" then
-	 if type(def[k] == "table" then clearDefunct(v, def[k]
+	 if type(def[k]) == "table" then clearDefunct(v, def[k])
 	 else cfg[k] = nil end
       end
    end
