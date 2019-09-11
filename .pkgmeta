@@ -38,6 +38,6 @@ externals:
         url: svn://svn.wowace.com/wow/libsink-2-0/mainline/trunk/LibSink-2.0
         tag: latest
     libs/LibSharedMedia-3.0:
-        url: svn://svn.wowace.com/wow/libsharedmedia-3-0/mainline/trunk
+        url: svn://svn.wowace.com/wow/libsharedmedia-3-0/mainline/trunk/LibSharedMedia-3.0
         tag: latest
     libs/LibPrism-1.0: https://github.com/Aiue/LibPrism
