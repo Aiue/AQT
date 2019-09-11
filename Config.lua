@@ -51,10 +51,6 @@ local defaults = {
 }
 
 local function clearDefunct(cfg, def) -- Clear any defunct config values on load. Currently highly experimental.
-   if not cfg or not def then
-      cfg = AQTCFG
-      def = defaults
-   end
    for k,v in pairs(cfg) do
       if not def[k] then cfg[k] = nil
       elseif type(v) == "table" then
@@ -64,7 +60,24 @@ local function clearDefunct(cfg, def) -- Clear any defunct config values on load
    end
 end
 
+local options = {
+   type = "group",
+   name = "AQT",
+   handler = nil, --!!!RE!!! Really going to need a handler.
+   args = {
+      general = {
+	 name = "General",
+	 type = "group",
+	 order = 0,
+	 args = {
+	 },
+      },
+   },
+}
+
 function st.initConfig()
-   if not AQTCFG then AQTCFG = {} end
+   if not AQTCFG or type(AQTCFG) ~= "table" then AQTCFG = {} end
+   clearDefunct(AQTCFG, defaults)
    st.cfg = defaults -- Should be removed once I've actually written some of the other stuff properly. Just need it to not break things while I work on other stuff.
+--   LibStub("AceConfig-3.0"):RegisterOptionsTable("AQT", options, "/aqt")
 end

@@ -13,10 +13,10 @@ LSM:Register("sound", "Peon: Work Work", [[Sound\Creature\Peon\PeonYes3.ogg]])
 local tinsert = table.insert
 
 function AQT:OnInitialize()
+   st.initConfig()
 end
 
 function AQT:OnEnable()
-   st.initConfig()
    st.gui:OnEnable()
    self:RegisterEvent("QUEST_LOG_UPDATE", "QuestLogUpdate")
    self:RegisterEvent("PLAYER_LEVEL_UP", "PlayerLevelUp")
