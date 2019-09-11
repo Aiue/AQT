@@ -112,13 +112,14 @@ function guiFunc:Release(recursed)
       if self == v then tinsert(recycler, tremove(parent.children, k));found = true end
    end
 
-   if not found then print("Could not find what we're trying to release..");print(self.text:GetText()) end
+   if not found then print("Could not find what we're trying to release..");print(self:GetParent().text:GetText() .. "/" .. self.text:GetText()) end
 
    self.text:SetText("")
    self.counter:SetText("")
    self.button.isClickButton = nil
    self.button:Hide()
    self.container:Show()
+   self:SetParent(nil)
 
    if not recursed then
       parent:RelinkChildren()
@@ -150,6 +151,7 @@ function guiFunc:New()
    if #recycler > 0 then
       object = tremove(recycler)
       object.container:Show()
+      object:SetParent(self)
    else
       object = CreateFrame("Frame", getAvailableName("AQTRow"), self)
       object.button = CreateFrame("Button", getAvailableName("AQTButton"), object)
@@ -180,6 +182,9 @@ function guiFunc:Update()
    self:Sort()
    self:ButtonCheck()
    self:UpdateSize(true) --!!!RE!!! Might want to NOT call this always. Only most of the time. Probably best to break it out and only call it when we actually need to.
+end
+
+local function clickButton(self, button, down)
 end
 
 function guiFunc:ButtonCheck()

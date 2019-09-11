@@ -269,7 +269,6 @@ function AQT:CollapseHeaders(collapsedheaders)
 end
 
 function AQT:QuestLogUpdate(...)
-   print("QLU")
    local collapsedheaders = {}
    self:ExpandHeaders(collapsedheaders)
 
