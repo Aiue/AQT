@@ -10,8 +10,14 @@ externals:
     libs/AceAddon-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceAddon-3.0
         tag: latest
+    libs/AceConsole-3.0:
+        url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConsole-3.0
+        tag: latest
     libs/AceEvent-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceEvent-3.0
+        tag: latest
+    libs/AceGUISharedMediaWidgets:
+        url: svn://svn.wowace.com/wow/ace-gui-3-0-shared-media-widgets/AceGUI-3.0-SharedMediaWidgets
         tag: latest
     libs/AceTimer-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceTimer-3.0
