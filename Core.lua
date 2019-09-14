@@ -271,7 +271,7 @@ end
 
 function AQT:QuestLogUpdate(...)
    local collapsedheaders = {}
-   self:ExpandHeaders(collapsedheaders)
+   self:ExpandHeaders(collapsedheaders) --!!!RE!!! Redo the iterator instead. While GetNumQuestLogEntries() returns the number of visible rows in the questlog, anything hidden under a collapsed header will be indexed at entries+n+1
 
    -- Find any updated quests or new quests/headers.
    local entries,questentries = GetNumQuestLogEntries()

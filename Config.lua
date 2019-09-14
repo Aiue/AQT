@@ -3,6 +3,7 @@ local _,st = ...
 local AQT = LibStub("AceAddon-3.0"):GetAddon("AQT")
 
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+local Prism = LibStub("LibPrism-1.0")
 
 local defaults = {
    backdrop = {
@@ -48,6 +49,24 @@ local defaults = {
    padding = 10,
    posX = -5,
    posY = -200,
+   useDifficultyColour = true,
+   useProgressColour = true,
+   useHSVGradient = true,
+   progressColourMin = {
+      r = 1,
+      g = 0,
+      b = 0,
+   },
+   progressColourMax = {
+      r = 0,
+      g = 1,
+      b = 0,
+   },
+}
+
+-- Doing this in case we wan't to ditch AceDB later.
+local aceDBdefaults = {
+   global = defaults
 }
 
 local function clearDefunct(cfg, def) -- Clear any defunct config values. To be called during initialization. Currently highly experimental.
@@ -61,12 +80,30 @@ local function clearDefunct(cfg, def) -- Clear any defunct config values. To be 
 end
 
 local CFGHandler = {
+   colouring = {
+      get = function(info)
+	 if info.type == "color" then
+	    return st.cfg[info[#info]].r, st.cfg[info[#info]].g, st.cfg[info[#info]].b
+	 else
+	    return st.cfg[info[#info]]
+	 end
+      end,
+      set = function(info, v1, v2, v3, v4)
+	 if info.type == "color" then
+	    st.cfg[info[#info]].r = v1
+	    st.cfg[info[#info]].g = v2
+	    st.cfg[info[#info]].b = v3
+	 else
+	    st.cfg[info[#info]] = v1
+	 end
+      end,
+   },
    font = {
       get = function(info)
-	 return st.cfg.font[info[#info-1]]
+	 return st.cfg.font[info[#info]]
       end,
       set = function(info, val)
-	 print(tostring(info[#info-1]) .. " : " .. tostring(val))
+	 print(tostring(info[#info]) .. " : " .. tostring(val))
       end,
    },
 }
@@ -96,7 +133,7 @@ local options = {
 	 type = "group",
 	 order = 2,
 	 args = {
-	    name = {
+	    font = {
 	       name = "Font",
 	       type = "group",
 	       inline = true,
@@ -104,16 +141,17 @@ local options = {
 	       get = CFGHandler.font.get,
 	       set = CFGHandler.font.set,
 	       args = {
-		  font = {
+		  name = {
 		     name = "Font",
 		     type = "select",
 		     order = 0,
 		     values = AceGUIWidgetLSMlists.font,
 		     dialogControl = "LSM30_Font",
+		     width = "double",
 		  },
 		  color = {
 		     type = "color",
-		     name = "Font",
+		     name = "Font Colour",
 		     order = 1,
 		  },
 		  outline = {
@@ -121,6 +159,64 @@ local options = {
 		     name = "Outline",
 		     order = 2,
 		     values = {[""] = "None",OUTLINE = "Thin Outline", THICKOUTLINE = "Thick Outline"},
+		  },
+	       },
+	    },
+	    colouring = {
+	       name = "Colouring",
+	       type = "group",
+	       inline = true,
+	       order = 1,
+	       get = CFGHandler.colouring.get,
+	       set = CFGHandler.colouring.set,
+	       args = {
+		  useDifficultyColour = {
+		     name = "Quest Difficulty Colouring",
+		     type = "toggle",
+		     order = 0,
+		     width = double,
+		  },
+		  useProgressColour = {
+		     name = "Progress-based Objective Colouring",
+		     type = "toggle",
+		     order = 1,
+		     width = double,
+		  },
+		  progressColour = {
+		     name = "Progress Colour",
+		     type = "group",
+		     inline = true,
+		     order = 2,
+		     disabled = function() return not st.cfg.useProgressColour end,
+		     args = {
+			progressColourMin = {
+			   name = "Incomplete",
+			   type = "color",
+			   hasAlpha = false,
+			   order = 0,
+			},
+			progressColourMax = {
+			   name = "Complete",
+			   type = "color",
+			   hasAlpha = false,
+			   order = 1,
+			},
+			useHSVGradient = {
+			   name = "Use HSV Gradient",
+			   type = "toggle",
+			   order = 2,
+			},
+			progressionSample = {
+			   name = function()
+			      local output = "Sample: "
+			      for i = 0, 10 do
+				 output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColourMin.r, st.cfg.progressColourMax.r, st.cfg.progressColourMin.g, st.cfg.progressColourMax.g, st.cfg.progressColourMin.b, st.cfg.progressColourMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
+			      end
+			      return output
+			   end,
+			   type = "description",
+			},
+		     },
 		  },
 	       },
 	    },
@@ -132,7 +228,8 @@ local options = {
 function st.initConfig()
    if not AQTCFG or type(AQTCFG) ~= "table" then AQTCFG = {} end
    clearDefunct(AQTCFG, defaults)
-   st.cfg = defaults -- Should be removed once I've actually written some of the other stuff properly. Just need it to not break things while I work on other stuff.
+   st.db = LibStub("AceDB-3.0"):New("AQTCFG", aceDBdefaults, true) -- Use AceDB for now. Might want to write my own metatable later instead.
+   st.cfg = st.db.global
    LibStub("AceConfig-3.0"):RegisterOptionsTable("AQT", options)
    LibStub("AceConsole-3.0"):RegisterChatCommand("aqt", function() LibStub("AceConfigDialog-3.0"):Open("AQT") end)
 end
