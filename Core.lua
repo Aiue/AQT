@@ -92,7 +92,7 @@ function AQT:CheckQuestForUpdates(index)
 	    v.uiObject = nil
 	 end
       end
-      if not q.complete then
+      if not q.complete and qComplete > 0 then
 	 sound = true
 	 self:Pour("Quest Complete: " .. qTitle, 0, 1, 0)
       end
