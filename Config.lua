@@ -96,6 +96,7 @@ local CFGHandler = {
 	 else
 	    st.cfg[info[#info]] = v1
 	 end
+	 st.gui:RedrawColor(true)
       end,
    },
    font = {
@@ -103,7 +104,8 @@ local CFGHandler = {
 	 return st.cfg.font[info[#info]]
       end,
       set = function(info, val)
-	 print(tostring(info[#info]) .. " : " .. tostring(val))
+	 st.cfg.font[info[#info]] = val
+	 st.gui:Redraw(true)
       end,
    },
 }
@@ -209,8 +211,11 @@ local options = {
 			progressionSample = {
 			   name = function()
 			      local output = "Sample: "
-			      for i = 0, 10 do
-				 output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColourMin.r, st.cfg.progressColourMax.r, st.cfg.progressColourMin.g, st.cfg.progressColourMax.g, st.cfg.progressColourMin.b, st.cfg.progressColourMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
+			      if st.cfg.usedProgressColour then
+				 for i = 0, 10 do
+				    output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColourMin.r, st.cfg.progressColourMax.r, st.cfg.progressColourMin.g, st.cfg.progressColourMax.g, st.cfg.progressColourMin.b, st.cfg.progressColourMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
+				 end
+				 else output = output .. "0% -> 10% -> 20% -> 30% -> 40% -> 50% -> 60% -> 70% -> 80% -> 90% -> 100%"
 			      end
 			      return output
 			   end,
@@ -227,7 +232,7 @@ local options = {
 
 function st.initConfig()
    if not AQTCFG or type(AQTCFG) ~= "table" then AQTCFG = {} end
-   clearDefunct(AQTCFG, defaults)
+--   clearDefunct(AQTCFG, defaults)
    st.db = LibStub("AceDB-3.0"):New("AQTCFG", aceDBdefaults, true) -- Use AceDB for now. Might want to write my own metatable later instead.
    st.cfg = st.db.global
    LibStub("AceConfig-3.0"):RegisterOptionsTable("AQT", options)

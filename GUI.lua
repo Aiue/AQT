@@ -26,22 +26,10 @@ gui.content = {} --???
 local guiFunc = {}
 
 function gui:OnEnable()
-   gui:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", st.cfg.posX, st.cfg.posY)
-
-   local padding = 2 --or whatever the config says
-
    gui.font = CreateFont(getAvailableName("AQTFont"))
    gui.font:SetJustifyV("TOP")
-   gui.font:SetFont(LSM:Fetch("font", st.cfg.font.name), st.cfg.font.size)
-   gui.font:SetShadowColor(st.cfg.font.shadow.r, st.cfg.font.shadow.g, st.cfg.font.shadow.b, st.cfg.font.shadow.a)
-   gui.font:SetShadowOffset(st.cfg.font.shadow.x, st.cfg.font.shadow.y)
-   gui.font:SetSpacing(st.cfg.font.spacing)
-   gui.font:SetTextColor(st.cfg.font.r, st.cfg.font.g, st.cfg.font.b, st.cfg.font.a)
 
    gui.scrollFrame = CreateFrame("ScrollFrame", getAvailableName("AQTScrollFrame"), gui)
-   gui.scrollFrame:SetPoint("TOPLEFT", gui, "TOPLEFT", st.cfg.padding, -st.cfg.padding)
-   gui.scrollFrame:SetPoint("BOTTOMRIGHT", gui, "BOTTOMRIGHT", -st.cfg.padding, st.cfg.padding)
-
    gui.scrollChild = CreateFrame("Frame", getAvailableName("AQTScrollChild"), gui.scrollFrame)
    gui.scrollFrame:SetScrollChild(gui.scrollChild)
    gui.scrollFrame:SetScript("OnSizeChanged", function(self, width, height)
@@ -65,6 +53,28 @@ function gui:OnEnable()
       gui:SetHeight((h + st.cfg.padding*2) > st.cfg.maxHeight and st.cfg.maxHeight or (h + st.cfg.padding*2))
    end
 
+
+   gui.title = guiFunc.New(gui.scrollChild)
+   gui.title:SetPoint("TOPLEFT", gui.scrollChild, "TOPLEFT")
+   gui.title:SetPoint("TOPRIGHT", gui.scrollChild, "TOPRIGHT")
+   gui.title.button.isClickButton = true
+   gui:Redraw(false)
+   gui.title.text:SetText("Quests")
+   gui.title.counter:SetText("|cff00ff000/" .. tostring(MAX_QUESTLOG_QUESTS) .. "|r")
+   gui.title:Update()
+
+end
+
+function gui:Redraw(recurse)
+   gui:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", st.cfg.posX, st.cfg.posY)
+
+   gui.font:SetFont(LSM:Fetch("font", st.cfg.font.name), st.cfg.font.size)
+   gui.font:SetShadowOffset(st.cfg.font.shadow.x, st.cfg.font.shadow.y)
+   gui.font:SetSpacing(st.cfg.font.spacing)
+
+   gui.scrollFrame:SetPoint("TOPLEFT", gui, "TOPLEFT", st.cfg.padding, -st.cfg.padding)
+   gui.scrollFrame:SetPoint("BOTTOMRIGHT", gui, "BOTTOMRIGHT", -st.cfg.padding, st.cfg.padding)
+
    local backdrop = {
       bgFile = LSM:Fetch("background", st.cfg.backdrop.background.name),
       edgeFile = LSM:Fetch("border", st.cfg.backdrop.border.name),
@@ -79,18 +89,17 @@ function gui:OnEnable()
    }
 
    gui:SetBackdrop(backdrop)
-   gui:SetBackdropColor(st.cfg.backdrop.background.r, st.cfg.backdrop.background.g, st.cfg.backdrop.background.b, st.cfg.backdrop.background.a)
-   gui:SetBackdropBorderColor(st.cfg.backdrop.border.r, st.cfg.backdrop.border.g, st.cfg.backdrop.border.b, st.cfg.backdrop.border.a)
 
    gui:SetWidth(st.cfg.maxWidth) --!!!RE!!!
 
-   gui.title = guiFunc.New(gui.scrollChild)
-   gui.title.text:SetText("Quests")
-   gui.title.counter:SetText("|cff00ff000/" .. tostring(MAX_QUESTLOG_QUESTS) .. "|r")
-   gui.title:SetPoint("TOPLEFT", gui.scrollChild, "TOPLEFT")
-   gui.title:SetPoint("TOPRIGHT", gui.scrollChild, "TOPRIGHT")
-   gui.title.button.isClickButton = true
-   gui.title:Update()
+   gui:RedrawColor()
+end
+
+function gui:RedrawColor()
+   gui.font:SetTextColor(st.cfg.font.r, st.cfg.font.g, st.cfg.font.b, st.cfg.font.a)   
+   gui.font:SetShadowColor(st.cfg.font.shadow.r, st.cfg.font.shadow.g, st.cfg.font.shadow.b, st.cfg.font.shadow.a)
+   gui:SetBackdropColor(st.cfg.backdrop.background.r, st.cfg.backdrop.background.g, st.cfg.backdrop.background.b, st.cfg.backdrop.background.a)
+   gui:SetBackdropBorderColor(st.cfg.backdrop.border.r, st.cfg.backdrop.border.g, st.cfg.backdrop.border.b, st.cfg.backdrop.border.a)
 end
 
 local mt = {
