@@ -69,6 +69,7 @@ function gui:Redraw(recurse)
    gui:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", st.cfg.posX, st.cfg.posY)
 
    gui.font:SetFont(LSM:Fetch("font", st.cfg.font.name), st.cfg.font.size)
+   gui.font:SetTextColor(st.cfg.font.r, st.cfg.font.g, st.cfg.font.b, st.cfg.font.a)
    gui.font:SetShadowOffset(st.cfg.font.shadow.x, st.cfg.font.shadow.y)
    gui.font:SetSpacing(st.cfg.font.spacing)
 

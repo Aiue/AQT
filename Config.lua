@@ -27,7 +27,7 @@ local defaults = {
       insets = {r = 3, l = 3, t = 3, b = 3},
    },
    font = {
-      name = nil,
+      name = "Friz Quadrata TT",
       spacing = 1,
       size = 12,
       r = 1,
@@ -80,6 +80,34 @@ local function clearDefunct(cfg, def) -- Clear any defunct config values. To be 
 end
 
 local CFGHandler = {
+   backdrop = {
+      get = function(info)
+	 if info.type == "color" then
+	    local key = info[#info]
+	    key = key:sub(1, key:find("Color")-1)
+	    return st.cfg.backdrop[key].r, st.cfg.backdrop[key].g, st.cfg.backdrop[key].b, st.cfg.backdrop[key].a
+	 else
+	    return st.cfg.backdrop[info[#info]].name and st.cfg.backdrop[info[#info]].name or st.cfg.backdrop[info[#info]]
+	 end
+      end,
+      set = function(info, v1, v2, v3, v4)
+	 if info.type == "color" then
+	    local key = info[#info]
+	    key = key:sub(1, key:find("Color")-1)
+	    st.cfg.backdrop[key].r = v1
+	    st.cfg.backdrop[key].g = v2
+	    st.cfg.backdrop[key].b = v3
+	    st.cfg.backdrop[key].a = v4
+	 else
+	    if st.cfg.backdrop[info[#info]].name then
+	       st.cfg.backdrop[info[#info]].name = v1
+	    else
+	       st.cfg.backdrop[info[#info]] = v1
+	    end
+	 end
+	 st.gui:Redraw(false)
+      end,
+   },
    colouring = {
       get = function(info)
 	 if info.type == "color" then
@@ -114,13 +142,14 @@ local options = {
    type = "group",
    name = "AQT",
    handler = CFGHandler, -- Possibly redundant, since I'll be using direct function references.
-   childGroups = "tab",
+   childGroups = "tree",
    args = {
       general = {
 	 name = "General",
 	 type = "group",
 	 order = 0,
 	 args = {
+	    sink = AQT:GetSinkAce3OptionsDataTable(),
 	 },
       },
       layout = {
@@ -164,11 +193,50 @@ local options = {
 		  },
 	       },
 	    },
+	    backdrop = {
+	       name = "Backdrop",
+	       type = "group",
+	       order = 1,
+	       inline = true,
+	       get = CFGHandler.backdrop.get,
+	       set = CFGHandler.backdrop.set,
+	       args = {
+		  background = {
+		     name = "Background Texture",
+		     type = "select",
+		     order = 0,
+		     values = AceGUIWidgetLSMlists.background,
+		     dialogControl = "LSM30_Background",
+		     width = "double",
+		  },
+		  backgroundColor = {
+		     name = "Background Color",
+		     type = "color",
+		     order = 1,
+		     hasAlpha = true,
+		  },
+		  border = {
+		     name = "Border Texture",
+		     type = "select",
+		     order = 2,
+		     values = AceGUIWidgetLSMlists.border,
+		     dialogControl = "LSM30_Border",
+		     width = "double",
+		  },
+		  borderColor = {
+		     name = "Border Color",
+		     type = "color",
+		     order = 3,
+		     hasAlpha = true,
+		  },
+		  
+	       },
+	    },
 	    colouring = {
 	       name = "Colouring",
 	       type = "group",
 	       inline = true,
-	       order = 1,
+	       order = 2,
 	       get = CFGHandler.colouring.get,
 	       set = CFGHandler.colouring.set,
 	       args = {
@@ -211,11 +279,11 @@ local options = {
 			progressionSample = {
 			   name = function()
 			      local output = "Sample: "
-			      if st.cfg.usedProgressColour then
+			      if st.cfg.useProgressColour then
 				 for i = 0, 10 do
 				    output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColourMin.r, st.cfg.progressColourMax.r, st.cfg.progressColourMin.g, st.cfg.progressColourMax.g, st.cfg.progressColourMin.b, st.cfg.progressColourMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
 				 end
-				 else output = output .. "0% -> 10% -> 20% -> 30% -> 40% -> 50% -> 60% -> 70% -> 80% -> 90% -> 100%"
+			      else output = output .. "0% -> 10% -> 20% -> 30% -> 40% -> 50% -> 60% -> 70% -> 80% -> 90% -> 100%"
 			      end
 			      return output
 			   end,
@@ -230,11 +298,14 @@ local options = {
    },
 }
 
+options.args.general.args.sink.inline = true
+
 function st.initConfig()
    if not AQTCFG or type(AQTCFG) ~= "table" then AQTCFG = {} end
 --   clearDefunct(AQTCFG, defaults)
    st.db = LibStub("AceDB-3.0"):New("AQTCFG", aceDBdefaults, true) -- Use AceDB for now. Might want to write my own metatable later instead.
    st.cfg = st.db.global
+   AQT:SetSinkStorage(st.cfg)
    LibStub("AceConfig-3.0"):RegisterOptionsTable("AQT", options)
    LibStub("AceConsole-3.0"):RegisterChatCommand("aqt", function() LibStub("AceConfigDialog-3.0"):Open("AQT") end)
 end
