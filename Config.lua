@@ -24,24 +24,18 @@ local defaults = {
       tile = true,
       tileSize = 0,
       edgeSize = 12,
-      insets = {r = 3, l = 3, t = 3, b = 3},
+      padding = 3,
+      insets = {r = 3, l = 3, t = 3, b = 3}, -- removeme?
    },
    font = {
       name = "Friz Quadrata TT",
+      outline = OUTLINE,
       spacing = 1,
       size = 12,
       r = 1,
       g = 1,
       b = 1,
       a = 1,
-      shadow = {
-	 r = 1,
-	 g = 1,
-	 b = 1,
-	 a = 0,
-	 x = 1,
-	 y = 1,
-      },
    },
    maxHeight = 650,
    minWidth = 100,
@@ -87,7 +81,7 @@ local CFGHandler = {
 	    key = key:sub(1, key:find("Color")-1)
 	    return st.cfg.backdrop[key].r, st.cfg.backdrop[key].g, st.cfg.backdrop[key].b, st.cfg.backdrop[key].a
 	 else
-	    return st.cfg.backdrop[info[#info]].name and st.cfg.backdrop[info[#info]].name or st.cfg.backdrop[info[#info]]
+	    return type(st.cfg.backdrop[info[#info]]) == "table"  and st.cfg.backdrop[info[#info]].name or st.cfg.backdrop[info[#info]]
 	 end
       end,
       set = function(info, v1, v2, v3, v4)
@@ -99,7 +93,7 @@ local CFGHandler = {
 	    st.cfg.backdrop[key].b = v3
 	    st.cfg.backdrop[key].a = v4
 	 else
-	    if st.cfg.backdrop[info[#info]].name then
+	    if type(st.cfg.backdrop[info[#info]]) == "table" then
 	       st.cfg.backdrop[info[#info]].name = v1
 	    else
 	       st.cfg.backdrop[info[#info]] = v1
@@ -163,11 +157,11 @@ local options = {
 	 name = "Style",
 	 type = "group",
 	 order = 2,
+	 childGroups = "tab",
 	 args = {
 	    font = {
 	       name = "Font",
 	       type = "group",
-	       inline = true,
 	       order = 0,
 	       get = CFGHandler.font.get,
 	       set = CFGHandler.font.set,
@@ -182,7 +176,7 @@ local options = {
 		  },
 		  color = {
 		     type = "color",
-		     name = "Font Colour",
+		     name = "Font Color",
 		     order = 1,
 		  },
 		  outline = {
@@ -191,13 +185,29 @@ local options = {
 		     order = 2,
 		     values = {[""] = "None",OUTLINE = "Thin Outline", THICKOUTLINE = "Thick Outline"},
 		  },
+		  size = {
+		     name = "Size",
+		     type = "range",
+		     min = 4,
+		     max = 32,
+		     step = 1,
+		     order = 3,
+		  },
+		  spacing = {
+		     name = "Spacing",
+		     type = "range",
+		     min = 0,
+		     max = 120,
+		     step = 1,
+		     order = 4,
+		     disabled = true,
+		  },
 	       },
 	    },
 	    backdrop = {
 	       name = "Backdrop",
 	       type = "group",
 	       order = 1,
-	       inline = true,
 	       get = CFGHandler.backdrop.get,
 	       set = CFGHandler.backdrop.set,
 	       args = {
@@ -215,10 +225,23 @@ local options = {
 		     order = 1,
 		     hasAlpha = true,
 		  },
+		  tile = {
+		     name = "Tile",
+		     order = 2,
+		     type = "toggle",
+		  },
+		  tileSize = {
+		     name = "Tile Size",
+		     order = 3,
+		     type = "range",
+		     min = 0,
+		     max = 64,
+		     step = .5,
+		  },
 		  border = {
 		     name = "Border Texture",
 		     type = "select",
-		     order = 2,
+		     order = 4,
 		     values = AceGUIWidgetLSMlists.border,
 		     dialogControl = "LSM30_Border",
 		     width = "double",
@@ -226,34 +249,48 @@ local options = {
 		  borderColor = {
 		     name = "Border Color",
 		     type = "color",
-		     order = 3,
+		     order = 5,
 		     hasAlpha = true,
 		  },
-		  
+		  edgeSize = {
+		     name = "Border Size",
+		     order = 6,
+		     type = "range",
+		     min = 0,
+		     max = 64,
+		     step = .5,
+		  },
+		  padding = {
+		     name = "Padding (renameme?)",
+		     order = 7,
+		     type = "range",
+		     min = 0,
+		     max = 32,
+		     step = .5,
+		  },
 	       },
 	    },
 	    colouring = {
-	       name = "Colouring",
+	       name = "Coloring",
 	       type = "group",
-	       inline = true,
 	       order = 2,
 	       get = CFGHandler.colouring.get,
 	       set = CFGHandler.colouring.set,
 	       args = {
 		  useDifficultyColour = {
-		     name = "Quest Difficulty Colouring",
+		     name = "Quest Difficulty Coloring",
 		     type = "toggle",
 		     order = 0,
 		     width = double,
 		  },
 		  useProgressColour = {
-		     name = "Progress-based Objective Colouring",
+		     name = "Progress-based Objective Coloring",
 		     type = "toggle",
 		     order = 1,
 		     width = double,
 		  },
 		  progressColour = {
-		     name = "Progress Colour",
+		     name = "Progress Color",
 		     type = "group",
 		     inline = true,
 		     order = 2,

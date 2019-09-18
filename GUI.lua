@@ -68,9 +68,8 @@ end
 function gui:Redraw(recurse)
    gui:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", st.cfg.posX, st.cfg.posY)
 
-   gui.font:SetFont(LSM:Fetch("font", st.cfg.font.name), st.cfg.font.size)
+   gui.font:SetFont(LSM:Fetch("font", st.cfg.font.name), st.cfg.font.size, st.cfg.font.outline)
    gui.font:SetTextColor(st.cfg.font.r, st.cfg.font.g, st.cfg.font.b, st.cfg.font.a)
-   gui.font:SetShadowOffset(st.cfg.font.shadow.x, st.cfg.font.shadow.y)
    gui.font:SetSpacing(st.cfg.font.spacing)
 
    gui.scrollFrame:SetPoint("TOPLEFT", gui, "TOPLEFT", st.cfg.padding, -st.cfg.padding)
@@ -81,11 +80,12 @@ function gui:Redraw(recurse)
       edgeFile = LSM:Fetch("border", st.cfg.backdrop.border.name),
       tileSize = st.cfg.backdrop.tileSize,
       edgeSize = st.cfg.backdrop.edgeSize,
+      tile = st.cfg.backdrop.tile,
       insets = {
-	 left = st.cfg.backdrop.insets.l,
-	 right = st.cfg.backdrop.insets.r,
-	 top = st.cfg.backdrop.insets.t,
-	 bottom = st.cfg.backdrop.insets.b
+	 left = st.cfg.backdrop.padding,
+	 right = st.cfg.backdrop.padding,
+	 top = st.cfg.backdrop.padding,
+	 bottom = st.cfg.backdrop.padding,
       }
    }
 
@@ -98,7 +98,7 @@ end
 
 function gui:RedrawColor()
    gui.font:SetTextColor(st.cfg.font.r, st.cfg.font.g, st.cfg.font.b, st.cfg.font.a)   
-   gui.font:SetShadowColor(st.cfg.font.shadow.r, st.cfg.font.shadow.g, st.cfg.font.shadow.b, st.cfg.font.shadow.a)
+   gui.font:SetSpacing(st.cfg.font.spacing)
    gui:SetBackdropColor(st.cfg.backdrop.background.r, st.cfg.backdrop.background.g, st.cfg.backdrop.background.b, st.cfg.backdrop.background.a)
    gui:SetBackdropBorderColor(st.cfg.backdrop.border.r, st.cfg.backdrop.border.g, st.cfg.backdrop.border.b, st.cfg.backdrop.border.a)
 end
