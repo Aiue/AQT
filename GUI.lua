@@ -66,7 +66,8 @@ function gui:OnEnable()
 end
 
 function gui:Redraw(recurse)
-   gui:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", st.cfg.posX, st.cfg.posY)
+   gui:ClearAllPoints()
+   gui:SetPoint(st.cfg.anchorFrom, UIParent, st.cfg.anchorTo, st.cfg.posX, st.cfg.posY)
 
    gui.font:SetFont(LSM:Fetch("font", st.cfg.font.name), st.cfg.font.size, st.cfg.font.outline)
    gui.font:SetTextColor(st.cfg.font.r, st.cfg.font.g, st.cfg.font.b, st.cfg.font.a)

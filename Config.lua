@@ -6,6 +6,8 @@ local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local Prism = LibStub("LibPrism-1.0")
 
 local defaults = {
+   anchorFrom = "TOPRIGHT",
+   anchorTo = "TOPRIGHT",
    backdrop = {
       background = {
 	 name = "Blizzard Tooltip",
@@ -24,7 +26,7 @@ local defaults = {
       tile = true,
       tileSize = 0,
       edgeSize = 12,
-      padding = 3,
+      insets = 3,
       insets = {r = 3, l = 3, t = 3, b = 3}, -- removeme?
    },
    font = {
@@ -43,19 +45,19 @@ local defaults = {
    padding = 10,
    posX = -5,
    posY = -200,
-   useDifficultyColour = true,
-   useProgressColour = true,
-   useHSVGradient = true,
-   progressColourMin = {
+   progressColorMin = {
       r = 1,
       g = 0,
       b = 0,
    },
-   progressColourMax = {
+   progressColorMax = {
       r = 0,
       g = 1,
       b = 0,
    },
+   useDifficultyColor = true,
+   useProgressColor = true,
+   useHSVGradient = true,
 }
 
 -- Doing this in case we wan't to ditch AceDB later.
@@ -102,7 +104,7 @@ local CFGHandler = {
 	 st.gui:Redraw(false)
       end,
    },
-   colouring = {
+   coloring = {
       get = function(info)
 	 if info.type == "color" then
 	    return st.cfg[info[#info]].r, st.cfg[info[#info]].g, st.cfg[info[#info]].b
@@ -130,6 +132,15 @@ local CFGHandler = {
 	 st.gui:Redraw(true)
       end,
    },
+   layout = {
+      get = function(info)
+	 return st.cfg[info[#info]]
+      end,
+      set = function(info, val)
+	 st.cfg[info[#info]] = val
+	 st.gui:Redraw(false)
+      end,
+   },
 }
 
 local options = {
@@ -150,7 +161,91 @@ local options = {
 	 name = "Layout",
 	 type = "group",
 	 order = 1,
+	 get = CFGHandler.layout.get,
+	 set = CFGHandler.layout.set,
 	 args = {
+	    anchorFrom = {
+	       name = "Tracker Anchor",
+	       order = 0,
+	       type = "select",
+	       values = {
+		  BOTTOM = "BOTTOM",
+		  BOTTOMLEFT = "BOTTOMLEFT",
+		  BOTTOMRIGHT = "BOTTOMRIGHT",
+		  CENTER = "CENTER",
+		  LEFT = "LEFT",
+		  RIGHT = "RIGHT",
+		  TOP = "TOP",
+		  TOPLEFT = "TOPLEFT",
+		  TOPRIGHT = "TOPRIGHT",
+	       },
+	    },
+	    anchorTo = {
+	       name = "UIParent Anchor",
+	       order = 1,
+	       type = "select",
+	       values = {
+		  BOTTOM = "BOTTOM",
+		  BOTTOMLEFT = "BOTTOMLEFT",
+		  BOTTOMRIGHT = "BOTTOMRIGHT",
+		  CENTER = "CENTER",
+		  LEFT = "LEFT",
+		  RIGHT = "RIGHT",
+		  TOP = "TOP",
+		  TOPLEFT = "TOPLEFT",
+		  TOPRIGHT = "TOPRIGHT",
+	       },
+	    },
+	    posX = {
+	       name = "X Offset",
+	       type = "range",
+	       min = -4000,
+	       max = 4000,
+	       step = 1,
+	       order = 2,
+	    },
+	    posY = {
+	       name = "Y Offset",
+	       type = "range",
+	       min = -2200,
+	       max = 2200,
+	       step = 1,
+	       order = 3,
+	    },
+	    minWidth = {
+	       name = "Minimum Width",
+	       type = "range",
+	       min = 50,
+	       max = 1000,
+	       step = .5,
+	       validate = function(info, val) if st.cfg.maxWidth > val then return "Minimum width cannot exceed maximum." end end,
+	       order = 4,
+	    },
+	    maxWidth = {
+	       name = "Maximum Width",
+	       type = "range",
+	       min = 50,
+	       max = 1000,
+	       step = .5,
+	       validate = function(info, val) if st.cfg.minWidth < val then return "Maximum width cannot be lower than minimum." end end,
+	       order = 5,
+	    },
+	    maxHeight = {
+	       name = "Maximum Height",
+	       type = "range",
+	       min = 50,
+	       max = 2000,
+	       step = 1,
+	       order = 6,
+	    },
+	    padding = {
+	       name = "Padding",
+	       type = "range",
+	       min = 0,
+	       max = 50,
+	       step = 1,
+	       order = 7,
+	    },
 	 },
       },
       style = {
@@ -260,8 +355,8 @@ local options = {
 		     max = 64,
 		     step = .5,
 		  },
-		  padding = {
-		     name = "Padding (renameme?)",
+		  insets = {
+		     name = "Insets",
 		     order = 7,
 		     type = "range",
 		     min = 0,
@@ -270,39 +365,39 @@ local options = {
 		  },
 	       },
 	    },
-	    colouring = {
+	    coloring = {
 	       name = "Coloring",
 	       type = "group",
 	       order = 2,
-	       get = CFGHandler.colouring.get,
-	       set = CFGHandler.colouring.set,
+	       get = CFGHandler.coloring.get,
+	       set = CFGHandler.coloring.set,
 	       args = {
-		  useDifficultyColour = {
+		  useDifficultyColor = {
 		     name = "Quest Difficulty Coloring",
 		     type = "toggle",
 		     order = 0,
 		     width = double,
 		  },
-		  useProgressColour = {
+		  useProgressColor = {
 		     name = "Progress-based Objective Coloring",
 		     type = "toggle",
 		     order = 1,
 		     width = double,
 		  },
-		  progressColour = {
+		  progressColor = {
 		     name = "Progress Color",
 		     type = "group",
 		     inline = true,
 		     order = 2,
-		     disabled = function() return not st.cfg.useProgressColour end,
+		     disabled = function() return not st.cfg.useProgressColor end,
 		     args = {
-			progressColourMin = {
+			progressColorMin = {
 			   name = "Incomplete",
 			   type = "color",
 			   hasAlpha = false,
 			   order = 0,
 			},
-			progressColourMax = {
+			progressColorMax = {
 			   name = "Complete",
 			   type = "color",
 			   hasAlpha = false,
@@ -316,9 +411,9 @@ local options = {
 			progressionSample = {
 			   name = function()
 			      local output = "Sample: "
-			      if st.cfg.useProgressColour then
+			      if st.cfg.useProgressColor then
 				 for i = 0, 10 do
-				    output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColourMin.r, st.cfg.progressColourMax.r, st.cfg.progressColourMin.g, st.cfg.progressColourMax.g, st.cfg.progressColourMin.b, st.cfg.progressColourMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
+				    output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColoqwrMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
 				 end
 			      else output = output .. "0% -> 10% -> 20% -> 30% -> 40% -> 50% -> 60% -> 70% -> 80% -> 90% -> 100%"
 			      end
