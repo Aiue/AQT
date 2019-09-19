@@ -23,11 +23,10 @@ local defaults = {
 	 b = 1,
 	 a = 1,
       },
-      tile = true,
+      tile = false,
       tileSize = 0,
       edgeSize = 12,
       insets = 3,
-      insets = {r = 3, l = 3, t = 3, b = 3}, -- removeme?
    },
    font = {
       name = "Friz Quadrata TT",
@@ -351,7 +350,7 @@ local options = {
 		     name = "Border Size",
 		     order = 6,
 		     type = "range",
-		     min = 0,
+		     min = 1,
 		     max = 64,
 		     step = .5,
 		  },
@@ -413,7 +412,7 @@ local options = {
 			      local output = "Sample: "
 			      if st.cfg.useProgressColor then
 				 for i = 0, 10 do
-				    output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColoqwrMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
+				    output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColoqrMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
 				 end
 			      else output = output .. "0% -> 10% -> 20% -> 30% -> 40% -> 50% -> 60% -> 70% -> 80% -> 90% -> 100%"
 			      end

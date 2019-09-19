@@ -83,10 +83,10 @@ function gui:Redraw(recurse)
       edgeSize = st.cfg.backdrop.edgeSize,
       tile = st.cfg.backdrop.tile,
       insets = {
-	 left = st.cfg.backdrop.padding,
-	 right = st.cfg.backdrop.padding,
-	 top = st.cfg.backdrop.padding,
-	 bottom = st.cfg.backdrop.padding,
+	 left = st.cfg.backdrop.insets,
+	 right = st.cfg.backdrop.insets,
+	 top = st.cfg.backdrop.insets,
+	 bottom = st.cfg.backdrop.insets,
       }
    }
 
