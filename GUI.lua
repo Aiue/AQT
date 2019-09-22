@@ -94,6 +94,8 @@ function gui:Redraw(recurse)
 
    gui:SetWidth(st.cfg.maxWidth) --!!!RE!!!
 
+   gui.scrollChild:UpdateSize()
+
    gui:RedrawColor()
 end
 
