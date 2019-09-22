@@ -312,11 +312,19 @@ function AQT:QuestLogUpdate(...)
    end
 
    if playSound then -- quest complete
-      if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: Job's Done"
-      else sound = "Peon: Work Complete" end -- Should only get here if the player is Horde. Otherwise, the horde is more awesome anyway.
+      if st.cfg.playCompletionSound then
+	 if st.cfg.useFactionCompletionSound then
+	    if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: Job's Done"
+	    else sound = "Peon: Work Complete" end -- Should only get here if the player is Horde. Otherwise, the horde is more awesome anyway.
+	 else sound = st.cfg.completionSoundName end
+      end
    elseif playSound == false then -- objective complete
-      if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: Ready to Work"
-      else sound = "Peon: Ready to Work" end -- default to horde, as it should be!
+      if st.cfg.playObjectiveSound then
+	 if st.cfg.useFactionObjectiveSound then
+	    if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: Ready to Work"
+	    else sound = "Peon: Ready to Work" end -- default to horde, as it should be!
+	 else sound = st.cfg.objectiveSound end
+      end
    end
 
    if sound then PlaySoundFile(LSM:Fetch("sound", sound)) end

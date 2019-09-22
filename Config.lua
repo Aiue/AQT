@@ -28,6 +28,7 @@ local defaults = {
       edgeSize = 12,
       insets = 3,
    },
+   completionSoundName = "Peon: Work Complete",
    font = {
       name = "Friz Quadrata TT",
       outline = OUTLINE,
@@ -41,7 +42,10 @@ local defaults = {
    maxHeight = 650,
    minWidth = 100,
    maxWidth = 250,
+   objectiveSoundName = "Peon: Ready to Work",
    padding = 10,
+   playCompletionSound = true,
+   playObjectiveSound = true,
    posX = -5,
    posY = -200,
    progressColorMin = {
@@ -55,6 +59,8 @@ local defaults = {
       b = 0,
    },
    useDifficultyColor = true,
+   useFactionCompletionSound = true,
+   useFactionObjectiveSound = true,
    useProgressColor = true,
    useHSVGradient = true,
 }
@@ -104,13 +110,6 @@ local CFGHandler = {
       end,
    },
    coloring = {
-      get = function(info)
-	 if info.type == "color" then
-	    return st.cfg[info[#info]].r, st.cfg[info[#info]].g, st.cfg[info[#info]].b
-	 else
-	    return st.cfg[info[#info]]
-	 end
-      end,
       set = function(info, v1, v2, v3, v4)
 	 if info.type == "color" then
 	    st.cfg[info[#info]].r = v1
@@ -120,6 +119,18 @@ local CFGHandler = {
 	    st.cfg[info[#info]] = v1
 	 end
 	 st.gui:RedrawColor(true)
+      end,
+   },
+   default = {
+      get = function(info)
+	 if info.type == "color" then
+	    return st.cfg[info[#info]].r, st.cfg[info[#info]].g, st.cfg[info[#info]].b
+	 else
+	    return st.cfg[info[#info]]
+	 end
+      end,
+      set = function(info, val)
+	 st.cfg[info[#info]] = val
       end,
    },
    font = {
@@ -147,12 +158,60 @@ local options = {
    name = "AQT",
    handler = CFGHandler, -- Possibly redundant, since I'll be using direct function references.
    childGroups = "tree",
+   get = CFGHandler.default.get,
+   set = CFGHandler.default.set,
    args = {
       general = {
 	 name = "General",
 	 type = "group",
 	 order = 0,
 	 args = {
+	    sound = {
+	       name = "Sound",
+	       type = "group",
+	       order = 0,
+	       inline = true,
+	       args = {
+		  playObjectiveSound = {
+		     type = "toggle",
+		     name = "Play Objective Completion Sound",
+		     order = 0,
+		  },
+		  useFactionObjectiveSound = {
+		     type = "toggle",
+		     name = "Use Faction Sound",
+		     order = 1,
+		     disabled = function(info) return not st.cfg.playObjectiveSound end,
+		  },
+		  objectiveSoundName = {
+		     type = "select",
+		     name = "Sound",
+		     order = 2,
+		     disabled = function(info) return (not st.cfg.playObjectiveSound or not st.cfg.useFactionObjectiveSound) end,
+		     values = AceGUIWidgetLSMlists.sound,
+		     dialogControl = "LSM30_Sound",
+		  },
+		  playCompletionSound = {
+		     type = "toggle",
+		     name = "Play Quest Completion Sound",
+		     order = 3,
+		  },
+		  useFactionCompletionSound = {
+		     type = "toggle",
+		     name = "Use Faction Sound",
+		     order = 4,
+		     disabled = function(info) return not st.cfg.playCompletionSound end,
+		  },
+		  completionSoundName = {
+		     type = "select",
+		     name = "Sound",
+		     order = 5,
+		     disabled = function(info) return (not st.cfg.playCompletionSound or not st.cfg.useFactionCompletionSound) end,
+		     values = AceGUIWidgetLSMlists.sound,
+		     dialogControl = "LSM30_Sound",
+		  },
+	       },
+	    },
 	    sink = AQT:GetSinkAce3OptionsDataTable(),
 	 },
       },
@@ -368,7 +427,6 @@ local options = {
 	       name = "Coloring",
 	       type = "group",
 	       order = 2,
-	       get = CFGHandler.coloring.get,
 	       set = CFGHandler.coloring.set,
 	       args = {
 		  useDifficultyColor = {
@@ -412,7 +470,7 @@ local options = {
 			      local output = "Sample: "
 			      if st.cfg.useProgressColor then
 				 for i = 0, 10 do
-				    output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColoqrMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
+				    output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
 				 end
 			      else output = output .. "0% -> 10% -> 20% -> 30% -> 40% -> 50% -> 60% -> 70% -> 80% -> 90% -> 100%"
 			      end
