@@ -21,7 +21,6 @@ end
 
 local gui = CreateFrame("Frame", getAvailableName("AQTParent"), UIParent)
 st.gui = gui
-gui.content = {} --???
 
 local guiFunc = {}
 
@@ -55,14 +54,14 @@ function gui:OnEnable()
 
 
    gui.title = guiFunc.New(gui.scrollChild)
+   gui.title.owner = {type = gui} -- Special hack.
    gui.title:SetPoint("TOPLEFT", gui.scrollChild, "TOPLEFT")
    gui.title:SetPoint("TOPRIGHT", gui.scrollChild, "TOPRIGHT")
-   gui.title.button.isClickButton = true
+--   gui.title.button.isClickButton = true
    gui:Redraw(false)
    gui.title.text:SetText("Quests")
-   gui.title.counter:SetText("|cff00ff000/" .. tostring(MAX_QUESTLOG_QUESTS) .. "|r")
+--   gui.title.counter:SetText("|cff00ff000/" .. tostring(MAX_QUESTLOG_QUESTS) .. "|r")
    gui.title:Update()
-
 end
 
 function gui:Redraw(recurse)
@@ -70,7 +69,6 @@ function gui:Redraw(recurse)
    gui:SetPoint(st.cfg.anchorFrom, UIParent, st.cfg.anchorTo, st.cfg.posX, st.cfg.posY)
 
    gui.font:SetFont(LSM:Fetch("font", st.cfg.font.name), st.cfg.font.size, st.cfg.font.outline)
-   gui.font:SetTextColor(st.cfg.font.r, st.cfg.font.g, st.cfg.font.b, st.cfg.font.a)
    gui.font:SetSpacing(st.cfg.font.spacing)
 
    gui.scrollFrame:SetPoint("TOPLEFT", gui, "TOPLEFT", st.cfg.padding, -st.cfg.padding)
@@ -101,7 +99,6 @@ end
 
 function gui:RedrawColor()
    gui.font:SetTextColor(st.cfg.font.r, st.cfg.font.g, st.cfg.font.b, st.cfg.font.a)   
-   gui.font:SetSpacing(st.cfg.font.spacing)
    gui:SetBackdropColor(st.cfg.backdrop.background.r, st.cfg.backdrop.background.g, st.cfg.backdrop.background.b, st.cfg.backdrop.background.a)
    gui:SetBackdropBorderColor(st.cfg.backdrop.border.r, st.cfg.backdrop.border.g, st.cfg.backdrop.border.b, st.cfg.backdrop.border.a)
 end
@@ -121,15 +118,16 @@ function guiFunc:Release(recursed)
 
    local found
 
-   for k,v in ipairs(parent.children) do
+   for k,v in ipairs(parent.children) do -- This sometimes fails. Figure out why. (Parent should never be nil.)
       if self == v then tinsert(recycler, tremove(parent.children, k));found = true end
    end
 
    if not found then print("Could not find what we're trying to release..");print(self:GetParent().text:GetText() .. "/" .. self.text:GetText()) end
 
+   self.owner = nil
    self.text:SetText("")
    self.counter:SetText("")
-   self.button.isClickButton = nil
+--   self.button.isClickButton = nil
    self.button:Hide()
    self.container:Show()
    self:SetParent(nil)
@@ -185,23 +183,24 @@ function guiFunc:New()
       object.children = {}
       setmetatable(object, mt)
    end
-   object:ButtonCheck()
+--   object:ButtonCheck()
    tinsert(self.children, object)
    if self ~= gui.scrollChild then self:Update() end
    return object
 end
 
 function guiFunc:Update()
-   self:Sort()
+   self:Sort() -- possibly change elsewhere
    self:ButtonCheck()
-   self:UpdateSize(true) --!!!RE!!! Might want to NOT call this always. Only most of the time. Probably best to break it out and only call it when we actually need to.
+   self:UpdateText()
+   self:UpdateSize(true) --!!!RE!!! Might want to NOT call this always. Only most of the time. Probably best to break it out and only call it when we actually need to. Also, that's some funky English I started this sentence with.
 end
 
 local function clickButton(self, button, down)
 end
 
-function guiFunc:ButtonCheck()
-   if self.button.isClickButton then
+function guiFunc:ButtonCheck() -- rewrite, removing isCLickButton, check type instead.
+   if self == gui.title or self.owner.type == st.types.Header then
       if #self.children > 0 then
 	 if self.container:IsShown() then
 	    self.button:SetNormalTexture([[Interface\BUTTONS\UI-MinusButton-Up]])
@@ -213,6 +212,17 @@ function guiFunc:ButtonCheck()
       else
 	 self.button:Hide()
 	 --also disable scripts?
+      end
+   elseif self.owner.type == st.types.Quest then
+      if self.owner.complete then
+	 if self.owner.complete < 0 then
+	    self.button:SetNormalTexture([[Interface\RAIDFRAME\ReadyCheck-NotReady]])
+	 elseif self.owner.complete > 0 then
+	    self.button:SetNormalTexture([[Interface\RAIDFRAME\ReadyCheck-Ready]])
+	 end
+	 self.button:Show()
+      else
+	 self.button:Hide()
       end
    end
    -- Interface\\BUTTONS\\UI-HideButton-[Disabled|Down|Up]
@@ -241,4 +251,32 @@ function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for s
    self:SetHeight(th > ch and th or ch)
 
    if recurse then self:GetParent():UpdateSize(true) end -- gui.scrollChild will have its own function, so no need for a base case
+end
+
+function guiFunc:UpdateText()
+   local titleText,counterText
+   if self == gui.title then return end
+   local cString = "|cff" .. (self.owner.progress and Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, self.owner.progress) or "ffffff")
+   if self.owner.titleColor then
+      if type(self.owner.titleColor) == "function" then
+	 local c = self.owner:titleColor()
+	 titleText = "|cff%02x%02x%02x" .. self.owner.titleText .. "|r"
+	 titleText = titleText:format(c.r*255,c.g*255,c.b*255)
+      else
+	 titleText = cString .. self.owner.titleText .. "|r"
+      end
+   else
+      titleText = self.owner.titleText
+   end
+
+   self.text:SetText(titleText)
+
+   if not self.owner.counterText then
+      counterText = ""
+      self.counter:Hide()
+   else
+      counterText = cString .. self.owner.counterText .. "|r"
+      self.counter:Show()
+   end
+   self.counter:SetText(counterText)
 end

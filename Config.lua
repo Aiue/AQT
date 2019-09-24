@@ -58,6 +58,14 @@ local defaults = {
       g = 1,
       b = 0,
    },
+   showHeaderCount = true,
+   showHeaders = true,
+   showTags = true,
+   sortFields = {
+      header = {},
+      quest = {},
+   },
+   trackAll = true,
    useDifficultyColor = true,
    useFactionCompletionSound = true,
    useFactionObjectiveSound = true,
@@ -166,10 +174,39 @@ local options = {
 	 type = "group",
 	 order = 0,
 	 args = {
+	    uncategorized = {
+	       type = "group",
+	       name = "Uncategorized",
+	       order = 0,
+	       inline = true,
+	       args = {
+		  showHeaders = {
+		     type = "toggle",
+		     name = "Show Headers",
+		     order = 0,
+		  },
+		  showHeaderCount = {
+		     type = "toggle",
+		     name = "Show Header Count",
+		     order = 1,
+		  },
+		  trackAll = {
+		     type = "toggle",
+		     name = "Track All Quests (recommended for now, no way of manually tracking things yet)",
+		     width = "full",
+		     order = 2,
+		  },
+		  showTags = {
+		     type = "toggle",
+		     name = "Show Quest Tags",
+		     order = 3,
+		  },
+	       },
+	    },
 	    sound = {
 	       name = "Sound",
 	       type = "group",
-	       order = 0,
+	       order = 1,
 	       inline = true,
 	       args = {
 		  playObjectiveSound = {
@@ -191,21 +228,26 @@ local options = {
 		     values = AceGUIWidgetLSMlists.sound,
 		     dialogControl = "LSM30_Sound",
 		  },
+		  soundBreak = {
+		     type = "header",
+		     order = 3,
+		     name = "",
+		  },
 		  playCompletionSound = {
 		     type = "toggle",
 		     name = "Play Quest Completion Sound",
-		     order = 3,
+		     order = 4,
 		  },
 		  useFactionCompletionSound = {
 		     type = "toggle",
 		     name = "Use Faction Sound",
-		     order = 4,
+		     order = 5,
 		     disabled = function(info) return not st.cfg.playCompletionSound end,
 		  },
 		  completionSoundName = {
 		     type = "select",
 		     name = "Sound",
-		     order = 5,
+		     order = 6,
 		     disabled = function(info) return (not st.cfg.playCompletionSound or not st.cfg.useFactionCompletionSound) end,
 		     values = AceGUIWidgetLSMlists.sound,
 		     dialogControl = "LSM30_Sound",

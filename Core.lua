@@ -10,10 +10,53 @@ LSM:Register("sound", "Peon: Ready to Work", [[Sound\Creature\Peon\PeonReady1.og
 LSM:Register("sound", "Peon: Work Complete", [[Sound\Creature\Peon\PeonBuildingComplete1.ogg]])
 LSM:Register("sound", "Peon: Work Work", [[Sound\Creature\Peon\PeonYes3.ogg]])
 
-local tinsert = table.insert
+local tinsert,tremove = table.insert,table.remove
+
+function AQT:OnDisable()
+end
+
+-- Not sure why I left this here.
+--local hooks = {
+--   "AbandonQuest",
+--   "GetQuestReward",
+--   "SetAbandonQuest",
+--}
+
+local QuestCache = {}
+local HeaderCache = {}
+
+local Header = {
+   sortFields = nil,
+   titleColor = false,
+   titleText = "",
+}
+
+Header.__index = Header
+Header.type = Header
+
+local Objective = {
+   sortFields = {"index"},
+   titleColor = true,
+   titleText = "",
+}
+
+Objective.__index = Objective
+Objective.type = Objective
+
+local Quest = {
+   titleColor = function(self) return GetQuestDifficultyColor(self.level) end,      
+   titleText = "",
+}
+
+Quest.__index = Quest
+Quest.type = Quest
+
+st.types = {Header = Header, Objective = Objective, Quest = Quest} -- May end up unused.
 
 function AQT:OnInitialize()
    st.initConfig()
+   Header.sortFields = st.cfg.sortFields.header
+   Quest.sortFields = st.cfg.sortFields.quest
 end
 
 function AQT:OnEnable()
@@ -22,257 +65,241 @@ function AQT:OnEnable()
    self:RegisterEvent("PLAYER_LEVEL_UP", "PlayerLevelUp")
 end
 
-function AQT:OnDisable()
+function Header:CreateUIObject()
+   if self.uiObject then error("Header:CreateUIObject(): '" .. self.name .. "' already has an uiObject.") end
+   self.uiObject = st.gui.title:New()
+   self.uiObject.owner = self
 end
 
-local hooks = {
-   "AbandonQuest",
-   "GetQuestReward",
-   "SetAbandonQuest",
-}
-
-local QuestCache = {}
-local HeaderCache = {}
-
-function AQT:AddQuest(header, index)
-   local qTitle,qLevel,qTag,qHeader,qCollapsed,qComplete,qFreq,qID = GetQuestLogTitle(index)
-   if QuestCache[qID] then error("Attempting to add quest that is already cached.") end
-   if not HeaderCache[header] then error("Unknown header: " .. header) end
-
-   QuestCache[qID] = {
-      uiObject = HeaderCache[header].uiObject:New(),
-      title = qTitle,
-      level = qLevel,
-      tag = qTag,
-      complete = qComplete,
-      objectives = {},
-   }
-   self:SetQuestTitle(qID)
-   self:CheckObjectives(index)
-   HeaderCache[header].uiObject:Sort()
+function Header:New(o)
+   if not o.name then error("Header:New() requires header name to be set.") end
+   setmetatable(o, self)
+   if not o.quests then o.quests = {} end
+   HeaderCache[o.name] = o
+   return o
 end
 
-function AQT:SetQuestTitle(id)
-   local q = QuestCache[id]
-   local c = GetQuestDifficultyColor(q.level)
-   local str = "|cff%02x%02x%02x[%d%s] " .. q.title .. "|r"
-   local tag
-   if not q.tag then tag = ""
-   else tag = q.tag:sub(1,1) end
-   q.uiObject.text:SetText(str:format(c.r*255, c.g*255, c.b*255, q.level, tag))
-   if q.complete then
-      if q.complete < 0 then
-	 q.uiObject.button:SetNormalTexture([[Interface\RAIDFRAME\ReadyCheck-NotReady]])
-      elseif q.complete > 0 then
-	 q.uiObject.button:SetNormalTexture([[Interface\RAIDFRAME\ReadyCheck-Ready]])
-      end
-      q.uiObject.button:Show()
+function Header:Remove()
+   if #self.quests > 0 then error("Header:Remove(): '" .. self.name .. "': trying to remove header that still has quests attached.") end
+   if self.uiObject then self.uiObject:Release() end
+   HeaderCache[self.name] = nil
+end
+
+function Header:Update()
+   self.titleText = self.name
+   local completed = 0
+   for k,v in ipairs(self.quests) do
+      if v.complete and v.complete > 0 then completed = completed + 1 end
    end
-   q.uiObject:UpdateSize(true)
+
+   self.counterText = tostring(completed) .. "/" .. tostring(#self.quests)
+   if #self.quests > 0 then
+      self.progress = completed/#self.quests 
+   else 
+      self.progress = 1 
+   end
+
+   if #self.quests > 0 then
+      if not self.uiObject then
+	 self:CreateUIObject()
+	 self.uiObject:Update()
+      end
+   elseif self.uiObject then
+      self.uiObject:Release()
+      self.uiObject = nil
+   end
 end
 
-function AQT:RemoveQuest(id)
-   local q = QuestCache[id]
--- Should be redundant, since it will recurse regardless.
---   for k,v in pairs(q.objectives) do
---      if v.uiObject then v.uiObject:Release() end
---   end
-   q.uiObject:Release()
-   QuestCache[id] = nil
+function Objective:New(o)
+   if not o.quest then error("Objective:New() requires quest id to be set.") end
+   setmetatable(o, self)
+   return o
 end
 
-function AQT:CheckQuestForUpdates(index)
-   local qTitle,qLevel,qTag,qHeader,qCollapsed,qComplete,qFreq,qID = GetQuestLogTitle(index)
-   local q = QuestCache[qID]
+function Objective:Remove() -- Probably redundant.
+end
+
+function Objective:Update(qIndex, oIndex)
+   local oText,oType,complete = GetQuestLogLeaderBoard(oIndex, qIndex)
+   local text,have,need
+   local countertext
+   local update
+
+   if oType == "monster" then
+      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_MONSTERS_KILLED, "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
+      if not have then -- Some of these objectives apparently do not follow this string pattern.
+	 text,have,need = string.match(oText, "^(.+): (%d+)/(%d+)$")
+      end
+   elseif oType == "item" then
+      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_ITEMS_NEEDED, "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
+   elseif oType == "object" then
+      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_OBJECTS_FOUND, "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
+   elseif oType == "reputation" then
+      text,have,need = string.match(oText, "^" .. string.gsub(QUEST_FACTION_NEEDED, "%%(s)", "(.+)") .. "$")
+      --!!!RE!!! Return to this and see if we can fetch actual numerical values for string colourization later.
+      countertext = have:gsub(1,1) .. "/" .. need:gsub(1,1)
+      have,need = (complete and 1 or 0),1
+   elseif oType == "event" then
+      have,need = (complete and 1 or 0),1
+      countertext = ""
+      text = oText
+   else
+      print("AQT:CheckObjectives(): Unknown objective type '" .. oType .. "'. Falling back to default parsing with this debug info.")
+      have,need = (complete and 1 or 0),1
+      text = "(" .. oType .. ")" .. cstring .. oText .. "|r"
+   end
+
+   if self.titleText ~= text or self.have ~= have or self.need ~= need or self.complete ~= complete then update = true end
+
+   if not self.new then
+      local pour,_,r,g,b
+      if complete and not self.complete then
+	 sound = false
+	 pour = true
+	 self.progress = 1
+	 r,g,b = st.cfg.progressColorMax.r, st.cfg.progressColorMax.g, st.cfg.progressColorMax.b
+      elseif self.have ~= have and not complete then
+	 pour = true
+	 _,r,g,b = Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, have/need)
+      end
+
+      if pour then AQT:Pour(text .. ": " .. tostring(have) .. "/" .. tostring(need), r, g, b) end
+   end
+
+   self.new = nil
+
+   self.titleText = text
+   self.have = have
+   self.need = need
+   self.progress = have/need
+   self.complete = complete
+   self.counterText = countertext and countertext or (tostring(have) .. "/" .. tostring(need))
+
+   if self.complete then
+      if self.uiObject then
+	 self.uiObject:Release()
+	 self.uiObject = nil
+	 update = false -- just in case
+      end
+   elseif not self.uiObject and QuestCache[self.quest].uiObject then
+      self.uiObject = QuestCache[self.quest].uiObject:New()
+      self.uiObject.owner = self
+      update = true
+   end
+
+   if update and self.uiObject then self.uiObject:Update() end
+   return sound
+end
+
+function Quest:New(o)
+   if not o.id then error("Quest:New() requires id to be set.") end
+   setmetatable(o, self)
+   if not o.objectives then o.objectives = {} end
+   local header = o.header.name or "Unknown"
+   if not HeaderCache[header] then o.header = Header:New({name = header, quests = {o}})
+   else
+      o.header = HeaderCache[header] 
+      tinsert(o.header.quests, o)
+   end
+   QuestCache[o.id] = o
+   o:Update()
+   if st.cfg.trackAll then o:Track() end
+   return o
+end
+
+function Quest:Remove()
+   if self.uiObject then self:Untrack() end
+   for k,v in ipairs(self.header.quests) do
+      if v == self then tremove(self.header.quests, k) end
+   end
+   self.header = nil
+   QuestCache[self.id] = nil
+end
+
+function Quest:Track()
+   if self.uiObject then error("Attempting to track already tracked quest, '" .. self.title .. "'.") end
+
+   local parent
+   if st.cfg.showHeaders then -- I think something's wrong here. Or hereabouts.
+      if not self.header.uiObject then self.header:CreateUIObject() end
+      parent = self.header.uiObject
+   else parent = st.gui.title end
+
+   self.uiObject = parent:New()
+   self.uiObject.owner = self
+   self.header:Update()
+   self.uiObject:Update() -- ???????
+   -- I COMPLETELY FORGOT EVERYTHING I WAS FUCKING DOING
+end
+
+function Quest:Untrack()
+   if not self.uiObject then error("Attempting to untrack untracked quest, '" .. self.title .. "'.") end
+
+   for i,v in ipairs(self.header.quests) do
+      if self == v then tremove(self.header.quests, i) end
+   end
+
+   self.header:Update()
+   self.uiObject:Release()
+end
+
+function Quest:Update()
+   local index = GetQuestLogIndexByID(self.id)
+   if not index then error("Quest:Update(): Unable to find quest '" .. self.title .. "' in log.") end
+
+   local qTitle,qLevel,qTag,qHeader,qCollapsed,qComplete = GetQuestLogTitle(index)
    local sound = nil
+   local update = nil
+   local title
+
+   if self.title ~= qTitle or self.level ~= qLevel or self.tag  ~= qTag or self.complete ~= qComplete then update = true end
+
    if qComplete then
-      for k,v in pairs(q.objectives) do
+      for k,v in ipairs(self.objectives) do
 	 if v.uiObject then
 	    v.uiObject:Release()
 	    v.uiObject = nil
 	 end
       end
-      if not q.complete and qComplete > 0 then
+      if not self.complete and qComplete > 0 then
 	 sound = true
-	 self:Pour("Quest Complete: " .. qTitle, 0, 1, 0)
+	 AQT:Pour("Quest Complete: " .. qTitle, st.cfg.progressColorMax.r, st.cfg.progressColorMax.g, st.cfg.progressColorMax.b)
       end
    end
    if GetNumQuestLeaderBoards(index) == 0 then qComplete = 1 end -- Special handling
-   q.title = qTitle
-   q.level = qLevel
-   q.complete = qComplete
-   self:SetQuestTitle(qID)
-   if not qComplete then sound = self:CheckObjectives(index) end
+   self.title = qTitle
+   self.level = qLevel
+   self.tag = qTag
+   self.complete = qComplete
+
+   if st.cfg.showTags then
+      local tag = self.tag and self.tag:sub(1,1) or ""
+      title = "[" .. tostring(self.level) .. tag .. "] " .. self.title
+   else title = self.title end
+
+   self.titleText = title
+
+   if not qComplete then sound = self:UpdateObjectives() end
+   if update then self.uiObject:Update() end
+   self.header:Update()
    return sound
 end
 
-function AQT:CheckObjectives(index) --!!!RE!!! Did most of this while my mind was all kinds of mushy, so should probably make sure to look over all of this.
-   local qTitle,qLevel,qTag,qHeader,qCollapsed,qComplete,qFreq,qID = GetQuestLogTitle(index)
+function Quest:UpdateObjectives()
+   local index = GetQuestLogIndexByID(self.id)
+   if not index then error("Quest:UpdateObjectives(): Unable to find quest '" .. self.title .. "' in log.") end
+
    local sound
-   local q = QuestCache[qID]
 
    for i = 1, GetNumQuestLeaderBoards(index) do
-      local oText,oType,complete = GetQuestLogLeaderBoard(i, index)
-      local text,have,need
-      local countertext
-      local cstring,r,g,b
-      local pour
-
-      if oType == "monster" then
-	 text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_MONSTERS_KILLED, "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
-	 if not have then -- Some of these objectives apparently do not follow this string pattern.
-	    text,have,need = string.match(oText, "^(.+): (%d+)/(%d+)$")
-	 end
-	 if not have or not need then error("STILL can't parse the damn string? Figure out what's wrong.") end --!!!RE!!! Remove this if this error isn't thrown at some point soon.
-      elseif oType == "item" then
-	 text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_ITEMS_NEEDED, "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
-      elseif oType == "object" then
-	 text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_OBJECTS_FOUND, "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
-      elseif oType == "reputation" then
-	 text,have,need = string.match(oText, "^" .. string.gsub(QUEST_FACTION_NEEDED, "%%(s)", "(.+)") .. "$")
-	 --!!!RE!!! Return to this and see if we can fetch actual numerical values for string colourization later.
-	 local cstring = "|cff" .. (complete and "00ff" or "ff00") .. "00"
-	 countertext = cstring .. have:gsub(1,1) .. "/" .. need:gsub(1,1) .. "|r"
-	 have,need = (complete and 1 or 0),1 -- Not sure this will be needed, actually, since we've already colourized.
-      elseif oType == "event" then
-	 have,need = (complete and 1 or 0),1
-	 countertext = ""
-	 local cstring = "|cff" .. (complete and "00ff" or "ff00") .. "00"
-	 text = cstring .. oText .. "|r"
-      else
-	 print("AQT:CheckObjectives(): Unknown objective type '" .. oType .. "'. Falling back to default parsing with this debug info.")
-	 have,need = (complete and 1 or 0),1
-	 local cstring = "|cff" .. (complete and "00ff" or "ff00") .. "00"
-	 text = "(" .. oType .. ")" .. cstring .. oText .. "|r"
-      end
-
-      if q.objectives[i] then
-	 local o = q.objectives[i]
-	 local pour
-	 if not o.complete and complete then
-	    if o.uiObject then
-	       o.uiObject:Release()
-	       o.uiObject = nil
-	    end
-	    sound = false
-	    pour = true
-	    r,g,b = 0,1,0
-	 elseif o.have ~= have and not complete then
-	    pour = true
-	    cstring,r,g,b = Prism:Gradient("hsv", 1, 0, 0, 1, 0, 0, have/need)
-	 elseif not complete and o.text ~= text or o.need ~= need then
-	    cstring,r,g,b = Prism:Gradient("hsv", 1, 0, 0, 1, 0, 0, have/need)
-	 end
-	 o.have = have
-	 o.need = need
-	 o.complete = complete
-	 if pour then self:Pour(text .. ": " .. tostring(have) .. "/" .. tostring(need), r, g, b) end
-      else
-	 q.objectives[i] = {
-	    have = have,
-	    need = need,
-	    complete = complete,
-	 }
-	 if not complete then
-	    q.objectives[i].uiObject = q.uiObject:New()
-	    cstring = Prism:Gradient("hsv", 1, 0, 0, 1, 0, 0, have/need)
-	 end
-      end
-      if q.objectives[i].uiObject and cstring then
-	 q.objectives[i].uiObject.text:SetText("|cff" .. cstring .. tostring(text) .. "|r")
-	 q.objectives[i].uiObject.counter:SetText(countertext and countertext or ("|cff" .. cstring .. tostring(have) .. "/" .. tostring(need)))
-	 q.objectives[i].uiObject:UpdateSize(true)
-      elseif cstring then
-	 print("uiObject expected but not found. quest " .. qTitle .. ", index " .. tostring(i))
-      end
+      if not self.objectives[i] then self.objectives[i] = Objective:New({quest = self.id, index = i, new = true}) end
+      local check = self.objectives[i]:Update(index, i)
+      if sound == nil then sound = check end
    end
    return sound
---[[
-	["QUEST_CRITERIA_TREE_OBJECTIVE"] = "%2$llu/%3$llu %1$s",
-	["QUEST_CRITERIA_TREE_OBJECTIVE_NOPROGRESS"] = "%1$s",
-	["QUEST_FACTION_NEEDED"] = "%s:  %s / %s",
-	["QUEST_FACTION_NEEDED_NOPROGRESS"] = "%2$s %1$s",
-	["QUEST_INTERMEDIATE_ITEMS_NEEDED"] = "%s: (%d)",
-	["QUEST_ITEMS_NEEDED"] = "%s: %d/%d",
-	["QUEST_ITEMS_NEEDED_NOPROGRESS"] = "%2$d x %1$s",
-	["QUEST_MONSTERS_KILLED"] = "%s slain: %d/%d",
-	["QUEST_MONSTERS_KILLED_NOPROGRESS"] = "%2$d x %1$s",
-	["QUEST_OBJECTIVE_PROGRESS_BAR"] = "%d%%",
-	["QUEST_OBJECTS_FOUND"] = "%s: %d/%d",
-	["QUEST_OBJECTS_FOUND_NOPROGRESS"] = "%2$d x %1$s",
-	["QUEST_PLAYERS_DEFEATED_PET_BATTLE"] = "%1$d/%2$d Players defeated in pet battle",
-	["QUEST_PLAYERS_DEFEATED_PET_BATTLE_NOPROGRESS"] = "%d x Players defeated in pet battle",
-	["QUEST_PLAYERS_KILLED"] = "%1$d/%2$d %3$s Players slain",
-	["QUEST_PLAYERS_KILLED_NOPROGRESS"] = "%2$s Players x %1$d",
-	["QUEST_PROGRESS_NEEDED"] = "Progress: %1$d",
-	["QUEST_SPELL_NEEDED"] = "Learn Spell: %s",
-	["QUEST_SPELL_REWARD_TYPE_AURA"] = 4,
-	["QUEST_SPELL_REWARD_TYPE_SPELL"] = 5,
-	["QUEST_SPELL_REWARD_TYPE_TRADESKILL_SPELL"] = 2,
-	["QUEST_SPELL_REWARD_TYPE_UNLOCK"] = 6,
-	["QUEST_TAG_DUNGEON_TYPES"] = {
-		[88] = true,
-		[89] = true,
-		[62] = true,
-		[81] = true,
-	},
-	["QUEST_TYPE_SCENARIO"] = 98,
-]]--
-end
-
-function AQT:AddHeader(name)
-   if HeaderCache[name] then error ("Attempting to add header that is already cached.") end
-   local header = {}
-   HeaderCache[name] = header
-   header.uiObject = st.gui.title:New()
-   header.uiObject.button.isClickButton = true
-   header.uiObject.text:SetText(name)
-   header.complete = 0
-   header.uiObject:UpdateSize(true)
-   st.gui.title:Sort()
-end
-
-function AQT:RemoveHeader(name)
-   HeaderCache[name].uiObject:Release()
-   HeaderCache[name] = nil
-end
-
-function AQT:UpdateHeaders()
-   for k,v in pairs(HeaderCache) do
-      local h,w = v.uiObject:GetSize()
-      local colorstring = Prism:Gradient("hsv", 1, 0, 0, 1, 0, 0, v.complete/#v.uiObject.children)
-      v.uiObject.counter:SetText("|cff" .. colorstring .. tostring(v.complete) .. "/" .. tostring(#v.uiObject.children))
-   end
-end
-
-function AQT:ExpandHeaders(collapsedheaders)
-   -- We may end up triggering the event a few times while processing, so we'll want to avoid unneccessary superfluous calls.
-   self:UnregisterEvent("QUEST_LOG_UPDATE")
-   -- Start by expanding any collapsed headers, so we can fetch info about their quests.
-   local i = 1
-   while GetQuestLogTitle(i) do
-      local qTitle,qLevel,qTag,qHeader,qCollapsed = GetQuestLogTitle(i)
-      if qCollapsed then
-	 tinsert(collapsedheaders, i)
-	 ExpandQuestHeader(i)
-      end
-      i = i + 1
-   end
-end
-
-function AQT:CollapseHeaders(collapsedheaders)
-   -- Collapse any previously expanded headers.
-   for i = #collapsedheaders, 1, -1 do
-      CollapseQuestHeader(collapsedheaders[i])
-   end
-   -- Start reacting to the event firing again.
-   self:RegisterEvent("QUEST_LOG_UPDATE", "QuestLogUpdate") -- This seems to still reenable it too soon. Any time a header is collapsed, QLU keeps firing indefinitely.
 end
 
 function AQT:QuestLogUpdate(...)
-   local collapsedheaders = {}
-   self:ExpandHeaders(collapsedheaders) --!!!RE!!! Redo the iterator instead. While GetNumQuestLogEntries() returns the number of visible rows in the questlog, anything hidden under a collapsed header will be indexed at entries+n+1
-
    -- Find any updated quests or new quests/headers.
    local entries,questentries = GetNumQuestLogEntries()
    local localQuestCache = {}
@@ -281,31 +308,35 @@ function AQT:QuestLogUpdate(...)
    local count = 0
    local playSound = nil
    local sound
-   for i = 1, entries do
+   local i = 1
+   while i do
       local qTitle,qLevel,qTag,qHeader,qCollapsed,qComplete,qFreq,qID = GetQuestLogTitle(i)
 
-      if qHeader then
-	 localHeaderCache[qTitle] = true
-	 -- Separate if rather than "and" so we can use else.
-	 if not HeaderCache[qTitle] then self:AddHeader(qTitle) end
-	 currentHeader = qTitle
-	 HeaderCache[qTitle].complete = 0
+      if not qTitle then i = nil
       else
-	 count = count + 1
-	 if qComplete then HeaderCache[currentHeader].complete = HeaderCache[currentHeader].complete + 1 end
-	 localQuestCache[qID] = true
-	 if not QuestCache[qID] then self:AddQuest(currentHeader, i)
-	 else 
-	    local sound = self:CheckQuestForUpdates(i)
-	    if sound and not playSound then playSound = sound -- true, quest completed
-	    elseif sound == false and not playSound then playSound = sound -- false, objective completed
-	    end -- else it's nil, nothing completed
+	 if currentHeader and i > entries then currentHeader = nil end
+	 if qHeader then
+	    localHeaderCache[qTitle] = true
+	    -- Separate if rather than "and" so we can use else.
+	    if not HeaderCache[qTitle] then currentHeader = Header:New({name = qTitle}) else currentHeader = HeaderCache[qTitle] end
+	 else
+	    localQuestCache[qID] = true
+	    if not QuestCache[qID] then
+	       Quest:New({title = qTitle, level = qLevel, tag = qTag, complete = qComplete, id = qID, header = currentHeader})
+	    else 
+	       local q = QuestCache[qID]
+	       local sound = q:Update()
+	       if sound and not playSound then playSound = sound -- true, quest completed
+	       elseif sound == false and not playSound then playSound = sound -- false, objective completed
+	       end -- else it's nil, nothing completed
+	    end
 	 end
+	 i = i + 1
       end
    end
    -- Find any removed quests or headers.
    for k,v in pairs(QuestCache) do
-      if not localQuestCache[k] then self:RemoveQuest(k) end
+      if not localQuestCache[k] then v:Remove() end
    end
    for k,v in pairs(HeaderCache) do
       if not localHeaderCache[k] then self:RemoveHeader(k) end
@@ -329,15 +360,13 @@ function AQT:QuestLogUpdate(...)
 
    if sound then PlaySoundFile(LSM:Fetch("sound", sound)) end
 
-   self:CollapseHeaders(collapsedheaders)
-   self:UpdateHeaders() -- Simplest way of doing it. May want to revisit this later.
-   local colorstring = Prism:Gradient("hsv", 0, 1, 1, 0, 0, 0, count/MAX_QUESTLOG_QUESTS)
-   st.gui.title.counter:SetText("|cff" .. colorstring .. tostring(count) .. "/" .. tostring(MAX_QUESTLOG_QUESTS) .. "|r")
+   local countString = ""
+   if st.cfg.useProgressColor then countString = countString .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, (MAX_QUESTLOG_QUESTS-questentries)/MAX_QUESTLOG_QUESTS) end
+   countString = countString .. tostring(questentries) .. "/" .. tostring(MAX_QUESTLOG_QUESTS)
+   if st.cfg.useProgressColor then countString = countString .. "|r" end
+   st.gui.title.counter:SetText(countString)
 end
 
 function AQT:PlayerLevelUp(...)
-   local headers = {}
-   self:ExpandHeaders(headers)
-   for k,v in pairs(QuestCache) do self:SetQuestTitle(k) end
-   self:CollapseHeaders(headers)
+   for k,v in pairs(QuestCache) do v:Update() end
 end
