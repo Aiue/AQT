@@ -124,6 +124,7 @@ function Objective:Update(qIndex, oIndex)
    local text,have,need
    local countertext
    local update
+   local sound
 
    if oType == "monster" then
       text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_MONSTERS_KILLED, "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
@@ -195,7 +196,7 @@ function Quest:New(o)
    if not o.id then error("Quest:New() requires id to be set.") end
    setmetatable(o, self)
    if not o.objectives then o.objectives = {} end
-   local header = o.header.name or "Unknown"
+   local header = o.header and o.header.name or "Unknown"
    if not HeaderCache[header] then o.header = Header:New({name = header, quests = {o}})
    else
       o.header = HeaderCache[header] 
@@ -221,15 +222,17 @@ function Quest:Track()
 
    local parent
    if st.cfg.showHeaders then -- I think something's wrong here. Or hereabouts.
-      if not self.header.uiObject then self.header:CreateUIObject() end
+      print("Showing headers")
+      if not self.header.uiObject then self.header:CreateUIObject();print("No uiObject for header, creating..") end
       parent = self.header.uiObject
-   else parent = st.gui.title end
+      print("parent: " .. tostring(parent))
+   else parent = st.gui.title;print("parent: st.gui.title") end
 
    self.uiObject = parent:New()
    self.uiObject.owner = self
    self.header:Update()
    self.uiObject:Update() -- ???????
-   -- I COMPLETELY FORGOT EVERYTHING I WAS FUCKING DOING
+   -- I COMPLETELY FORGOT EVERYTHING I WAS FUCKING DOING ... yeah, this was probably food time. Look this over and remove this silly comment.
 end
 
 function Quest:Untrack()

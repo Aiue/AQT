@@ -111,6 +111,13 @@ local mt = {
 
 function guiFunc:Release(recursed)
    local parent = self:GetParent()
+   if not parent then
+      print(tostring(self:GetName()) .. ": failure to release, parent not set.")
+      print("Title: " .. self.text:GetText())
+      local output = "Owner: %s (name: %s; id: %s)"
+      print(output:format(tostring(self.owner), tostring(self.owner.name), tostring(self.owner.id)))
+      return
+   end
    while #self.children > 0 do
       self.children[1]:SetPoint("TOPLEFT", nil)
       self.children[1]:Release(true)
