@@ -81,7 +81,7 @@ end
 
 function Header:Remove()
    if #self.quests > 0 then error("Header:Remove(): '" .. self.name .. "': trying to remove header that still has quests attached.") end
-   if self.uiObject then self.uiObject:Release() end
+   if self.uiObject then self.uiObject:Release();self.uiObject = nil end
    HeaderCache[self.name] = nil
 end
 
@@ -222,11 +222,9 @@ function Quest:Track()
 
    local parent
    if st.cfg.showHeaders then -- I think something's wrong here. Or hereabouts.
-      print("Showing headers")
-      if not self.header.uiObject then self.header:CreateUIObject();print("No uiObject for header, creating..") end
+      if not self.header.uiObject then self.header:CreateUIObject() end
       parent = self.header.uiObject
-      print("parent: " .. tostring(parent))
-   else parent = st.gui.title;print("parent: st.gui.title") end
+   else parent = st.gui.title end
 
    self.uiObject = parent:New()
    self.uiObject.owner = self
@@ -242,8 +240,9 @@ function Quest:Untrack()
       if self == v then tremove(self.header.quests, i) end
    end
 
-   self.header:Update()
    self.uiObject:Release()
+   self.uiObject = nil
+   self.header:Update()
 end
 
 function Quest:Update()
@@ -341,9 +340,9 @@ function AQT:QuestLogUpdate(...)
    for k,v in pairs(QuestCache) do
       if not localQuestCache[k] then v:Remove() end
    end
-   for k,v in pairs(HeaderCache) do
-      if not localHeaderCache[k] then self:RemoveHeader(k) end
-   end
+--   for k,v in pairs(HeaderCache) do
+--      if not localHeaderCache[k] then self:RemoveHeader(k) end
+--   end
 
    if playSound then -- quest complete
       if st.cfg.playCompletionSound then
