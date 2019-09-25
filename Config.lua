@@ -126,7 +126,7 @@ local CFGHandler = {
 	 else
 	    st.cfg[info[#info]] = v1
 	 end
-	 st.gui:RedrawColor(true)
+	 st.gui.title:UpdateText(true)
       end,
    },
    default = {

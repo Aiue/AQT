@@ -27,7 +27,6 @@ local HeaderCache = {}
 
 local Header = {
    __tostring = function(t) return "Header" end,
-   titleColor = false,
    titleText = "",
 }
 
@@ -37,7 +36,6 @@ Header.type = Header
 local Objective = {
    __tostring = function(t) return "Objective" end,
    sortFields = {{field = "index", descending = true}},
-   titleColor = true,
    titleText = "",
 }
 
@@ -46,7 +44,6 @@ Objective.type = Objective
 
 local Quest = {
    __tostring = function(t) return "Quest" end,
-   titleColor = function(self) return GetQuestDifficultyColor(self.level) end,      
    titleText = "",
 }
 

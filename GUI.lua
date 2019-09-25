@@ -94,7 +94,7 @@ function gui:Redraw(recurse)
 
    gui.scrollChild:UpdateSize()
 
-   gui:RedrawColor()
+   gui:RedrawColor(false)
 end
 
 function gui:RedrawColor()
@@ -277,30 +277,53 @@ function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for s
    if recurse then self:GetParent():UpdateSize(true) end -- gui.scrollChild will have its own function, so no need for a base case
 end
 
-function guiFunc:UpdateText()
-   local titleText,counterText
-   if self == gui.title then return end
-   local cString = "|cff" .. (self.owner.progress and Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, self.owner.progress) or "ffffff")
-   if self.owner.titleColor then
-      if type(self.owner.titleColor) == "function" then
-	 local c = self.owner:titleColor()
-	 titleText = "|cff%02x%02x%02x" .. self.owner.titleText .. "|r"
-	 titleText = titleText:format(c.r*255,c.g*255,c.b*255)
+function guiFunc:UpdateText(recurse)
+   local HSVorRGB = st.cfg.useHSVGradient and "hsv" or "rgb"
+
+   if self.owner.type == st.types.Header then
+      self.text:SetText(self.owner.titleText)
+      if st.cfg.showHeaderCount and self.owner.counterText then
+	 local text
+	 if st.cfg.useProgressColor then
+	    text = "|cff" .. Prism:Gradient(HSVorRGB, st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, (self.owner.progress or 1)) .. self.owner.counterText .. "|r"
+	 else text = self.owner.counterText end
+	 self.counter:SetText(text)
+	 self.counter:Show()
       else
-	 titleText = cString .. self.owner.titleText .. "|r"
+	 self.counter:SetText("")
+	 self.counter:Hide()
       end
-   else
-      titleText = self.owner.titleText
+   elseif self.owner.type == st.types.Quest then
+      local text
+      if st.cfg.useDifficultyColor then
+	 local c = GetQuestDifficultyColor(self.owner.level)
+	 text = "|cff%02x%02x%02x%s|r"
+	 text = text:format(c.r*255,c.g*255,c.b*255,self.owner.titleText)
+      else
+	 text = self.owner.titleText
+      end
+      self.text:SetText(text)
+      self.text:Show()
+   elseif self.owner.type == st.types.Objective then
+      local titleText,counterText
+      if st.cfg.useProgressColor then
+	 local cString = "|cff" .. Prism:Gradient(HSVorRGB, st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, (self.owner.progress or 1))
+	 titleText = cString .. self.owner.titleText .. "|r"
+	 if not self.owner.counterText or self.owner.counterText == "" then counterText = ""
+	 else counterText = cString .. self.owner.counterText .. "|r" end
+      else
+	 titleText = self.owner.titleText
+	 counterText = self.owner.counterText and self.owner.counterText or ""
+      end
+      self.text:SetText(titleText)
+      self.counter:SetText(counterText)
+      if counterText == "" then self.counter:Hide() else self.counter:Show() end
+   elseif self ~= st.gui.title then
+      print("Unknown type for " .. (self.GetName and self:GetName() or tostring(self)) .. ": " .. tostring(self.owner.type))
    end
 
-   self.text:SetText(titleText)
-
-   if not self.owner.counterText then
-      counterText = ""
-      self.counter:Hide()
-   else
-      counterText = cString .. self.owner.counterText .. "|r"
-      self.counter:Show()
+   if recurse then
+      for k,v in ipairs(self.children) do v:UpdateText(true) end
    end
-   self.counter:SetText(counterText)
 end
+
