@@ -1,6 +1,6 @@
 local _,st = ...
 
-local AQT = LibStub("AceAddon-3.0"):NewAddon("AQT", "AceEvent-3.0", "LibSink-2.0")
+local AQT = LibStub("AceAddon-3.0"):NewAddon("AQT", "AceEvent-3.0", "AceTimer-3.0", "LibSink-2.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 local Prism = LibStub("LibPrism-1.0")
 
@@ -372,6 +372,10 @@ function AQT:QuestLogUpdate(...)
    st.gui.title.counter:SetText(countString)
 end
 
-function AQT:PlayerLevelUp(...)
-   for k,v in pairs(QuestCache) do v:Update() end
+function AQT:PlayerLevelUp()
+   self:ScheduleTimer("PlayerLevelUpUpdate", 1)
+end
+
+function AQT:PlayerLevelUpUpdate()
+   for k,v in pairs(QuestCache) do if v.uiObject then v.uiObject:UpdateText() end end
 end
