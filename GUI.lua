@@ -239,8 +239,19 @@ function guiFunc:Sort()
 	    else
 	       for i,v in ipairs(a.owner.sortFields) do
 		  if a.owner[v.field] ~= b.owner[v.field] then
-		     if v.descending then return a.owner[v.field] > b.owner[v.field]
-		     else return a.owner[v.field] < b.owner[v.field] end
+		     if v.descending then
+			if not a.owner[v.field] then -- nil, so b is not
+			   return false
+			elseif not b.owner[v.field] then -- nil, so a is not
+			   return true
+			else return a.owner[v.field] > b.owner[v.field] end
+		     else
+			if not a.owner[v.field] then
+			   return true
+			elseif not b.owner[v.field] then
+			   return false
+			else return a.owner[v.field] < b.owner[v.field] end
+		     end
 		  end
 	       end
 	    end
