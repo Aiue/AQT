@@ -228,9 +228,9 @@ function Quest:Track()
 
    self.uiObject = parent:New()
    self.uiObject.owner = self
+   self:Update() -- Temporary fix
    self.header:Update()
-   self.uiObject:Update() -- ???????
-   -- I COMPLETELY FORGOT EVERYTHING I WAS FUCKING DOING ... yeah, this was probably food time. Look this over and remove this silly comment.
+   self.uiObject:Update()
 end
 
 function Quest:Untrack()
