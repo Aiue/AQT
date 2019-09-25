@@ -26,7 +26,7 @@ local QuestCache = {}
 local HeaderCache = {}
 
 local Header = {
-   sortFields = nil,
+   __tostring = function(t) return "Header" end,
    titleColor = false,
    titleText = "",
 }
@@ -35,7 +35,8 @@ Header.__index = Header
 Header.type = Header
 
 local Objective = {
-   sortFields = {"index"},
+   __tostring = function(t) return "Objective" end,
+   sortFields = {{field = "index", descending = true}},
    titleColor = true,
    titleText = "",
 }
@@ -44,6 +45,7 @@ Objective.__index = Objective
 Objective.type = Objective
 
 local Quest = {
+   __tostring = function(t) return "Quest" end,
    titleColor = function(self) return GetQuestDifficultyColor(self.level) end,      
    titleText = "",
 }
@@ -175,6 +177,7 @@ function Objective:Update(qIndex, oIndex)
    self.progress = have/need
    self.complete = complete
    self.counterText = countertext and countertext or (tostring(have) .. "/" .. tostring(need))
+   self.index = oIndex
 
    if self.complete then
       if self.uiObject then

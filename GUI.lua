@@ -190,7 +190,8 @@ function guiFunc:New()
 end
 
 function guiFunc:Update()
-   self:Sort() -- possibly change elsewhere
+   self:Sort()
+   if self:GetParent().Sort then self:GetParent():Sort() end
    self:ButtonCheck()
    self:UpdateText()
    self:UpdateSize(true) --!!!RE!!! Might want to NOT call this always. Only most of the time. Probably best to break it out and only call it when we actually need to. Also, that's some funky English I started this sentence with.
@@ -231,7 +232,19 @@ end
 
 function guiFunc:Sort()
    tsort(self.children, function(a,b)
-	    return (a.text:GetText() and a.text:GetText() or "") < (b.text:GetText() and b.text:GetText() or "")
+	    if not a.owner or not b.owner then return false
+	    elseif a.owner.type ~= b.owner.type then return tostring(a.owner.type) > tostring(b.owner.type)
+	    elseif not a.owner.sortFields then -- b.owner.sortFields should be the same in this case
+	       return false
+	    else
+	       for i,v in ipairs(a.owner.sortFields) do
+		  if a.owner[v.field] ~= b.owner[v.field] then
+		     if v.descending then return a.owner[v.field] > b.owner[v.field]
+		     else return a.owner[v.field] < b.owner[v.field] end
+		  end
+	       end
+	    end
+	    return false -- some kind of default, just in case, shouldn't realistically ever get here, though
    end)
    --sortfunc, followed by
    self:RelinkChildren()
