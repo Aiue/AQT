@@ -35,7 +35,7 @@ Header.type = Header
 
 local Objective = {
    __tostring = function(t) return "Objective" end,
-   sortFields = {{field = "index", descending = true}},
+   sortFields = {{field = "index"}},
    titleText = "",
 }
 

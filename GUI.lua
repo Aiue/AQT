@@ -50,6 +50,8 @@ function gui:OnEnable()
       gui.scrollChild:SetHeight(h)
 
       gui:SetHeight((h + st.cfg.padding*2) > st.cfg.maxHeight and st.cfg.maxHeight or (h + st.cfg.padding*2))
+
+      if gui.scrollFrame:GetVerticalScroll() > gui.scrollFrame:GetVerticalScrollRange() then gui.scrollFrame:SetVerticalScroll(gui.scrollFrame:GetVerticalScrollRange()) end
    end
 
 
@@ -194,7 +196,7 @@ function guiFunc:Update()
    if self:GetParent().Sort then self:GetParent():Sort() end
    self:ButtonCheck()
    self:UpdateText()
-   self:UpdateSize(true) --!!!RE!!! Might want to NOT call this always. Only most of the time. Probably best to break it out and only call it when we actually need to. Also, that's some funky English I started this sentence with.
+   self:UpdateSize(true) --!!!RE!!! Break this out and have UpdateText() call it IF one of the fontstrings changes size.
 end
 
 local function clickButton(self, button, down)
@@ -318,7 +320,9 @@ function guiFunc:UpdateText(recurse)
       self.text:SetText(titleText)
       self.counter:SetText(counterText)
       if counterText == "" then self.counter:Hide() else self.counter:Show() end
-   elseif self ~= st.gui.title then
+   elseif self == st.gui.title then
+      print("Reminder to fix guiFunc:UpdateText() to set questlog count.")
+   else
       print("Unknown type for " .. (self.GetName and self:GetName() or tostring(self)) .. ": " .. tostring(self.owner.type))
    end
 

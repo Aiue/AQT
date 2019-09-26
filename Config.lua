@@ -63,7 +63,7 @@ local defaults = {
    showTags = true,
    sortFields = {
       header = {{field = "name"}},
-      quest = {{field = "complete", descending = true}, {field = "level"},{fieldn = "tag"}, {field = "name"}},
+      quest = {{field = "complete", descending = true}, {field = "level"},{field = "tag"}, {field = "title"}},
    },
    trackAll = true,
    useDifficultyColor = true,
