@@ -113,6 +113,19 @@ local mt = {
    end
 }
 
+function guiFunc:GetWidth(textWidth, counterWidth)
+   textWidth = (self.text:GetStringWidth() > textWidth) and self.text:GetStringWidth() or textWidth
+   counterWidth = (self.counter:GetStringWidth() > counterWidth) and self.counter:GetStringWidth() or counterWidth
+
+   for k,v in ipairs(self.children) do
+      local childTextWidth,childCounterWidth = v:GetWidth(textWidth, counterWidth)
+      textWidth = (childTextWidth > textWidth) and childTextWidth or textWidth
+      counterWidth = (childCounterWidth > counterWidth) and childCounterWidth or counterWidth
+   end
+
+   return textWidth, counterWidth
+end
+
 function guiFunc:Release(recursed)
    local parent = self:GetParent()
    while #self.children > 0 do
