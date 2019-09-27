@@ -51,6 +51,8 @@ function gui:OnEnable()
 
       gui:SetHeight((h + st.cfg.padding*2) > st.cfg.maxHeight and st.cfg.maxHeight or (h + st.cfg.padding*2))
 
+--      print("GetVerticalScroll(): " .. tostring(gui.scrollFrame:GetVerticalScroll()) .. "; GetVerticalScrollRange(): " .. tostring(gui.scrollFrame:GetVerticalScrollRange())) -- So I've concluded it's definitely called too often. But it doesn't seem to do what it should when it should.
+      -- Ok. It's called too frequently, but.. it would appear that it for some reason ends up being called BEFORE something is removed. Definitely not sure why this would be.
       if gui.scrollFrame:GetVerticalScroll() > gui.scrollFrame:GetVerticalScrollRange() then gui.scrollFrame:SetVerticalScroll(gui.scrollFrame:GetVerticalScrollRange()) end
    end
 
@@ -196,13 +198,12 @@ function guiFunc:Update()
    if self:GetParent().Sort then self:GetParent():Sort() end
    self:ButtonCheck()
    self:UpdateText()
-   self:UpdateSize(true) --!!!RE!!! Break this out and have UpdateText() call it IF one of the fontstrings changes size.
 end
 
 local function clickButton(self, button, down)
 end
 
-function guiFunc:ButtonCheck() -- rewrite, removing isCLickButton, check type instead.
+function guiFunc:ButtonCheck()
    if self == gui.title or self.owner.type == st.types.Header then
       if #self.children > 0 then
 	 if self.container:IsShown() then
@@ -228,8 +229,6 @@ function guiFunc:ButtonCheck() -- rewrite, removing isCLickButton, check type in
 	 self.button:Hide()
       end
    end
-   -- Interface\\BUTTONS\\UI-HideButton-[Disabled|Down|Up]
-   -- Interface\\BUTTONS\\UI-PlusButton-[Disabled|Down|Hilight|Up]
 end
 
 function guiFunc:Sort()
@@ -259,11 +258,10 @@ function guiFunc:Sort()
 	    end
 	    return false -- some kind of default, just in case, shouldn't realistically ever get here, though
    end)
-   --sortfunc, followed by
    self:RelinkChildren()
 end
 
-function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for some of these things. Particularly useful for fontstrings.
+function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for some of these things. Particularly useful for fontstrings. Which can't set that script, so uh. Still. Get back to this. Could solve some of my other issues. And FontStrings I can handle in UpdateText().
    local h,w = 0,0 -- Do I need width? ...possibly
    for k,v in ipairs(self.children) do
 --      local th,ch = v.text:GetHeight(),v.counter:GetHeight()
@@ -281,6 +279,8 @@ end
 
 function guiFunc:UpdateText(recurse)
    local HSVorRGB = st.cfg.useHSVGradient and "hsv" or "rgb"
+
+   local th,tw,ch,tw = self.text:GetStringHeight(),self.text:GetStringWidth(),self.counter:GetStringHeight(),self.counter:GetStringWidth()
 
    if self.owner.type == st.types.Header then
       self.text:SetText(self.owner.titleText)
@@ -326,8 +326,11 @@ function guiFunc:UpdateText(recurse)
       print("Unknown type for " .. (self.GetName and self:GetName() or tostring(self)) .. ": " .. tostring(self.owner.type))
    end
 
+   if th ~= self.text:GetStringHeight() or tw ~= self.text:GetStringWidth() or ch ~= self.counter:GetStringHeight() or tw ~= self.counter:GetStringWidth() then
+      self:UpdateSize(true)
+   end
+
    if recurse then
       for k,v in ipairs(self.children) do v:UpdateText(true) end
    end
 end
-
