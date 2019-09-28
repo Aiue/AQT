@@ -66,8 +66,7 @@ end
 
 function Header:CreateUIObject()
    if self.uiObject then error("Header:CreateUIObject(): '" .. self.name .. "' already has an uiObject.") end
-   self.uiObject = st.gui.title:New()
-   self.uiObject.owner = self
+   self.uiObject = st.gui.title:New(self)
 end
 
 function Header:New(o)
@@ -183,8 +182,7 @@ function Objective:Update(qIndex, oIndex)
 	 update = false -- just in case
       end
    elseif not self.uiObject and QuestCache[self.quest].uiObject then
-      self.uiObject = QuestCache[self.quest].uiObject:New()
-      self.uiObject.owner = self
+      self.uiObject = QuestCache[self.quest].uiObject:New(self)
       update = true
    end
 
@@ -226,8 +224,7 @@ function Quest:Track()
       parent = self.header.uiObject
    else parent = st.gui.title end
 
-   self.uiObject = parent:New()
-   self.uiObject.owner = self
+   self.uiObject = parent:New(self)
    self:Update() -- Temporary fix
    self.header:Update()
    self.uiObject:Update()

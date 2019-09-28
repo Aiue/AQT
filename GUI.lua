@@ -175,7 +175,7 @@ function guiFunc:RelinkChildren()
    end
 end
 
-function guiFunc:New()
+function guiFunc:New(owner)
    if #recycler > 0 then
       object = tremove(recycler)
       object.container:Show()
@@ -189,11 +189,12 @@ function guiFunc:New()
       object.text:SetFontObject(gui.font)
       object.text:SetJustifyH("LEFT")
       object.text:SetPoint("TOPLEFT", object.button, "TOPRIGHT", -10)
-      object.text:SetWordWrap(true)
+      object.text:SetWordWrap(st.cfg.font.wrap)
       object.counter = object:CreateFontString(getAvailableName("AQTCounter"), object)
       object.counter:SetFontObject(gui.font)
       object.counter:SetJustifyH("RIGHT")
       object.counter:SetPoint("TOPRIGHT", object)
+      object.counter:SetWordWrap(st.cfg.font.wrap)
       object.text:SetPoint("TOPRIGHT", object.counter, "TOPLEFT", -10)
       object.container = CreateFrame("Frame", getAvailableName("AQTContainer"), object)
       object.container:SetPoint("TOPLEFT", object, "BOTTOMLEFT")
@@ -203,6 +204,7 @@ function guiFunc:New()
    end
 --   object:ButtonCheck()
    tinsert(self.children, object)
+   object.owner = owner
    if self ~= gui.scrollChild then self:Update() end
    return object
 end
