@@ -140,6 +140,11 @@ local CFGHandler = {
       end,
       set = function(info, val)
 	 st.cfg[info[#info]] = val
+	 if info[#info] == "showHeaders" then
+	    print("Not showing headers is currently buggy, also, this will not immediately apply just yet.")
+	 elseif info[#info] == "showHeaderCount" or info[#info] == "showTags" then
+	    st.gui.title:UpdateText(true)
+	 end
       end,
    },
    font = {
@@ -197,6 +202,7 @@ local options = {
 		     name = "Track All Quests (recommended for now, no way of manually tracking things yet)",
 		     width = "full",
 		     order = 2,
+		     disabled = true, --disabled until I've create my own questlog
 		  },
 		  showTags = {
 		     type = "toggle",
