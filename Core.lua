@@ -90,7 +90,7 @@ end
 
 function Header:Remove()
    if #self.quests > 0 then error("Header:Remove(): '" .. self.name .. "': trying to remove header that still has quests attached.") end
-   if self.uiObject then self.uiObject:Release();self.uiObject = nil end
+   if self.uiObject then self.uiObject:Release() end
    HeaderCache[self.name] = nil
 end
 
@@ -115,7 +115,6 @@ function Header:Update()
       end
    elseif self.uiObject then
       self.uiObject:Release()
-      self.uiObject = nil
    end
 end
 
@@ -189,7 +188,6 @@ function Objective:Update(qIndex, oIndex)
    if self.complete then
       if self.uiObject then
 	 self.uiObject:Release()
-	 self.uiObject = nil
 	 update = false -- just in case
       end
    elseif not self.uiObject and QuestCache[self.quest].uiObject then
@@ -249,7 +247,6 @@ function Quest:Untrack()
    end
 
    self.uiObject:Release()
-   self.uiObject = nil
    self.header:Update()
 end
 
@@ -268,7 +265,6 @@ function Quest:Update()
       for k,v in ipairs(self.objectives) do
 	 if v.uiObject then
 	    v.uiObject:Release()
-	    v.uiObject = nil
 	 end
       end
       if not self.complete and qComplete > 0 then

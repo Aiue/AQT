@@ -139,6 +139,7 @@ function guiFunc:Release(recursed)
 
    if not found then print("Could not find what we're trying to release..");print(self:GetParent().text:GetText() .. "/" .. self.text:GetText()) end
 
+   self.owner.uiObject = nil
    self.owner = nil
    self.text:SetText("")
    self.counter:SetText("")
