@@ -25,6 +25,7 @@ end
 local QuestCache = {}
 local HeaderCache = {}
 
+-- Some object types. Going to change how I handle this a tiny bit later, but for now, I'll repeat myself a bit.
 local Header = {
    __tostring = function(t) return "Header" end,
    titleText = "",
@@ -50,7 +51,17 @@ local Quest = {
 Quest.__index = Quest
 Quest.type = Quest
 
-st.types = {Header = Header, Objective = Objective, Quest = Quest} -- May end up unused.
+local Title = { -- May rename this later, right now it's only a special case used by only one ui element. Could be relevant if I take a more modular approach later. In case I need to include support for, I dunno, achievements or something silly like that.
+   __tostring = function(t) return "Title" end,
+   titleText = "Quests",
+   counterText = "0/0",
+   progress = 1,
+}
+
+--Title.__index = Title
+Title.type = Title
+
+st.types = {Header = Header, Objective = Objective, Quest = Quest, Title = Title} -- May end up unused.
 
 function AQT:OnInitialize()
    st.initConfig()
@@ -359,11 +370,9 @@ function AQT:QuestLogUpdate(...)
 
    if sound then PlaySoundFile(LSM:Fetch("sound", sound)) end
 
-   local countString = ""
-   if st.cfg.useProgressColor then countString = countString .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, (MAX_QUESTLOG_QUESTS-questentries)/MAX_QUESTLOG_QUESTS) end
-   countString = countString .. tostring(questentries) .. "/" .. tostring(MAX_QUESTLOG_QUESTS)
-   if st.cfg.useProgressColor then countString = countString .. "|r" end
-   st.gui.title.counter:SetText(countString)
+   Title.counterText = tostring(questentries) .. "/" .. tostring(MAX_QUESTLOG_QUESTS)
+   Title.progress = (MAX_QUESTLOG_QUESTS-questentries)/MAX_QUESTLOG_QUESTS
+   st.gui.title:UpdateText()
 end
 
 function AQT:PlayerLevelUp()

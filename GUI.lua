@@ -57,13 +57,11 @@ function gui:OnEnable()
    end
 
 
-   gui.title = guiFunc.New(gui.scrollChild)
-   gui.title.owner = {type = gui} -- Special hack.
+   gui.title = guiFunc.New(gui.scrollChild, st.types.Title)
    gui.title:SetPoint("TOPLEFT", gui.scrollChild, "TOPLEFT")
    gui.title:SetPoint("TOPRIGHT", gui.scrollChild, "TOPRIGHT")
 --   gui.title.button.isClickButton = true
    gui:Redraw(false)
-   gui.title.text:SetText("Quests")
 --   gui.title.counter:SetText("|cff00ff000/" .. tostring(MAX_QUESTLOG_QUESTS) .. "|r")
    gui.title:Update()
 end
@@ -314,6 +312,7 @@ function guiFunc:UpdateText(recurse)
 	 self.counter:SetText("")
 	 self.counter:Hide()
       end
+
    elseif self.owner.type == st.types.Quest then
       local text
       if st.cfg.useDifficultyColor then
@@ -325,6 +324,7 @@ function guiFunc:UpdateText(recurse)
       end
       self.text:SetText(text)
       self.text:Show()
+
    elseif self.owner.type == st.types.Objective then
       local titleText,counterText
       if st.cfg.useProgressColor then
@@ -339,8 +339,15 @@ function guiFunc:UpdateText(recurse)
       self.text:SetText(titleText)
       self.counter:SetText(counterText)
       if counterText == "" then self.counter:Hide() else self.counter:Show() end
-   elseif self == st.gui.title then
-      print("Reminder to fix guiFunc:UpdateText() to set questlog count.")
+
+   elseif self.owner.type == st.types.Title then
+      local text
+      self.text:SetText(self.owner.titleText)
+      if st.cfg.useProgressColor then
+	 text = "|cff" .. Prism:Gradient(HSVorRGB, st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, (self.owner.progress or 1)) .. self.owner.counterText .. "|r"
+      else text = self.owner.counterText end
+      self.counter:SetText(text)
+
    else
       print("Unknown type for " .. (self.GetName and self:GetName() or tostring(self)) .. ": " .. tostring(self.owner.type))
    end
