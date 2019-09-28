@@ -285,7 +285,7 @@ function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for s
 
    self.container:SetHeight(self.container:IsShown() and (h > 0 and h or .1)) -- Need to make sure height is > 0 or it won't serve as an anchor.
 
-   local th,ch = self.text:GetHeight(),self.counter:GetHeight()
+   local th,ch = self.text:GetStringHeight(),self.counter:GetStringHeight()
    self:SetHeight(th > ch and th or ch)
 
    if recurse then self:GetParent():UpdateSize(true) end -- gui.scrollChild will have its own function, so no need for a base case
@@ -295,6 +295,9 @@ function guiFunc:UpdateText(recurse)
    local HSVorRGB = st.cfg.useHSVGradient and "hsv" or "rgb"
 
    local th,tw,ch,tw = self.text:GetStringHeight(),self.text:GetStringWidth(),self.counter:GetStringHeight(),self.counter:GetStringWidth()
+
+   self.text:SetWordWrap(st.cfg.font.wrap)
+   self.counter:SetWordWrap(st.cfg.font.wrap)
 
    if self.owner.type == st.types.Header then
       self.text:SetText(self.owner.titleText)

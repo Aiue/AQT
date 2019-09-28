@@ -31,13 +31,14 @@ local defaults = {
    completionSoundName = "Peon: Work Complete",
    font = {
       name = "Friz Quadrata TT",
-      outline = OUTLINE,
+      outline = "OUTLINE",
       spacing = 1,
       size = 12,
       r = 1,
       g = 1,
       b = 1,
       a = 1,
+      wrap = true,
    },
    maxHeight = 650,
    minWidth = 100,
@@ -114,7 +115,7 @@ local CFGHandler = {
 	       st.cfg.backdrop[info[#info]] = v1
 	    end
 	 end
-	 st.gui:Redraw(false)
+	 st.gui:Redraw()
       end,
    },
    coloring = {
@@ -147,7 +148,8 @@ local CFGHandler = {
       end,
       set = function(info, val)
 	 st.cfg.font[info[#info]] = val
-	 st.gui:Redraw(true)
+	 st.gui:Redraw() -- only needed for some settings, return to this
+--	 st.gui.title:UpdateText(true)
       end,
    },
    layout = {
@@ -156,7 +158,7 @@ local CFGHandler = {
       end,
       set = function(info, val)
 	 st.cfg[info[#info]] = val
-	 st.gui:Redraw(false)
+	 st.gui:Redraw()
       end,
    },
 }
@@ -395,6 +397,12 @@ local options = {
 		     max = 120,
 		     step = 1,
 		     order = 4,
+		     disabled = true,
+		  },
+		  wrap = {
+		     name = "Wrap Long Lines",
+		     type = "toggle",
+		     order = 5,
 		     disabled = true,
 		  },
 	       },
