@@ -146,6 +146,7 @@ function guiFunc:Release(recursed)
    self.button:Hide()
    self.container:Show()
    self:SetParent(nil)
+   self.button:SetScript("OnClick", nil)
 
    if not recursed then
       parent:RelinkChildren()
@@ -216,6 +217,16 @@ function guiFunc:Update()
 end
 
 local function clickButton(self, button, down)
+   if button == "LeftButton" then -- Right now this is the only button registered for clicks, but in case we want to add more later.
+      if self:GetParent().container:IsShown() then
+	 self:GetParent().container:Hide()
+      else
+	 self:GetParent().container:Show()
+      end
+
+      self:GetParent():ButtonCheck()
+      self:GetParent():UpdateSize(true)
+   end
 end
 
 function guiFunc:ButtonCheck()
@@ -227,10 +238,10 @@ function guiFunc:ButtonCheck()
 	    self.button:SetNormalTexture([[Interface\BUTTONS\UI-PlusButton-Up]])
 	 end
 	 self.button:Show()
-	 --also enable scripts? ..although hiding it should be enough
+	 self.button:SetScript("OnClick", clickButton)
       else
 	 self.button:Hide()
-	 --also disable scripts?
+	 self.button:SetScript("OnClick", nil)
       end
    elseif self.owner.type == st.types.Quest then
       if self.owner.complete then
