@@ -310,7 +310,8 @@ function guiFunc:UpdateText(recurse)
 
    self.text:SetText(titleText)
    self.counter:SetText(counterText)
-   if counterText == "" then self.counter:Hide() end
+   if counterText == "" then self.counter:Hide()
+   else self.counter:Show() end
 
    if th ~= self.text:GetStringHeight() or tw ~= self.text:GetStringWidth() or ch ~= self.counter:GetStringHeight() or tw ~= self.counter:GetStringWidth() then
       self:UpdateSize(true)
