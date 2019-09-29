@@ -28,7 +28,34 @@ local HeaderCache = {}
 -- Some object types. Going to change how I handle this a tiny bit later, but for now, I'll repeat myself a bit.
 local Header = {
    __tostring = function(t) return "Header" end,
-   titleText = "",
+   TitleText = "",
+   CounterText = function(self)
+      if st.cfg.showHeaderCount then
+	 local text
+	 local completed = 0
+	 local progress
+
+	 for k,v in ipairs(self.quests) do
+	    if v.complete and v.complete > 0 then completed = completed + 1 end
+	 end
+
+	 if #self.quests > 0 then
+	    progress = completed/#self.quests
+	 else
+	    progress = 1
+	 end
+
+	 if st.cfg.useProgressColor then 
+	    text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, progress) .. tostring(completed) .. "/" .. tostring(#self.quests)
+	 else
+	    text = tostring(completed) .. "/" .. tostring(#self.quests)
+	 end
+
+	 return text
+      else
+	 return ""
+      end
+   end,
 }
 
 Header.__index = Header
@@ -37,7 +64,31 @@ Header.type = Header
 local Objective = {
    __tostring = function(t) return "Objective" end,
    sortFields = {{field = "index"}},
-   titleText = "",
+   TitleText = function(self)
+      local text
+
+      if st.cfg.useProgressColor then
+	 text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, self.have/self.need) .. self.text .. "|r"
+      else
+	 text = self.text
+      end
+
+      return text
+   end,
+
+   CounterText = function(self)
+      local text
+
+      local counterString = self.counterString and self.counterString or (tostring(self.have) .. "/" .. tostring(self.need))
+
+      if st.cfg.useProgressColor then
+	 text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, self.have/self.need) .. counterString .. "|r"
+      else
+	 text = counterString
+      end
+
+      return text
+   end,
 }
 
 Objective.__index = Objective
@@ -45,7 +96,26 @@ Objective.type = Objective
 
 local Quest = {
    __tostring = function(t) return "Quest" end,
-   titleText = "",
+   TitleText = function(self)
+      local text
+
+      if st.cfg.showTags then
+	 local tag = self.tag and self.tag:sub(1,1) or ""
+	 text = "[" .. tostring(self.level) .. tag .. "] " .. self.title
+      else
+	 text = self.title
+      end
+
+      if st.cfg.useDifficultyColor then
+	 local c = GetQuestDifficultyColor(self.level)
+	 text = "|cff%02x%02x%02x" .. text .. "|r"
+	 text = text:format(c.r*255,c.g*255,c.b*255)
+      else
+	 text = self.title
+      end
+
+      return text
+   end,
 }
 
 Quest.__index = Quest
@@ -53,9 +123,17 @@ Quest.type = Quest
 
 local Title = { -- May rename this later, right now it's only a special case used by only one ui element. Could be relevant if I take a more modular approach later. In case I need to include support for, I dunno, achievements or something silly like that.
    __tostring = function(t) return "Title" end,
-   titleText = "Quests",
-   counterText = "0/0",
-   progress = 1,
+   TitleText = "Quests",
+
+   CounterText = function(self)
+      local text
+      if st.cfg.useProgressColor then text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, (MAX_QUESTLOG_QUESTS-self.quests)/MAX_QUESTLOG_QUESTS) .. tostring(self.quests) .. "/" .. tostring(MAX_QUESTLOG_QUESTS) .. "|r"
+      else text = tostring(self.quests) .. "/" .. tostring(MAX_QUESTLOG_QUESTS) end
+
+      return text
+   end,
+
+   quests = 0,
 }
 
 --Title.__index = Title
@@ -94,20 +172,8 @@ function Header:Remove()
    HeaderCache[self.name] = nil
 end
 
-function Header:Update()
-   self.titleText = self.name
-   local completed = 0
-   for k,v in ipairs(self.quests) do
-      if v.complete and v.complete > 0 then completed = completed + 1 end
-   end
-
-   self.counterText = tostring(completed) .. "/" .. tostring(#self.quests)
-   if #self.quests > 0 then
-      self.progress = completed/#self.quests 
-   else 
-      self.progress = 1 
-   end
-
+function Header:Update() -- Probably redundant after the latest abstraction fix. Should be able to move these things elsewhere without breaking abstraction.
+   self.TitleText = self.name
    if #self.quests > 0 then
       if not self.uiObject then
 	 self:CreateUIObject()
@@ -158,7 +224,7 @@ function Objective:Update(qIndex, oIndex)
       text = "(" .. oType .. ")" .. cstring .. oText .. "|r"
    end
 
-   if self.titleText ~= text or self.have ~= have or self.need ~= need or self.complete ~= complete then update = true end
+   if self.text ~= text or self.have ~= have or self.need ~= need or self.complete ~= complete then update = true end
 
    if not self.new then
       local pour,_,r,g,b
@@ -177,12 +243,11 @@ function Objective:Update(qIndex, oIndex)
 
    self.new = nil
 
-   self.titleText = text
+   self.text = text
    self.have = have
    self.need = need
-   self.progress = have/need
    self.complete = complete
-   self.counterText = countertext and countertext or (tostring(have) .. "/" .. tostring(need))
+   self.counterString = countertext and countertext or (tostring(have) .. "/" .. tostring(need))
    self.index = oIndex
 
    if self.complete then
@@ -278,13 +343,6 @@ function Quest:Update()
    self.tag = qTag
    self.complete = qComplete
 
-   if st.cfg.showTags then
-      local tag = self.tag and self.tag:sub(1,1) or ""
-      title = "[" .. tostring(self.level) .. tag .. "] " .. self.title
-   else title = self.title end
-
-   self.titleText = title
-
    if not qComplete then sound = self:UpdateObjectives() end
    if update then self.uiObject:Update() end
    self.header:Update()
@@ -366,8 +424,7 @@ function AQT:QuestLogUpdate(...)
 
    if sound then PlaySoundFile(LSM:Fetch("sound", sound)) end
 
-   Title.counterText = tostring(questentries) .. "/" .. tostring(MAX_QUESTLOG_QUESTS)
-   Title.progress = (MAX_QUESTLOG_QUESTS-questentries)/MAX_QUESTLOG_QUESTS
+   Title.quests = questentries
    st.gui.title:UpdateText()
 end
 

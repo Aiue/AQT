@@ -293,65 +293,24 @@ function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for s
 end
 
 function guiFunc:UpdateText(recurse)
-   local HSVorRGB = st.cfg.useHSVGradient and "hsv" or "rgb"
-
    local th,tw,ch,tw = self.text:GetStringHeight(),self.text:GetStringWidth(),self.counter:GetStringHeight(),self.counter:GetStringWidth()
+   local titleText,counterText
 
-   self.text:SetWordWrap(st.cfg.font.wrap)
-   self.counter:SetWordWrap(st.cfg.font.wrap)
-
-   if self.owner.type == st.types.Header then
-      self.text:SetText(self.owner.titleText)
-      if st.cfg.showHeaderCount and self.owner.counterText then
-	 local text
-	 if st.cfg.useProgressColor then
-	    text = "|cff" .. Prism:Gradient(HSVorRGB, st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, (self.owner.progress or 1)) .. self.owner.counterText .. "|r"
-	 else text = self.owner.counterText end
-	 self.counter:SetText(text)
-	 self.counter:Show()
-      else
-	 self.counter:SetText("")
-	 self.counter:Hide()
-      end
-
-   elseif self.owner.type == st.types.Quest then
-      local text
-      if st.cfg.useDifficultyColor then
-	 local c = GetQuestDifficultyColor(self.owner.level)
-	 text = "|cff%02x%02x%02x%s|r"
-	 text = text:format(c.r*255,c.g*255,c.b*255,self.owner.titleText)
-      else
-	 text = self.owner.titleText
-      end
-      self.text:SetText(text)
-      self.text:Show()
-
-   elseif self.owner.type == st.types.Objective then
-      local titleText,counterText
-      if st.cfg.useProgressColor then
-	 local cString = "|cff" .. Prism:Gradient(HSVorRGB, st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, (self.owner.progress or 1))
-	 titleText = cString .. self.owner.titleText .. "|r"
-	 if not self.owner.counterText or self.owner.counterText == "" then counterText = ""
-	 else counterText = cString .. self.owner.counterText .. "|r" end
-      else
-	 titleText = self.owner.titleText
-	 counterText = self.owner.counterText and self.owner.counterText or ""
-      end
-      self.text:SetText(titleText)
-      self.counter:SetText(counterText)
-      if counterText == "" then self.counter:Hide() else self.counter:Show() end
-
-   elseif self.owner.type == st.types.Title then
-      local text
-      self.text:SetText(self.owner.titleText)
-      if st.cfg.useProgressColor then
-	 text = "|cff" .. Prism:Gradient(HSVorRGB, st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, (self.owner.progress or 1)) .. self.owner.counterText .. "|r"
-      else text = self.owner.counterText end
-      self.counter:SetText(text)
-
+   if type(self.owner.TitleText) == "function" then
+      titleText = self.owner:TitleText()
    else
-      print("Unknown type for " .. (self.GetName and self:GetName() or tostring(self)) .. ": " .. tostring(self.owner.type))
+      titleText = self.owner.TitleText
    end
+
+   if type(self.owner.CounterText) == "function" then
+      counterText = self.owner:CounterText()
+   else
+      counterText = self.owner.CounterText
+   end
+
+   self.text:SetText(titleText)
+   self.counter:SetText(counterText)
+   if counterText == "" then self.counter:Hide() end
 
    if th ~= self.text:GetStringHeight() or tw ~= self.text:GetStringWidth() or ch ~= self.counter:GetStringHeight() or tw ~= self.counter:GetStringWidth() then
       self:UpdateSize(true)
