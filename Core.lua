@@ -293,7 +293,7 @@ function Quest:Track()
    if self.uiObject then error("Attempting to track already tracked quest, '" .. self.title .. "'.") end
 
    local parent
-   if st.cfg.showHeaders then -- I think something's wrong here. Or hereabouts.
+   if st.cfg.showHeaders then
       if not self.header.uiObject then self.header:CreateUIObject() end
       parent = self.header.uiObject
    else parent = st.gui.title end

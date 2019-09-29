@@ -30,6 +30,7 @@ function gui:OnEnable()
 
    gui.scrollFrame = CreateFrame("ScrollFrame", getAvailableName("AQTScrollFrame"), gui)
    gui.scrollChild = CreateFrame("Frame", getAvailableName("AQTScrollChild"), gui.scrollFrame)
+   gui.container = gui.scrollChild -- Hack to support new relational structure. Will make this the only reference after going through the code to make sure nothing else references it.
    gui.scrollFrame:SetScrollChild(gui.scrollChild)
    gui.scrollFrame:SetScript("OnSizeChanged", function(self, width, height)
 				self:GetScrollChild():SetWidth(width)
@@ -43,9 +44,9 @@ function gui:OnEnable()
 				else setpos = pos-delta end
 				self:SetVerticalScroll(setpos)
    end)
-   gui.scrollChild.children = {}
+   gui.children = {}
 
-   function gui.scrollChild:UpdateSize()
+   function gui:UpdateSize()
       local h = gui.title:GetHeight() + (gui.title.container:IsShown() and gui.title.container:GetHeight() or 0)
       gui.scrollChild:SetHeight(h)
 
@@ -57,12 +58,10 @@ function gui:OnEnable()
    end
 
 
-   gui.title = guiFunc.New(gui.scrollChild, st.types.Title)
+   gui.title = guiFunc.New(gui, st.types.Title)
    gui.title:SetPoint("TOPLEFT", gui.scrollChild, "TOPLEFT")
    gui.title:SetPoint("TOPRIGHT", gui.scrollChild, "TOPRIGHT")
---   gui.title.button.isClickButton = true
    gui:Redraw(false)
---   gui.title.counter:SetText("|cff00ff000/" .. tostring(MAX_QUESTLOG_QUESTS) .. "|r")
    gui.title:Update()
 end
 
@@ -94,7 +93,7 @@ function gui:Redraw(recurse)
 
    gui:SetWidth(st.cfg.maxWidth) --!!!RE!!!
 
-   gui.scrollChild:UpdateSize()
+   gui:UpdateSize()
 
    gui:RedrawColor(false)
 end
@@ -125,7 +124,7 @@ function guiFunc:GetWidth(textWidth, counterWidth)
 end
 
 function guiFunc:Release(recursed)
-   local parent = self:GetParent()
+   local parent = self:Parent()
    while #self.children > 0 do
       self.children[1]:SetPoint("TOPLEFT", nil)
       self.children[1]:Release(true)
@@ -137,7 +136,7 @@ function guiFunc:Release(recursed)
       if self == v then tinsert(recycler, tremove(parent.children, k));found = true end
    end
 
-   if not found then print("Could not find what we're trying to release..");print(self:GetParent().text:GetText() .. "/" .. self.text:GetText()) end
+   if not found then print("Could not find what we're trying to release..");print(self:Parent().text:GetText() .. "/" .. self.text:GetText()) end
 
    self.owner.uiObject = nil
    self.owner = nil
@@ -175,12 +174,13 @@ function guiFunc:RelinkChildren()
 end
 
 function guiFunc:New(owner)
+   if not self.container then error(self:GetName() .. " missing container") end
    if #recycler > 0 then
       object = tremove(recycler)
       object.container:Show()
-      object:SetParent(self)
+      object:SetParent(self.container)
    else
-      object = CreateFrame("Frame", getAvailableName("AQTRow"), self)
+      object = CreateFrame("Frame", getAvailableName("AQTRow"), self.container)
       object.button = CreateFrame("Button", getAvailableName("AQTButton"), object)
       object.button:SetPoint("TOPLEFT", object)
       object.button:SetSize(12,12)
@@ -204,13 +204,13 @@ function guiFunc:New(owner)
 --   object:ButtonCheck()
    tinsert(self.children, object)
    object.owner = owner
-   if self ~= gui.scrollChild then self:Update() end
+   if self ~= gui then self:Update() end
    return object
 end
 
 function guiFunc:Update()
    self:Sort()
-   if self:GetParent().Sort then self:GetParent():Sort() end
+   if self:Parent().Sort then self:Parent():Sort() end
    self:ButtonCheck()
    self:UpdateText()
 end
@@ -244,6 +244,14 @@ function guiFunc:ButtonCheck()
 	 self.button:Hide()
       end
    end
+end
+
+function guiFunc:Parent()
+   local parent = self:GetParent()
+   if not self:GetParent() then return parent end
+   parent = parent:GetParent()
+   if parent == gui.scrollFrame then return parent:GetParent() else return parent end
+--   return self:GetParent():GetParent()
 end
 
 function guiFunc:Sort()
@@ -284,12 +292,12 @@ function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for s
       h = h + v:GetHeight() + (v.container:IsShown() and v.container:GetHeight() or 0)
    end
 
-   self.container:SetHeight(self.container:IsShown() and (h > 0 and h or .1)) -- Need to make sure height is > 0 or it won't serve as an anchor.
+   self.container:SetHeight(self.container:IsShown() and (h > 0 and h or .1) or .1) -- Need to make sure height is > 0 or it won't serve as an anchor.
 
    local th,ch = self.text:GetStringHeight(),self.counter:GetStringHeight()
    self:SetHeight(th > ch and th or ch)
 
-   if recurse then self:GetParent():UpdateSize(true) end -- gui.scrollChild will have its own function, so no need for a base case
+   if recurse then self:Parent():UpdateSize(true) end -- gui will have its own function, so no need for a base case
 end
 
 function guiFunc:UpdateText(recurse)

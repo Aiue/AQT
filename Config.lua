@@ -191,6 +191,7 @@ local options = {
 		     type = "toggle",
 		     name = "Show Headers",
 		     order = 0,
+		     disabled = true, -- Doesn't work properly yet.
 		  },
 		  showHeaderCount = {
 		     type = "toggle",
