@@ -184,7 +184,7 @@ function guiFunc:New(owner)
       object = CreateFrame("Frame", getAvailableName("AQTRow"), self.container)
       object.button = CreateFrame("Button", getAvailableName("AQTButton"), object)
       object.button:SetPoint("TOPLEFT", object)
-      object.button:SetSize(12,12)
+      object.button:SetSize(12,12) -- Might want to use font size, which means this shouldn't be here.
       object.text = object:CreateFontString(getAvailableName("AQTText"), object)
       object.text:SetFontObject(gui.font)
       object.text:SetJustifyH("LEFT")
@@ -229,13 +229,17 @@ local function clickButton(self, button, down)
    end
 end
 
-function guiFunc:ButtonCheck()
+function guiFunc:ButtonCheck() -- May want to rewrite this later and simply use a texture for the unclickable ones. Unless I can figure out a way to disable mouse interaction completely for buttons.
    if self == gui.title or self.owner.type == st.types.Header then
       if #self.children > 0 then
 	 if self.container:IsShown() then
 	    self.button:SetNormalTexture([[Interface\BUTTONS\UI-MinusButton-Up]])
+	    self.button:SetHighlightTexture([[Interface\BUTTONS\UI-PlusButton-Hilight]])
+	    self.button:SetPushedTexture([[Interface\BUTTONS\UI-MinusButton-Down]])
 	 else
 	    self.button:SetNormalTexture([[Interface\BUTTONS\UI-PlusButton-Up]])
+	    self.button:SetHighlightTexture([[Interface\BUTTONS\UI-PlusButton-Hilight]])
+	    self.button:SetPushedTexture([[Interface\BUTTONS\UI-PlusButton-Down]])
 	 end
 	 self.button:Show()
 	 self.button:SetScript("OnClick", clickButton)
@@ -247,8 +251,12 @@ function guiFunc:ButtonCheck()
       if self.owner.complete then
 	 if self.owner.complete < 0 then
 	    self.button:SetNormalTexture([[Interface\RAIDFRAME\ReadyCheck-NotReady]])
+	    self.button:SetHighlightTexture(nil)
+	    self.button:SetPushedTextured(nil)
 	 elseif self.owner.complete > 0 then
 	    self.button:SetNormalTexture([[Interface\RAIDFRAME\ReadyCheck-Ready]])
+	    self.button:SetHighlightTexture(nil)
+	    self.button:SetPushedTextured(nil)
 	 end
 	 self.button:Show()
       else
