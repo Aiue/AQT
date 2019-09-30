@@ -40,6 +40,7 @@ local defaults = {
       a = 1,
       wrap = true,
    },
+   hideQuestWatch = true,
    maxHeight = 650,
    minWidth = 100,
    maxWidth = 250,
@@ -144,6 +145,8 @@ local CFGHandler = {
 	    print("Not showing headers is currently buggy, also, this will not immediately apply just yet.")
 	 elseif info[#info] == "showHeaderCount" or info[#info] == "showTags" then
 	    st.gui.title:UpdateText(true)
+	 elseif info[#info] == "hideQuestWatch" then
+	    if val then QuestWatchFrame:Hide() else QuestWatchFrame:Show() end
 	 end
       end,
    },
@@ -209,6 +212,11 @@ local options = {
 		     type = "toggle",
 		     name = "Show Quest Tags",
 		     order = 3,
+		  },
+		  hideQuestWatch = {
+		     type = "toggle",
+		     name = "Hide Blizzard QuestWatchFrame",
+		     order = 4,
 		  },
 	       },
 	    },

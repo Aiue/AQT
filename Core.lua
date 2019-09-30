@@ -148,6 +148,12 @@ function AQT:OnInitialize()
 end
 
 function AQT:OnEnable()
+   QuestWatchFrame:SetScript("OnShow", function(self)
+				if st.cfg.hideQuestWatch then self:Hide() end
+   end)
+
+   if st.cfg.hideQuestWatch then QuestWatchFrame:Hide() end
+
    st.gui:OnEnable()
    self:RegisterEvent("QUEST_LOG_UPDATE", "QuestLogUpdate")
    self:RegisterEvent("PLAYER_LEVEL_UP", "PlayerLevelUp")
