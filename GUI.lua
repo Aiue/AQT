@@ -256,7 +256,7 @@ function guiFunc:ButtonCheck() -- May want to rewrite this later and simply use 
 	 elseif self.owner.complete > 0 then
 	    self.button:SetNormalTexture([[Interface\RAIDFRAME\ReadyCheck-Ready]])
 	    self.button:SetHighlightTexture(nil)
-	    self.button:SetPushedTextured(nil)
+	    self.button:SetPushedTexture(nil)
 	 end
 	 self.button:Show()
       else
