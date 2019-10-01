@@ -152,10 +152,21 @@ local CFGHandler = {
    },
    font = {
       get = function(info)
-	 return st.cfg.font[info[#info]]
+	 if info.type == "color" then
+	    return st.cfg.font.r, st.cfg.font.g, st.cfg.font.b, st.cfg.font.a
+	 else
+	    return st.cfg.font[info[#info]]
+	 end
       end,
-      set = function(info, val)
-	 st.cfg.font[info[#info]] = val
+      set = function(info, v1, v2, v3, v4)
+	 if info.type == "color" then
+	    st.cfg.font.r = v1
+	    st.cfg.font.g = v2
+	    st.cfg.font.b = v3
+	    st.cfg.font.a = v4
+	 else
+	    st.cfg.font[info[#info]] = v1
+	 end
 	 st.gui:Redraw() -- only needed for some settings, return to this
 --	 st.gui.title:UpdateText(true)
       end,
