@@ -6,7 +6,10 @@ local Prism = LibStub("LibPrism-1.0")
 
 local tinsert,tremove,tsort = table.insert,table.remove,table.sort
 
-local recycler = {}
+local recycler = {
+   buttons = {},
+   icons = {},
+}
 
 local function getAvailableName(name) -- Version for debug purposes.
    if not _G[name] then return name else
@@ -23,6 +26,7 @@ local gui = CreateFrame("Frame", getAvailableName("AQTParent"), UIParent)
 st.gui = gui
 
 local guiFunc = {}
+setmetatable(guiFunc, getmetatable(UIParent))
 
 function gui:OnEnable()
    gui.font = CreateFont(getAvailableName("AQTFont"))
@@ -104,11 +108,7 @@ function gui:RedrawColor()
    gui:SetBackdropBorderColor(st.cfg.backdrop.border.r, st.cfg.backdrop.border.g, st.cfg.backdrop.border.b, st.cfg.backdrop.border.a)
 end
 
-local mt = {
-   __index = function(t, k)
-      if guiFunc[k] then return guiFunc[k] else return getmetatable(gui).__index[k] end --!!!RE!!!
-   end
-}
+local mt = {__index = function(t, k) return guiFunc[k] end}
 
 function guiFunc:GetWidth(textWidth, counterWidth)
    textWidth = (self.text:GetStringWidth() > textWidth) and self.text:GetStringWidth() or textWidth
@@ -142,15 +142,34 @@ function guiFunc:Release(recursed)
    self.owner = nil
    self.text:SetText("")
    self.counter:SetText("")
---   self.button.isClickButton = nil
-   self.button:Hide()
+
+   self:ReleaseButton()
+   self:ReleaseIcon()
+
    self.container:Show()
    self:SetParent(nil)
-   self.button:SetScript("OnClick", nil)
 
    if not recursed then
       parent:RelinkChildren()
       parent:UpdateSize(true)
+   end
+end
+
+function guiFunc:ReleaseButton()
+   if self.button then
+      self.button:ClearAllPoints()
+      self.button:SetParent(nil)
+      tinsert(recycler.buttons, self.button)
+      self.button = nil
+   end
+end
+
+function guiFunc:ReleaseIcon()
+   if self.icon then
+      self.icon:ClearAllPoints()
+      self.icon:SetParent(nil)
+      tinsert(recycler.icons, self.icon)
+      self.icon = nil
    end
 end
 
@@ -175,6 +194,7 @@ function guiFunc:RelinkChildren()
 end
 
 function guiFunc:New(owner)
+   local object
    if not self.container then error(self:GetName() .. " missing container") end
    if #recycler > 0 then
       object = tremove(recycler)
@@ -182,38 +202,28 @@ function guiFunc:New(owner)
       object:SetParent(self.container)
    else
       object = CreateFrame("Frame", getAvailableName("AQTRow"), self.container)
-      object.button = CreateFrame("Button", getAvailableName("AQTButton"), object)
-      object.button:SetPoint("TOPLEFT", object)
-      object.button:SetSize(12,12) -- Might want to use font size, which means this shouldn't be here.
       object.text = object:CreateFontString(getAvailableName("AQTText"), object)
       object.text:SetFontObject(gui.font)
       object.text:SetJustifyH("LEFT")
-      object.text:SetPoint("TOPLEFT", object.button, "TOPRIGHT", -10)
+      object.text:SetPoint("TOPLEFT", object, "TOPLEFT", st.cfg.font.size, 0)
       object.text:SetWordWrap(st.cfg.font.wrap)
       object.counter = object:CreateFontString(getAvailableName("AQTCounter"), object)
       object.counter:SetFontObject(gui.font)
       object.counter:SetJustifyH("RIGHT")
       object.counter:SetPoint("TOPRIGHT", object)
       object.counter:SetWordWrap(st.cfg.font.wrap)
-      object.text:SetPoint("TOPRIGHT", object.counter, "TOPLEFT", -10)
+      object.text:SetPoint("TOPRIGHT", object.counter, "TOPLEFT", -10, 0)
+      -- Create a container. May want to have these ones also be on-demand. It's a whole lot easier keeping it as is, though.
       object.container = CreateFrame("Frame", getAvailableName("AQTContainer"), object)
       object.container:SetPoint("TOPLEFT", object, "BOTTOMLEFT")
       object.container:SetPoint("TOPRIGHT", object, "BOTTOMRIGHT")
       object.children = {}
       setmetatable(object, mt)
    end
---   object:ButtonCheck()
    tinsert(self.children, object)
    object.owner = owner
    if self ~= gui then self:Update() end
    return object
-end
-
-function guiFunc:Update()
-   self:Sort()
-   if self:Parent().Sort then self:Parent():Sort() end
-   self:ButtonCheck()
-   self:UpdateText()
 end
 
 local function clickButton(self, button, down)
@@ -229,9 +239,46 @@ local function clickButton(self, button, down)
    end
 end
 
+function guiFunc:NewButton()
+   local button
+   if #recycler.buttons > 0 then
+      button = tremove(recycler.buttons)
+   else
+      button = CreateFrame("Button", getAvailableName("AQTButton"), self)
+      button:SetScript("OnClick", clickButton)
+   end
+
+   self.button = button
+   self.button:SetSize(st.cfg.font.size, st.cfg.font.size)
+   self.button:SetPoint("TOPLEFT", self)
+   self.button:SetParent(self)
+end
+
+function guiFunc:NewIcon()
+   local icon
+   if #recycler.icons > 0 then
+      icon = tremove(recycler.icons)
+   else
+      icon = self:CreateTexture(getAvailableName("AQTIcon"))
+   end
+
+   self.icon = icon
+   self.icon:SetSize(st.cfg.font.size, st.cfg.font.size)
+   self.icon:SetPoint("TOPLEFT", self)
+   self.icon:SetParent(self)
+end
+
+function guiFunc:Update()
+   self:Sort()
+   if self:Parent().Sort then self:Parent():Sort() end
+   self:ButtonCheck()
+   self:UpdateText()
+end
+
 function guiFunc:ButtonCheck() -- May want to rewrite this later and simply use a texture for the unclickable ones. Unless I can figure out a way to disable mouse interaction completely for buttons.
    if self == gui.title or self.owner.type == st.types.Header then
       if #self.children > 0 then
+	 if not self.button then self:NewButton() end
 	 if self.container:IsShown() then
 	    self.button:SetNormalTexture([[Interface\BUTTONS\UI-MinusButton-Up]])
 	    self.button:SetHighlightTexture([[Interface\BUTTONS\UI-PlusButton-Hilight]])
@@ -241,26 +288,19 @@ function guiFunc:ButtonCheck() -- May want to rewrite this later and simply use 
 	    self.button:SetHighlightTexture([[Interface\BUTTONS\UI-PlusButton-Hilight]])
 	    self.button:SetPushedTexture([[Interface\BUTTONS\UI-PlusButton-Down]])
 	 end
-	 self.button:Show()
-	 self.button:SetScript("OnClick", clickButton)
       else
-	 self.button:Hide()
-	 self.button:SetScript("OnClick", nil)
+	 self:ReleaseButton()
       end
    elseif self.owner.type == st.types.Quest then
       if self.owner.complete then
+	 if not self.icon then self:NewIcon() end
 	 if self.owner.complete < 0 then
-	    self.button:SetNormalTexture([[Interface\RAIDFRAME\ReadyCheck-NotReady]])
-	    self.button:SetHighlightTexture(nil)
-	    self.button:SetPushedTexture(nil)
+	    self.icon:SetTexture([[Interface\RAIDFRAME\ReadyCheck-NotReady]])
 	 elseif self.owner.complete > 0 then
-	    self.button:SetNormalTexture([[Interface\RAIDFRAME\ReadyCheck-Ready]])
-	    self.button:SetHighlightTexture(nil)
-	    self.button:SetPushedTexture(nil)
+	    self.icon:SetTexture([[Interface\RAIDFRAME\ReadyCheck-Ready]])
 	 end
-	 self.button:Show()
       else
-	 self.button:Hide()
+	 self:ReleaseIcon()
       end
    end
 end
@@ -310,6 +350,9 @@ function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for s
 --      h = h + (th > ch and th or ch) + (v.container:IsShown() and v.container:GetHeight() or 0)
       h = h + v:GetHeight() + (v.container:IsShown() and v.container:GetHeight() or 0)
    end
+
+   if self.button then self.button:SetSize(st.cfg.font.size, st.cfg.font.size) end
+   if self.icon then self.icon:SetSize(st.cfg.font.size, st.cfg.font.size) end
 
    self.container:SetHeight(self.container:IsShown() and (h > 0 and h or .1) or .1) -- Need to make sure height is > 0 or it won't serve as an anchor.
 
