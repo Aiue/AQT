@@ -168,6 +168,7 @@ function guiFunc:ReleaseIcon()
    if self.icon then
       self.icon:ClearAllPoints()
       self.icon:SetParent(UIParent)
+      self.icon:Hide()
       tinsert(recycler.icons, self.icon)
       self.icon = nil
    end
@@ -266,6 +267,7 @@ function guiFunc:NewIcon()
    self.icon:SetSize(st.cfg.font.size, st.cfg.font.size)
    self.icon:SetPoint("TOPLEFT", self)
    self.icon:SetParent(self)
+   self.icon:Show()
 end
 
 function guiFunc:Update()
