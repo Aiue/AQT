@@ -218,6 +218,15 @@ local options = {
 		     name = "Hide Blizzard QuestWatchFrame",
 		     order = 4,
 		  },
+		  indent = {
+		     type = "range",
+		     name = "Indentation",
+		     order = 5,
+		     min = 0,
+		     max = 5,
+		     step = .1,
+		     disabled = true, -- lacks proper update handling at the moment
+		  },
 	       },
 	    },
 	    sound = {

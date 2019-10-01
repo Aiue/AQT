@@ -184,10 +184,10 @@ function guiFunc:RelinkChildren()
    self:UnlinkChildren() -- While we shouldn't get any circular links, play it safe and unlink everything first
    for k,v in ipairs(self.children) do
       if k == 1 then
-	 v:SetPoint("TOPLEFT", self.container, "TOPLEFT")
+	 v:SetPoint("TOPLEFT", self.container, "TOPLEFT", st.cfg.indent, 0)
 	 v:SetPoint("TOPRIGHT", self.container, "TOPRIGHT")
       else
-	 v:SetPoint("TOPLEFT", self.children[k-1].container, "BOTTOMLEFT") 
+	 v:SetPoint("TOPLEFT", self.children[k-1].container, "BOTTOMLEFT")
 	 v:SetPoint("TOPRIGHT", self.children[k-1].container, "BOTTOMRIGHT")
       end
    end
