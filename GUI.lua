@@ -167,7 +167,7 @@ end
 function guiFunc:ReleaseIcon()
    if self.icon then
       self.icon:ClearAllPoints()
-      self.icon:SetParent(nil)
+      self.icon:SetParent(UIParent)
       tinsert(recycler.icons, self.icon)
       self.icon = nil
    end
