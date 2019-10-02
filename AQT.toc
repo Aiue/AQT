@@ -24,6 +24,18 @@ libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
 libs\LibPrism-1.0\lib.xml
 libs\LibSink-2.0\lib.xml
 
+Localization\enUS.lua
+Localization\deDE.lua
+Localization\esES.lua
+Localization\esMX.lua
+Localization\frFR.lua
+Localization\itIT.lua
+Localization\koKR.lua
+Localization\ptBR.lua
+Localization\ruRU.lua
+Localization\zhCN.lua
+Localization\zhTW.lua
+
 Core.lua
 GUI.lua
 Config.lua
