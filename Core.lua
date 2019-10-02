@@ -218,7 +218,7 @@ function Objective:Update(qIndex, oIndex)
    elseif oType == "reputation" then
       text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_FACTION_NEEDED, "%%%d($)", "%%"),"%%(s)", "(.+)") .. "$")
       --!!!RE!!! Return to this and see if we can fetch actual numerical values for string colourization later.
-      countertext = have:gsub(1,1) .. "/" .. need:gsub(1,1)
+      countertext = have:sub(1,1) .. "/" .. need:sub(1,1)
       have,need = (complete and 1 or 0),1
    elseif oType == "event" then
       have,need = (complete and 1 or 0),1
