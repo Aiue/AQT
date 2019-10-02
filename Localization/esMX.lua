@@ -4,4 +4,4 @@ local _,st = ...
 
 local L = st.L
 
-@localization(locale="esMX", format="lua_additive_table", handle-unlocalized="ignore")@
+--@localization(locale="esMX", format="lua_additive_table", handle-unlocalized="ignore")@

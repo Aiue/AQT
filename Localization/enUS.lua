@@ -4,4 +4,4 @@ local _,st = ...
 
 st.L = {}
 
-setmetatable st.L({__index = function(t,k) return k end})
+setmetatable(st.L, {__index = function(t,k) return k end})
