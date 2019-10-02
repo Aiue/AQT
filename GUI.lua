@@ -159,6 +159,7 @@ function guiFunc:ReleaseButton()
    if self.button then
       self.button:ClearAllPoints()
       self.button:SetParent(nil)
+      self.button:Hide()
       tinsert(recycler.buttons, self.button)
       self.button = nil
    end
@@ -250,6 +251,7 @@ function guiFunc:NewButton()
    end
 
    self.button = button
+   self.button:Show()
    self.button:SetSize(st.cfg.font.size, st.cfg.font.size)
    self.button:SetPoint("TOPLEFT", self)
    self.button:SetParent(self)
