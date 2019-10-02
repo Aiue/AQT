@@ -123,7 +123,7 @@ Quest.type = Quest
 
 local Title = { -- May rename this later, right now it's only a special case used by only one ui element. Could be relevant if I take a more modular approach later. In case I need to include support for, I dunno, achievements or something silly like that.
    __tostring = function(t) return "Title" end,
-   TitleText = "Quests",
+   TitleText = st.L.Quests,
 
    CounterText = function(self)
       local text

@@ -5,6 +5,8 @@ local AQT = LibStub("AceAddon-3.0"):GetAddon("AQT")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local Prism = LibStub("LibPrism-1.0")
 
+local L = st.L
+
 local defaults = {
    anchorFrom = "TOPRIGHT",
    anchorTo = "TOPRIGHT",
@@ -191,47 +193,47 @@ local options = {
    set = CFGHandler.default.set,
    args = {
       general = {
-	 name = "General",
+	 name = L.General,
 	 type = "group",
 	 order = 0,
 	 args = {
 	    uncategorized = {
 	       type = "group",
-	       name = "Uncategorized",
+	       name = L.Uncategorized,
 	       order = 0,
 	       inline = true,
 	       args = {
 		  showHeaders = {
 		     type = "toggle",
-		     name = "Show Headers",
+		     name = L["Show Headers"],
 		     order = 0,
 		     disabled = true, -- Doesn't work properly yet.
 		  },
 		  showHeaderCount = {
 		     type = "toggle",
-		     name = "Show Header Count",
+		     name = L["Show Header Count"],
 		     order = 1,
 		  },
 		  trackAll = {
 		     type = "toggle",
-		     name = "Track All Quests (recommended for now, no way of manually tracking things yet)",
+		     name = L["Track All Quests"] .. " (recommended for now, no way of manually tracking things yet)",
 		     width = "full",
 		     order = 2,
 		     disabled = true, --disabled until I've create my own questlog
 		  },
 		  showTags = {
 		     type = "toggle",
-		     name = "Show Quest Tags",
+		     name = L["Show Quest Tags"],
 		     order = 3,
 		  },
 		  hideQuestWatch = {
 		     type = "toggle",
-		     name = "Hide Blizzard QuestWatchFrame",
+		     name = L["Hide Blizzard QuestWatchFrame"],
 		     order = 4,
 		  },
 		  indent = {
 		     type = "range",
-		     name = "Indentation",
+		     name = L.Indentation,
 		     order = 5,
 		     min = 0,
 		     max = 5,
@@ -241,25 +243,25 @@ local options = {
 	       },
 	    },
 	    sound = {
-	       name = "Sound",
+	       name = L.Sound,
 	       type = "group",
 	       order = 1,
 	       inline = true,
 	       args = {
 		  playObjectiveSound = {
 		     type = "toggle",
-		     name = "Play Objective Completion Sound",
+		     name = L["Play Objective Completion Sound"],
 		     order = 0,
 		  },
 		  useFactionObjectiveSound = {
 		     type = "toggle",
-		     name = "Use Faction Sound",
+		     name = L["Use Faction Sound"],
 		     order = 1,
 		     disabled = function(info) return not st.cfg.playObjectiveSound end,
 		  },
 		  objectiveSoundName = {
 		     type = "select",
-		     name = "Sound",
+		     name = L.Sound,
 		     order = 2,
 		     disabled = function(info) return (not st.cfg.playObjectiveSound or not st.cfg.useFactionObjectiveSound) end,
 		     values = AceGUIWidgetLSMlists.sound,
@@ -272,18 +274,18 @@ local options = {
 		  },
 		  playCompletionSound = {
 		     type = "toggle",
-		     name = "Play Quest Completion Sound",
+		     name = L["Play Quest Completion Sound"],
 		     order = 4,
 		  },
 		  useFactionCompletionSound = {
 		     type = "toggle",
-		     name = "Use Faction Sound",
+		     name = L["Use Faction Sound"],
 		     order = 5,
 		     disabled = function(info) return not st.cfg.playCompletionSound end,
 		  },
 		  completionSoundName = {
 		     type = "select",
-		     name = "Sound",
+		     name = L.Sound,
 		     order = 6,
 		     disabled = function(info) return (not st.cfg.playCompletionSound or not st.cfg.useFactionCompletionSound) end,
 		     values = AceGUIWidgetLSMlists.sound,
@@ -295,46 +297,46 @@ local options = {
 	 },
       },
       layout = {
-	 name = "Layout",
+	 name = L.Layout,
 	 type = "group",
 	 order = 1,
 	 get = CFGHandler.layout.get,
 	 set = CFGHandler.layout.set,
 	 args = {
 	    anchorFrom = {
-	       name = "Tracker Anchor",
+	       name = L["Tracker Anchor"],
 	       order = 0,
 	       type = "select",
 	       values = {
-		  BOTTOM = "BOTTOM",
-		  BOTTOMLEFT = "BOTTOMLEFT",
-		  BOTTOMRIGHT = "BOTTOMRIGHT",
-		  CENTER = "CENTER",
-		  LEFT = "LEFT",
-		  RIGHT = "RIGHT",
-		  TOP = "TOP",
-		  TOPLEFT = "TOPLEFT",
-		  TOPRIGHT = "TOPRIGHT",
+		  BOTTOM = L.Bottom,
+		  BOTTOMLEFT = L["Bottom Left"],
+		  BOTTOMRIGHT = L["Bottom Right"],
+		  CENTER = L.Center,
+		  LEFT = L.Left,
+		  RIGHT = L.Right,
+		  TOP = L.Top,
+		  TOPLEFT = L["Top Left"],
+		  TOPRIGHT = L["Top Right"],
 	       },
 	    },
 	    anchorTo = {
-	       name = "UIParent Anchor",
+	       name = L["UIParent Anchor"],
 	       order = 1,
 	       type = "select",
 	       values = {
-		  BOTTOM = "BOTTOM",
-		  BOTTOMLEFT = "BOTTOMLEFT",
-		  BOTTOMRIGHT = "BOTTOMRIGHT",
-		  CENTER = "CENTER",
-		  LEFT = "LEFT",
-		  RIGHT = "RIGHT",
-		  TOP = "TOP",
-		  TOPLEFT = "TOPLEFT",
-		  TOPRIGHT = "TOPRIGHT",
+		  BOTTOM = L.Bottom,
+		  BOTTOMLEFT = L["Bottom Left"],
+		  BOTTOMRIGHT = L["Bottom Right"],
+		  CENTER = L.Center,
+		  LEFT = L.Left,
+		  RIGHT = L.Right,
+		  TOP = L.Top,
+		  TOPLEFT = L["Top Left"],
+		  TOPRIGHT = L["Top Right"],
 	       },
 	    },
 	    posX = {
-	       name = "X Offset",
+	       name = L["X Offset"],
 	       type = "range",
 	       min = -4000,
 	       max = 4000,
@@ -342,7 +344,7 @@ local options = {
 	       order = 2,
 	    },
 	    posY = {
-	       name = "Y Offset",
+	       name = L["Y Offset"],
 	       type = "range",
 	       min = -2200,
 	       max = 2200,
@@ -350,7 +352,7 @@ local options = {
 	       order = 3,
 	    },
 	    minWidth = {
-	       name = "Minimum Width",
+	       name = L["Minimum Width"],
 	       type = "range",
 	       min = 50,
 	       max = 1000,
@@ -359,7 +361,7 @@ local options = {
 	       order = 4,
 	    },
 	    maxWidth = {
-	       name = "Maximum Width",
+	       name = L["Maximum Width"],
 	       type = "range",
 	       min = 50,
 	       max = 1000,
@@ -368,7 +370,7 @@ local options = {
 	       order = 5,
 	    },
 	    maxHeight = {
-	       name = "Maximum Height",
+	       name = L["Maximum Height"],
 	       type = "range",
 	       min = 50,
 	       max = 2000,
@@ -376,7 +378,7 @@ local options = {
 	       order = 6,
 	    },
 	    padding = {
-	       name = "Padding",
+	       name = L.Padding,
 	       type = "range",
 	       min = 0,
 	       max = 50,
@@ -386,20 +388,20 @@ local options = {
 	 },
       },
       style = {
-	 name = "Style",
+	 name = L.Style,
 	 type = "group",
 	 order = 2,
 	 childGroups = "tab",
 	 args = {
 	    font = {
-	       name = "Font",
+	       name = L.Font,
 	       type = "group",
 	       order = 0,
 	       get = CFGHandler.font.get,
 	       set = CFGHandler.font.set,
 	       args = {
 		  name = {
-		     name = "Font",
+		     name = L.Font,
 		     type = "select",
 		     order = 0,
 		     values = AceGUIWidgetLSMlists.font,
@@ -408,17 +410,17 @@ local options = {
 		  },
 		  color = {
 		     type = "color",
-		     name = "Font Color",
+		     name = L["Font Color"],
 		     order = 1,
 		  },
 		  outline = {
 		     type = "select",
-		     name = "Outline",
+		     name = L.Outline,
 		     order = 2,
 		     values = {[""] = "None",OUTLINE = "Thin Outline", THICKOUTLINE = "Thick Outline"},
 		  },
 		  size = {
-		     name = "Size",
+		     name = L.Size,
 		     type = "range",
 		     min = 4,
 		     max = 32,
@@ -426,7 +428,7 @@ local options = {
 		     order = 3,
 		  },
 		  spacing = {
-		     name = "Spacing",
+		     name = L.Spacing,
 		     type = "range",
 		     min = 0,
 		     max = 120,
@@ -435,7 +437,7 @@ local options = {
 		     disabled = true,
 		  },
 		  wrap = {
-		     name = "Wrap Long Lines",
+		     name = L["Wrap Long Lines"],
 		     type = "toggle",
 		     order = 5,
 		     disabled = true,
@@ -443,14 +445,14 @@ local options = {
 	       },
 	    },
 	    backdrop = {
-	       name = "Backdrop",
+	       name = L.Backdrop,
 	       type = "group",
 	       order = 1,
 	       get = CFGHandler.backdrop.get,
 	       set = CFGHandler.backdrop.set,
 	       args = {
 		  background = {
-		     name = "Background Texture",
+		     name = L["Background Texture"],
 		     type = "select",
 		     order = 0,
 		     values = AceGUIWidgetLSMlists.background,
@@ -458,18 +460,18 @@ local options = {
 		     width = "double",
 		  },
 		  backgroundColor = {
-		     name = "Background Color",
+		     name = L["Background Color"],
 		     type = "color",
 		     order = 1,
 		     hasAlpha = true,
 		  },
 		  tile = {
-		     name = "Tile",
+		     name = L.Tile,
 		     order = 2,
 		     type = "toggle",
 		  },
 		  tileSize = {
-		     name = "Tile Size",
+		     name = L["Tile Size"],
 		     order = 3,
 		     type = "range",
 		     min = 0,
@@ -477,7 +479,7 @@ local options = {
 		     step = .5,
 		  },
 		  border = {
-		     name = "Border Texture",
+		     name = L["Border Texture"],
 		     type = "select",
 		     order = 4,
 		     values = AceGUIWidgetLSMlists.border,
@@ -485,13 +487,13 @@ local options = {
 		     width = "double",
 		  },
 		  borderColor = {
-		     name = "Border Color",
+		     name = L["Border Color"],
 		     type = "color",
 		     order = 5,
 		     hasAlpha = true,
 		  },
 		  edgeSize = {
-		     name = "Border Size",
+		     name = L["Border Size"],
 		     order = 6,
 		     type = "range",
 		     min = 1,
@@ -499,7 +501,7 @@ local options = {
 		     step = .5,
 		  },
 		  insets = {
-		     name = "Insets",
+		     name = L.Insets,
 		     order = 7,
 		     type = "range",
 		     min = 0,
@@ -509,50 +511,50 @@ local options = {
 	       },
 	    },
 	    coloring = {
-	       name = "Coloring",
+	       name = L.Coloring,
 	       type = "group",
 	       order = 2,
 	       set = CFGHandler.coloring.set,
 	       args = {
 		  useDifficultyColor = {
-		     name = "Quest Difficulty Coloring",
+		     name = L["Quest Difficulty Coloring"],
 		     type = "toggle",
 		     order = 0,
 		     width = double,
 		  },
 		  useProgressColor = {
-		     name = "Progress-based Objective Coloring",
+		     name = L["Progress-based Objective Coloring"],
 		     type = "toggle",
 		     order = 1,
 		     width = double,
 		  },
 		  progressColor = {
-		     name = "Progress Color",
+		     name = L["Progress Color"],
 		     type = "group",
 		     inline = true,
 		     order = 2,
 		     disabled = function() return not st.cfg.useProgressColor end,
 		     args = {
 			progressColorMin = {
-			   name = "Incomplete",
+			   name = L.Incomplete,
 			   type = "color",
 			   hasAlpha = false,
 			   order = 0,
 			},
 			progressColorMax = {
-			   name = "Complete",
+			   name = L.Complete,
 			   type = "color",
 			   hasAlpha = false,
 			   order = 1,
 			},
 			useHSVGradient = {
-			   name = "Use HSV Gradient",
+			   name = L["Use HSV Gradient"],
 			   type = "toggle",
 			   order = 2,
 			},
 			progressionSample = {
 			   name = function()
-			      local output = "Sample: "
+			      local output = L.Sample .. ": "
 			      if st.cfg.useProgressColor then
 				 for i = 0, 10 do
 				    output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
