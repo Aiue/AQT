@@ -207,16 +207,16 @@ function Objective:Update(qIndex, oIndex)
    local sound
 
    if oType == "monster" then
-      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_MONSTERS_KILLED, "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
+      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(string.gsub(QUEST_MONSTERS_KILLED, "%%%d($)", "%%"), "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
       if not have then -- Some of these objectives apparently do not follow this string pattern.
 	 text,have,need = string.match(oText, "^(.+): (%d+)/(%d+)$")
       end
    elseif oType == "item" then
-      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_ITEMS_NEEDED, "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
+      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(string.gsub(QUEST_ITEMS_NEEDED, "%%%d($)", "%%"), "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
    elseif oType == "object" then
-      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_OBJECTS_FOUND, "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
+      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(string.gsub(QUEST_OBJECTS_FOUND, "%%%d($)", "%%"), "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
    elseif oType == "reputation" then
-      text,have,need = string.match(oText, "^" .. string.gsub(QUEST_FACTION_NEEDED, "%%(s)", "(.+)") .. "$")
+      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_FACTION_NEEDED, "%%%d($)", "%%"),"%%(s)", "(.+)") .. "$")
       --!!!RE!!! Return to this and see if we can fetch actual numerical values for string colourization later.
       countertext = have:gsub(1,1) .. "/" .. need:gsub(1,1)
       have,need = (complete and 1 or 0),1
