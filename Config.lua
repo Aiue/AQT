@@ -69,6 +69,7 @@ local defaults = {
       header = {{field = "IsCurrentZone"}, {field = "name"}},
       quest = {{field = "complete", descending = true}, {field = "level"},{field = "tag"}, {field = "title"}},
    },
+   suppressErrorFrame = true,
    trackAll = true,
    useDifficultyColor = true,
    useFactionCompletionSound = true,
@@ -149,6 +150,8 @@ local CFGHandler = {
 	    st.gui.title:UpdateText(true)
 	 elseif info[#info] == "hideQuestWatch" then
 	    if val then QuestWatchFrame:Hide() else QuestWatchFrame:Show() end
+	 elseif info[#info] == "suppressErrorFrame" then
+	    AQT:SuppressionCheck()
 	 end
       end,
    },
@@ -240,6 +243,11 @@ local options = {
 		     step = .1,
 		     disabled = true, -- lacks proper update handling at the moment
 		  },
+		  suppressErrorFrame = {
+		     type = "toggle",
+		     name = L["Suppress Blizzard Quest Updates"],
+		     order = 6,
+		  },
 	       },
 	    },
 	    sound = {
@@ -293,6 +301,7 @@ local options = {
 		  },
 	       },
 	    },
+	    
 	    sink = AQT:GetSinkAce3OptionsDataTable(),
 	 },
       },

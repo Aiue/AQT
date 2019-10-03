@@ -158,6 +158,7 @@ function AQT:OnEnable()
    self:RegisterEvent("QUEST_LOG_UPDATE", "QuestLogUpdate")
    self:RegisterEvent("PLAYER_LEVEL_UP", "PlayerLevelUp")
    self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ResortHeaders")
+   self:SuppressionCheck()
 end
 
 function Header:CreateUIObject()
@@ -249,7 +250,7 @@ function Objective:Update(qIndex, oIndex)
 	 _,r,g,b = Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, have/need)
       end
 
-      if pour then AQT:Pour(text .. ": " .. tostring(have) .. "/" .. tostring(need), r, g, b) end
+      if pour then AQT:PrePour(text .. ": " .. tostring(have) .. "/" .. tostring(need), r, g, b) end
    end
 
    self.new = nil
@@ -345,7 +346,7 @@ function Quest:Update()
       end
       if not self.complete and qComplete > 0 then
 	 sound = true
-	 AQT:Pour("Quest Complete: " .. qTitle, st.cfg.progressColorMax.r, st.cfg.progressColorMax.g, st.cfg.progressColorMax.b)
+	 AQT:PrePour("Quest Complete: " .. qTitle, st.cfg.progressColorMax.r, st.cfg.progressColorMax.g, st.cfg.progressColorMax.b)
       end
    end
    if GetNumQuestLeaderBoards(index) == 0 then qComplete = 1 end -- Special handling
@@ -449,4 +450,39 @@ end
 
 function AQT:ResortHeaders()
    st.gui.title:Sort()
+end
+
+-- This is ugly, but AceHook didn't seem to deliver quite according to documentation.
+
+local function errorFrameAddMessage(self, msg, r, g, b, a)
+   if r == 1 and g == 1 and b == 0 and not msg:match("^|cff") then -- All relevant default quest messages are in yellow, and should have no colour string. This should be a good first filter for anything we don't want to suppress.
+      if msg == QUEST_COMPLETE then return -- Don't think this is in UIErrorsFrame, but just in case?
+      elseif msg == ERR_QUEST_UNKNOWN_COMPLETE then return
+      elseif msg:match("^" .. string.gsub(string.gsub(string.gsub(QUEST_MONSTERS_KILLED, "%%%d($)", "%%"), "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$") then return
+      elseif msg:match("^" .. string.gsub(string.gsub(string.gsub(QUEST_ITEMS_NEEDED, "%%%d($)", "%%"), "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$") then return
+      elseif msg:match("^" .. string.gsub(string.gsub(string.gsub(QUEST_OBJECTS_FOUND, "%%%d($)", "%%"), "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$") then return
+      elseif msg:match("^" .. string.gsub(string.gsub(QUEST_FACTION_NEEDED, "%%%d($)", "%%"),"%%(s)", "(.+)") .. "$") then return
+      elseif msg:match("^" .. string.gsub(string.gsub(ERR_QUEST_OBJECTIVE_COMPLETE_S, "%%%d($)", "%%"), "%%(s)", "(.+)") .. "$") then return end
+   end
+   AQT.ErrorFrameAddMessage(UIErrorsFrame, msg, r, g, b, a)
+end
+
+function AQT:SuppressionCheck()
+   if st.cfg.suppressErrorFrame then
+      if not AQT.ErrorFrameAddMessage then
+	 AQT.ErrorFrameAddMessage = UIErrorsFrame.AddMessage
+	 UIErrorsFrame.AddMessage = errorFrameAddMessage
+      end
+   elseif AQT.ErrorFrameAddMessage then
+      UIErrorsFrame.AddMessage = AQT.ErrorFrameAddMessage
+      AQT.ErrorFrameAddMessage = nil
+   end
+end
+
+function AQT:PrePour(msg, r, g, b)
+   if not msg:match("^|cff") then -- no point applying colour code if the message is coded already
+      msg:format("|cff%02x%02x%02x" .. msg .. "|r", r*255, g*255, b*255)
+      if r == 1 and g == 1 and b == 0 then b = .001 end -- Just to make sure we don't suppress our own messages, if Sink is directed to the errorframe.
+      self:Pour(msg, r, g, b)
+   end
 end
