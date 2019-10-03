@@ -606,7 +606,7 @@ options.args.general.args.sink.inline = true
 local function buildSortOptions()
    local typeList = {} -- To get it sortable.
    for k,v in pairs(st.types) do tinsert(typeList, k) end
---   typeList:sort(function(a,b)
+   tsort(typeList, function(a,b) return a<b end)
 end
 
 --[[
