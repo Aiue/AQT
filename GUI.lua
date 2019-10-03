@@ -319,12 +319,14 @@ end
 
 function guiFunc:Sort()
    tsort(self.children, function(a,b)
+	    print(st.cfg.sortFields[tostring(a.owner.type)])
+	    print(tostring(a.owner.type))
 	    if not a.owner or not b.owner then return false
 	    elseif a.owner.type ~= b.owner.type then return tostring(a.owner.type) > tostring(b.owner.type)
-	    elseif not a.owner.sortFields then -- b.owner.sortFields should be the same in this case
+	    elseif not st.cfg.sortFields[tostring(a.owner.type)] then -- b.owner.sortFields should be the same in this case
 	       return false
 	    else
-	       for i,v in ipairs(a.owner.sortFields) do
+	       for i,v in ipairs(st.cfg.sortFields[tostring(a.owner.type)]) do
 		  if a.owner[v.field] ~= b.owner[v.field] then
 		     if v.descending then
 			if not a.owner[v.field] then -- nil, so b is not

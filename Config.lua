@@ -6,6 +6,7 @@ local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local Prism = LibStub("LibPrism-1.0")
 
 local L = st.L
+local tinsert,tremove,tsort = table.insert,table.remove,table.sort
 
 local defaults = {
    anchorFrom = "TOPRIGHT",
@@ -66,8 +67,9 @@ local defaults = {
    showHeaders = true,
    showTags = true,
    sortFields = {
-      header = {{field = "IsCurrentZone"}, {field = "name"}},
-      quest = {{field = "complete", descending = true}, {field = "level"},{field = "tag"}, {field = "title"}},
+      Header = {{field = "IsCurrentZone"}, {field = "name"}},
+      Objective = {{field = "index"}},
+      Quest = {{field = "complete", descending = true}, {field = "level"},{field = "tag"}, {field = "title"}},
    },
    suppressErrorFrame = true,
    trackAll = true,
@@ -183,6 +185,13 @@ local CFGHandler = {
       set = function(info, val)
 	 st.cfg[info[#info]] = val
 	 st.gui:Redraw()
+      end,
+   },
+   sorting = {
+      get = function(info)
+	 return
+      end,
+      set = function(info, val)
       end,
    },
 }
@@ -396,10 +405,19 @@ local options = {
 	    },
 	 },
       },
+      sorting = {
+	 name = L.Sorting,
+	 type = "group",
+	 order = 2,
+	 childGroups = "tab",
+	 get = CFGHandler.sorting.get,
+	 set = CFGHandler.sorting.set,
+	 args = {},
+      },
       style = {
 	 name = L.Style,
 	 type = "group",
-	 order = 2,
+	 order = 3,
 	 childGroups = "tab",
 	 args = {
 	    font = {
@@ -585,6 +603,28 @@ local options = {
 
 options.args.general.args.sink.inline = true
 
+local function buildSortOptions()
+   local typeList = {} -- To get it sortable.
+   for k,v in pairs(st.types) do tinsert(typeList, k) end
+--   typeList:sort(function(a,b)
+end
+
+--[[
+	    Header = {
+	       name = L.Headers,
+	       type = "group",
+	       order = 0,
+	       args = {},
+	    },
+	    Quest = {
+	       name = L.Quests,
+	       type = "group",
+	       order = 1,
+	       args = {},
+	    },
+	 },
+]]--
+
 function st.initConfig()
    if not AQTCFG or type(AQTCFG) ~= "table" then AQTCFG = {} end
 --   clearDefunct(AQTCFG, defaults)
@@ -593,4 +633,5 @@ function st.initConfig()
    AQT:SetSinkStorage(st.cfg)
    LibStub("AceConfig-3.0"):RegisterOptionsTable("AQT", options)
    LibStub("AceConsole-3.0"):RegisterChatCommand("aqt", function() LibStub("AceConfigDialog-3.0"):Open("AQT") end)
+   buildSortOptions()
 end

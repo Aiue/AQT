@@ -25,126 +25,75 @@ end
 local QuestCache = {}
 local HeaderCache = {}
 
--- Some object types. Going to change how I handle this a tiny bit later, but for now, I'll repeat myself a bit.
-local Header = {
-   __tostring = function(t) return "Header" end,
-   TitleText = "",
-   CounterText = function(self)
-      if st.cfg.showHeaderCount then
+st.types = {}
+
+local baseObject = {
+   __tostring = function(t) return t.name end,
+}
+
+baseObject.__index = baseObject
+
+function baseObject:New(o)
+   if not o.name or st.types[o.name] then error("AQT baseObject:New(): (unique) name required") end
+   o.__index = o
+   o.type = o
+   setmetatable(o, baseObject)
+   st.types[o.name] = o
+   return o
+end
+
+local Header = baseObject:New(
+   {
+      name = "Header",
+      TitleText = "",
+      sortConfigurable = true,
+      sortFields = {
+	 name = L.Title,
+	 IsCurrentZone = L["Matches Current Zone"],
+      },
+   }
+)
+
+local Objective = baseObject:New(
+   {
+      name = "Objective",
+   }
+)
+
+local Quest = baseObject:New(
+   {
+      name = "Quest",
+      sortConfigurable = true,
+      sortFields = {
+	 complete = L.Completion,
+	 level = L.Level,
+	 tag = L.Tag,
+	 title = L.Title,
+      },
+   }
+)
+
+-- May rename this later, right now it's only a special case used by only one ui element. Could be relevant if I take a more modular approach later. In case I need to include support for, I dunno, achievements or something silly like that.
+local Title = baseObject:New(
+   {
+      name = "Title",
+      __tostring = function(t) return "Title" end,
+      TitleText = st.L.Quests,
+
+      CounterText = function(self)
 	 local text
-	 local completed = 0
-	 local progress
-
-	 for k,v in ipairs(self.quests) do
-	    if v.complete and v.complete > 0 then completed = completed + 1 end
-	 end
-
-	 if #self.quests > 0 then
-	    progress = completed/#self.quests
-	 else
-	    progress = 1
-	 end
-
-	 if st.cfg.useProgressColor then 
-	    text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, progress) .. tostring(completed) .. "/" .. tostring(#self.quests)
-	 else
-	    text = tostring(completed) .. "/" .. tostring(#self.quests)
-	 end
+	 if st.cfg.useProgressColor then text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, (MAX_QUESTLOG_QUESTS-self.quests)/MAX_QUESTLOG_QUESTS) .. tostring(self.quests) .. "/" .. tostring(MAX_QUESTLOG_QUESTS) .. "|r"
+	 else text = tostring(self.quests) .. "/" .. tostring(MAX_QUESTLOG_QUESTS) end
 
 	 return text
-      else
-	 return ""
-      end
-   end,
-}
+      end,
 
-Header.__index = Header
-Header.type = Header
-
-local Objective = {
-   __tostring = function(t) return "Objective" end,
-   sortFields = {{field = "index"}},
-   TitleText = function(self)
-      local text
-
-      if st.cfg.useProgressColor then
-	 text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, self.have/self.need) .. self.text .. "|r"
-      else
-	 text = self.text
-      end
-
-      return text
-   end,
-
-   CounterText = function(self)
-      local text
-
-      local counterString = self.counterString and self.counterString or (tostring(self.have) .. "/" .. tostring(self.need))
-
-      if st.cfg.useProgressColor then
-	 text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, self.have/self.need) .. counterString .. "|r"
-      else
-	 text = counterString
-      end
-
-      return text
-   end,
-}
-
-Objective.__index = Objective
-Objective.type = Objective
-
-local Quest = {
-   __tostring = function(t) return "Quest" end,
-   TitleText = function(self)
-      local text
-
-      if st.cfg.showTags then
-	 local tag = self.tag and self.tag:sub(1,1) or ""
-	 text = "[" .. tostring(self.level) .. tag .. "] " .. self.title
-      else
-	 text = self.title
-      end
-
-      if st.cfg.useDifficultyColor then
-	 local c = GetQuestDifficultyColor(self.level)
-	 text = "|cff%02x%02x%02x" .. text .. "|r"
-	 text = text:format(c.r*255,c.g*255,c.b*255)
-      else
-	 text = self.title
-      end
-
-      return text
-   end,
-}
-
-Quest.__index = Quest
-Quest.type = Quest
-
-local Title = { -- May rename this later, right now it's only a special case used by only one ui element. Could be relevant if I take a more modular approach later. In case I need to include support for, I dunno, achievements or something silly like that.
-   __tostring = function(t) return "Title" end,
-   TitleText = st.L.Quests,
-
-   CounterText = function(self)
-      local text
-      if st.cfg.useProgressColor then text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, (MAX_QUESTLOG_QUESTS-self.quests)/MAX_QUESTLOG_QUESTS) .. tostring(self.quests) .. "/" .. tostring(MAX_QUESTLOG_QUESTS) .. "|r"
-      else text = tostring(self.quests) .. "/" .. tostring(MAX_QUESTLOG_QUESTS) end
-
-      return text
-   end,
-
-   quests = 0,
-}
-
---Title.__index = Title
-Title.type = Title
-
-st.types = {Header = Header, Objective = Objective, Quest = Quest, Title = Title} -- May end up unused.
+      quests = 0,
+   }
+)
 
 function AQT:OnInitialize()
    st.initConfig()
-   Header.sortFields = st.cfg.sortFields.header
-   Quest.sortFields = st.cfg.sortFields.quest
 end
 
 function AQT:OnEnable()
@@ -159,6 +108,34 @@ function AQT:OnEnable()
    self:RegisterEvent("PLAYER_LEVEL_UP", "PlayerLevelUp")
    self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ResortHeaders")
    self:SuppressionCheck()
+end
+
+function Header:CounterText()
+   if st.cfg.showHeaderCount then
+      local text
+      local completed = 0
+      local progress
+ 
+      for k,v in ipairs(self.quests) do
+	 if v.complete and v.complete > 0 then completed = completed + 1 end
+      end
+
+      if #self.quests > 0 then
+	 progress = completed/#self.quests
+      else
+	 progress = 1
+      end
+
+      if st.cfg.useProgressColor then 
+	 text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, progress) .. tostring(completed) .. "/" .. tostring(#self.quests)
+      else
+	 text = tostring(completed) .. "/" .. tostring(#self.quests)
+      end
+
+      return text
+   else
+      return ""
+   end
 end
 
 function Header:CreateUIObject()
@@ -178,11 +155,13 @@ function Header:New(o)
    return o
 end
 
+--[[ Never called.
 function Header:Remove()
    if #self.quests > 0 then error("Header:Remove(): '" .. self.name .. "': trying to remove header that still has quests attached.") end
    if self.uiObject then self.uiObject:Release() end
    HeaderCache[self.name] = nil
 end
+]]--
 
 function Header:Update() -- Probably redundant after the latest abstraction fix. Should be able to move these things elsewhere without breaking abstraction.
    self.TitleText = self.name
@@ -196,13 +175,36 @@ function Header:Update() -- Probably redundant after the latest abstraction fix.
    end
 end
 
+function Objective:CounterText()
+   local text
+
+   local counterString = self.counterString and self.counterString or (tostring(self.have) .. "/" .. tostring(self.need))
+
+   if st.cfg.useProgressColor then
+      text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, self.have/self.need) .. counterString .. "|r"
+   else
+      text = counterString
+   end
+
+   return text
+end
+
 function Objective:New(o)
    if not o.quest then error("Objective:New() requires quest id to be set.") end
    setmetatable(o, self)
    return o
 end
 
-function Objective:Remove() -- Probably redundant.
+function Objective:TitleText()
+   local text
+
+   if st.cfg.useProgressColor then
+      text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, self.have/self.need) .. self.text .. "|r"
+   else
+      text = self.text
+   end
+
+   return text
 end
 
 function Objective:Update(qIndex, oIndex)
@@ -299,6 +301,27 @@ function Quest:Remove()
    end
    self.header = nil
    QuestCache[self.id] = nil
+end
+
+function Quest:TitleText()
+   local text
+
+   if st.cfg.showTags then
+      local tag = self.tag and self.tag:sub(1,1) or ""
+      text = "[" .. tostring(self.level) .. tag .. "] " .. self.title
+   else
+      text = self.title
+   end
+
+   if st.cfg.useDifficultyColor then
+      local c = GetQuestDifficultyColor(self.level)
+      text = "|cff%02x%02x%02x" .. text .. "|r"
+      text = text:format(c.r*255,c.g*255,c.b*255)
+   else
+      text = self.title
+   end
+
+   return text
 end
 
 function Quest:Track()
