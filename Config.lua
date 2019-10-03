@@ -66,7 +66,7 @@ local defaults = {
    showHeaders = true,
    showTags = true,
    sortFields = {
-      header = {{field = "name"}},
+      header = {{field = "IsCurrentZone"}, {field = "name"}},
       quest = {{field = "complete", descending = true}, {field = "level"},{field = "tag"}, {field = "title"}},
    },
    trackAll = true,

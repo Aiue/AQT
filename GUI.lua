@@ -339,6 +339,9 @@ function guiFunc:Sort()
 			   return false
 			else return a.owner[v.field] < b.owner[v.field] end
 		     end
+		  elseif type(a.owner[v.field]) == "function" then -- If we're on this else, then a.owner[v.field] == b.owner[v.field]
+		     if a.owner[v.field](a.owner) then return true
+		     elseif b.owner[v.field](b.owner) then return false end
 		  end
 	       end
 	    end

@@ -157,11 +157,16 @@ function AQT:OnEnable()
    st.gui:OnEnable()
    self:RegisterEvent("QUEST_LOG_UPDATE", "QuestLogUpdate")
    self:RegisterEvent("PLAYER_LEVEL_UP", "PlayerLevelUp")
+   self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ResortHeaders")
 end
 
 function Header:CreateUIObject()
    if self.uiObject then error("Header:CreateUIObject(): '" .. self.name .. "' already has an uiObject.") end
    self.uiObject = st.gui.title:New(self)
+end
+
+function Header:IsCurrentZone()
+   return (GetRealZoneText() == self.name)
 end
 
 function Header:New(o)
@@ -440,4 +445,8 @@ end
 
 function AQT:PlayerLevelUpUpdate()
    for k,v in pairs(QuestCache) do if v.uiObject then v.uiObject:UpdateText() end end
+end
+
+function AQT:ResortHeaders()
+   st.gui.title:Sort()
 end
