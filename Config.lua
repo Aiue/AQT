@@ -85,16 +85,6 @@ local aceDBdefaults = {
    global = defaults
 }
 
-local function clearDefunct(cfg, def) -- Clear any defunct config values. To be called during initialization. Currently highly experimental.
-   for k,v in pairs(cfg) do
-      if not def[k] then cfg[k] = nil
-      elseif type(v) == "table" then
-	 if type(def[k]) == "table" then clearDefunct(v, def[k])
-	 else cfg[k] = nil end
-      end
-   end
-end
-
 local CFGHandler = {
    backdrop = {
       get = function(info)
@@ -606,28 +596,37 @@ options.args.general.args.sink.inline = true
 local function buildSortOptions()
    local typeList = {} -- To get it sortable.
    for k,v in pairs(st.types) do tinsert(typeList, k) end
-   tsort(typeList, function(a,b) return a<b end)
-end
+   tsort(typeList, function(a,b) return tostring(a)<tostring(b) end)
 
---[[
-	    Header = {
-	       name = L.Headers,
-	       type = "group",
-	       order = 0,
-	       args = {},
-	    },
-	    Quest = {
-	       name = L.Quests,
-	       type = "group",
-	       order = 1,
-	       args = {},
-	    },
-	 },
-]]--
+   for i,v in ipairs(typeList) do
+      if st.types[v].sortConfigurable then
+	 options.args.sorting.args[v] = {
+	    name = L[v],
+	    type = "group",
+	    order = i,
+	    args = {},
+	 }
+
+	 options.args.sorting.args[v].args.tmp = {
+	    name = "While waiting on proper implementation of sorting configuration, I give the option of at least showing the current configuration settings.",
+	    type = "description",
+	    order = 0,
+	 }
+
+	 for k,f in ipairs(st.cfg.sortFields[v]) do
+	    if not st.types[v].sortFields[f.field] then print(v .. " does not have " .. f.field .. " as a sortable field!") end
+	    options.args.sorting.args[v].args["moo"..tostring(k)] = {
+	       name = "Prio #" .. tostring(k) .. ": " .. tostring(st.types[v].sortFields[f.field]) .. " " .. (f.descending and "(descending)" or "(ascending)"),
+	       type = "description",
+	       order = k,
+	    }
+	 end
+      end
+   end
+end
 
 function st.initConfig()
    if not AQTCFG or type(AQTCFG) ~= "table" then AQTCFG = {} end
---   clearDefunct(AQTCFG, defaults)
    st.db = LibStub("AceDB-3.0"):New("AQTCFG", aceDBdefaults, true) -- Use AceDB for now. Might want to write my own metatable later instead.
    st.cfg = st.db.global
    AQT:SetSinkStorage(st.cfg)

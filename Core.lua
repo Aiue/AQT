@@ -4,6 +4,8 @@ local AQT = LibStub("AceAddon-3.0"):NewAddon("AQT", "AceEvent-3.0", "AceTimer-3.
 local LSM = LibStub("LibSharedMedia-3.0")
 local Prism = LibStub("LibPrism-1.0")
 
+local L = st.L
+
 LSM:Register("sound", "Peasant: Job's Done", [[Interface\AddOns\AQT\Sounds\Peasant_work_done.mp3]])
 LSM:Register("sound", "Peasant: Ready to Work", [[Sound\Creature\Peasant\PeasantReady1.ogg]])
 LSM:Register("sound", "Peon: Ready to Work", [[Sound\Creature\Peon\PeonReady1.ogg]])
@@ -47,12 +49,18 @@ local Header = baseObject:New(
       name = "Header",
       TitleText = "",
       sortConfigurable = true,
+      testTable = {1,2,3},
       sortFields = {
 	 name = L.Title,
 	 IsCurrentZone = L["Matches Current Zone"],
       },
    }
 )
+
+Header.sortFields = {
+   name = L.Title,
+   IsCurrentZone = L["Matches Current Zone"],
+}
 
 local Objective = baseObject:New(
    {
