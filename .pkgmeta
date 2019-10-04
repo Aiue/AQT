@@ -47,3 +47,5 @@ required-dependencies:
     - libsharedmedia-3-0
     - libsink-2-0
     - libstub
+
+license-output: LICENSE.md

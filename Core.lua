@@ -56,11 +56,6 @@ local Header = baseObject:New(
    }
 )
 
-Header.sortFields = {
-   name = L.Title,
-   IsCurrentZone = L["Matches Current Zone"],
-}
-
 local Objective = baseObject:New(
    {
       name = "Objective",
