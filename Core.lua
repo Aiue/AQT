@@ -290,6 +290,7 @@ function Quest:New(o)
       tinsert(o.header.quests, o)
    end
    QuestCache[o.id] = o
+   -- if o.timer, then add handling here .. then in Quest:Track(), and make the proper ui changes. But first: sleep.
    o:Update()
    if st.cfg.trackAll then o:Track() end
    return o
@@ -409,6 +410,8 @@ function AQT:QuestLogUpdate(...)
    local playSound = nil
    local sound
    local i = 1
+   local timers = {GetQuestTimers()}
+   for k,v in ipairs(timers) do timers[k] = {timeleft = timers[k],index = GetQuestIndexForTimer(k)} end
    while i do
       local qTitle,qLevel,qTag,qHeader,qCollapsed,qComplete,qFreq,qID = GetQuestLogTitle(i)
 
@@ -420,9 +423,13 @@ function AQT:QuestLogUpdate(...)
 	    -- Separate if rather than "and" so we can use else.
 	    if not HeaderCache[qTitle] then currentHeader = Header:New({name = qTitle}) else currentHeader = HeaderCache[qTitle] end
 	 else
+	    local timer
+	    for k,v in ipairs(timers) do
+	       if v.index == i then timer = v.timeleft end
+	    end
 	    localQuestCache[qID] = true
 	    if not QuestCache[qID] then
-	       Quest:New({title = qTitle, level = qLevel, tag = qTag, complete = qComplete, id = qID, header = currentHeader})
+	       Quest:New({title = qTitle, level = qLevel, tag = qTag, complete = qComplete, id = qID, header = currentHeader, timer = timer})
 	    else 
 	       local q = QuestCache[qID]
 	       local sound = q:Update()
