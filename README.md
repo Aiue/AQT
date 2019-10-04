@@ -5,9 +5,9 @@ What it will do is:
 * Show a list of the quests in your log, and their status.
 * Optionally colour by difficulty/completion. Fully configurable with either a HSV or RGB gradient.
 * Optionally show quest tags/levels.
-* Sorting. It currently supports configuration, but has no config interface. If you're curious, take a look at Config.lua and edit your SV accordingly. It should stand out if you have a basic * understanding of lua.
+* Configurable sorting, with more options to be added.
 * Sounds, if you're into that kind of thing. I am. Defaults to faction-based sounds, but can be reconfigured. Makes use of LibSharedMedia.
-* Direct quest updates via LibSink. Not yet suppressing the standard errorframe update.
+* Direct quest updates via LibSink, and optionally suppres the standard errorframe update.
 
 Apart from improving on the current functionality, some of which I will admit is somewhat lackluster, future plans include:
 
