@@ -48,7 +48,6 @@ local Header = baseObject:New(
    {
       name = "Header",
       TitleText = "",
-      sortConfigurable = true,
       testTable = {1,2,3},
       sortFields = {
 	 name = L.Title,
@@ -71,7 +70,6 @@ local Objective = baseObject:New(
 local Quest = baseObject:New(
    {
       name = "Quest",
-      sortConfigurable = true,
       sortFields = {
 	 complete = L.Completion,
 	 level = L.Level,
