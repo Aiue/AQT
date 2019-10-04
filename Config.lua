@@ -8,6 +8,14 @@ local Prism = LibStub("LibPrism-1.0")
 local L = st.L
 local tinsert,tremove,tsort = table.insert,table.remove,table.sort
 
+local sortcfg = {}
+
+local defaultSortFields = { -- Because AceDB will kind of screw things up for us otherwise.
+   Header = {{field = "IsCurrentZone"}, {field = "name"}},
+   Objective = {{field = "index"}},
+   Quest = {{field = "complete", descending = true}, {field = "level"},{field = "tag"}, {field = "title"}},
+}
+
 local defaults = {
    anchorFrom = "TOPRIGHT",
    anchorTo = "TOPRIGHT",
@@ -66,11 +74,6 @@ local defaults = {
    showHeaderCount = true,
    showHeaders = true,
    showTags = true,
-   sortFields = {
-      Header = {{field = "IsCurrentZone"}, {field = "name"}},
-      Objective = {{field = "index"}},
-      Quest = {{field = "complete", descending = true}, {field = "level"},{field = "tag"}, {field = "title"}},
-   },
    suppressErrorFrame = true,
    trackAll = true,
    useDifficultyColor = true,
@@ -178,13 +181,83 @@ local CFGHandler = {
       end,
    },
    sorting = {
-      get = function(info)
-	 return
+      AddSortValuesOrNot = function(objType, returnastable)
+	 local values = {}
+	 local sfCache = {}
+	 for k,v in pairs(st.types[objType].sortFields) do tinsert(sfCache, k) end
+	 for k,v in ipairs(st.cfg.sortFields[objType]) do
+	    for i = #sfCache, 1, -1 do
+	       if v.field == sfCache[i] then tremove(sfCache, i) end
+	    end
+	 end
+	 for k,v in ipairs(sfCache) do values[v] = st.types[objType].sortFields[v] end
+	 if sortcfg.field and not st.types[objType].sortFields[sortcfg.field] then
+	    sortcfg.field = nil
+	    sortcfg.descending = nil
+	 end
+	 return returnastable and values or (#sfCache == 0)
       end,
-      set = function(info, val)
+
+      edit = function(info)
+	 local obj = info[#info-2]
+	 local index = info.options.args.sorting.args[obj].args[info[#info-1]].order
+	 if info[#info] == "ascdesc" then
+	    st.cfg.sortFields[obj][index].descending = not st.cfg.sortFields[obj][index].descending
+	 elseif info[#info] == "moveup" or info[#info] == "movedown" then
+	    newindex = (info[#info] == "moveup" and (index - 1) or (index + 1))
+	    print(index)
+	    print(newindex)
+	    for k,v in pairs(info.options.args.sorting.args[obj].args) do
+	       if v.order == newindex then v.order = index end
+	    end
+	    info.options.args.sorting.args[obj].args[info[#info-1]].order = (info[#info] == "moveup" and (index - 1) or (index + 1))
+	    tinsert(st.cfg.sortFields[obj], newindex, tremove(st.cfg.sortFields[obj], index))
+	 elseif info[#info] == "remove" then
+	    info.options.args.sorting.args[obj].args[info[#info-1]] = nil
+	    tremove(st.cfg.sortFields[obj], index)
+	 end
+	 st.gui:RecurseResort()
+      end,
+   
+      get = function(info) -- only for new stuff
+	 return sortcfg[info[#info]]
+      end,
+   
+      set = function(info, val) -- only for new stuff
+	 sortcfg[info[#info]] = val
+      end,
+   
+      addValidate = function(info)
+	 if not st.types[info[#info-2]].sortFields[info[#info-1]] then return "Unknown sort field." end
+      end,
+   
+      addExecute = function(info)
+	 tinsert(st.cfg.sortFields[info[#info-2]], {field=sortcfg.field,descending=sortcfg.descending or nil})
+	 sortcfg.field = nil
+	 sortcfg.descending = nil
+	 st.gui:RecurseResort()
+      end,
+   
+      addDisabled = function(info)
+	 if not sortcfg.field then return true end
       end,
    },
 }
+
+-- Need to set these here, as they refer back to CFGHandler.
+CFGHandler.sorting.AddHasSortValues = function(info)
+   return CFGHandler.sorting.AddSortValuesOrNot(info[#info-2], false)
+end
+
+CFGHandler.sorting.AddSortValues = function(info)
+   return CFGHandler.sorting.AddSortValuesOrNot(info[#info-2], true)
+end
+   
+CFGHandler.sorting.newDisabled = function(info)
+   local objType
+   if info[#info-1] == "_specialAddNew" then objType = info[#info-2] else objType = info[#info-1] end
+   return CFGHandler.sorting.AddSortValuesOrNot(objType, false)
+end
 
 local options = {
    type = "group",
@@ -593,6 +666,102 @@ local options = {
 
 options.args.general.args.sink.inline = true
 
+local editSortOptions = {
+   ascdesc = {
+      name = function(info)
+	 for k,v in ipairs(st.cfg.sortFields[info[#info-2]]) do
+	    if v.field == info[#info-1] then return v.descending and L.Descending or L.Ascending end
+	 end
+      end,
+      type = "execute",
+      order = 0,
+   },
+   moveup = {
+      name = L["Move Up"],
+      type = "execute",
+      order = 1,
+      disabled = function(info)
+	 return options.args.sorting.args[info[#info-2]].args[info[#info-1]].order == 1
+      end,
+    },
+   movedown = {
+      name = L["Move Down"],
+      type = "execute",
+      order = 2,
+      disabled = function(info)
+	 return options.args.sorting.args[info[#info-2]].args[info[#info-1]].order == #st.cfg.sortFields[info[#info-2]]
+      end,
+   },
+   remove = {
+      name = L.Remove,
+      type = "execute",
+      order = 3,
+   },
+}
+
+local addSortOptions = {
+   field = {
+      name = L.Field,
+      type = "select",
+      values = CFGHandler.sorting.AddSortValues,
+      disabled = CFGHandler.sorting.AddHasSortValues,
+      order = 0,
+   },
+   descending = {
+      name = L.Descending,
+      type = "toggle",
+      order = 1,
+   },
+   add = {
+      name = L.Add,
+      type = "execute",
+      order = 2,
+      validate = CFGHandler.sorting.addValidate,
+      func = CFGHandler.sorting.addExecute,
+      disabled = CFGHandler.sorting.addDisabled,
+   },
+}
+
+local function addSortOption(objType, sortField, index)
+   options.args.sorting.args[objType].args[sortField] = {
+      name = st.types[objType].sortFields[sortField],
+      type = "group",
+      order = index,
+      args = editSortOptions,
+   }
+end
+ 
+addSortOptions.add.func = function(info)
+   tinsert(st.cfg.sortFields[info[#info-2]], {field=sortcfg.field, descending=sortcfg.descending or nil})
+   addSortOption(info[#info-2], sortcfg.field, #st.cfg.sortFields[info[#info-2]] + 1)
+   st.gui:RecurseResort()
+end
+
+local function buildSortOptions()
+   for k,v in pairs(st.types) do
+      if v.sortFields then
+	 options.args.sorting.args[v.name] = {
+	    name = v.name,
+	    type = "group",
+	    childGroups = "tree",
+	    func = CFGHandler.sorting.edit,
+	    args = {
+	       _specialAddNew = { -- Hopefully I (or some future someone else?) shouldn't decide THIS should be a sortable field. If so, just reject it as a sortable field, pfft.
+		  name = L["Add new..."],
+		  type = "group",
+		  order = 500, -- If we're using even close to this many sortfields, we got issues, man.
+		  args = addSortOptions,
+		  hidden = CFGHandler.sorting.newDisabled,
+	       },
+	    },
+	 }
+
+	 for a,b in ipairs(st.cfg.sortFields[v.name]) do addSortOption(v.name, b.field, a) end
+      end
+   end
+end
+
+--[[
 local function buildSortOptions()
    local typeList = {} -- To get it sortable.
    for k,v in pairs(st.types) do tinsert(typeList, k) end
@@ -624,6 +793,7 @@ local function buildSortOptions()
       end
    end
 end
+]]--
 
 function st.initConfig()
    if not AQTCFG or type(AQTCFG) ~= "table" then AQTCFG = {} end
@@ -632,5 +802,13 @@ function st.initConfig()
    AQT:SetSinkStorage(st.cfg)
    LibStub("AceConfig-3.0"):RegisterOptionsTable("AQT", options)
    LibStub("AceConsole-3.0"):RegisterChatCommand("aqt", function() LibStub("AceConfigDialog-3.0"):Open("AQT") end)
+   if not st.cfg.sortFields then st.cfg.sortFields = defaultSortFields
+   else
+      for k,v in pairs(defaultSortFields) do
+	 if not st.cfg.sortFields[k] then
+	    st.cfg.sortFields[k] = v
+	 end
+      end
+   end
    buildSortOptions()
 end

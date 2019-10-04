@@ -69,6 +69,10 @@ function gui:OnEnable()
    gui.title:Update()
 end
 
+function gui:RecurseResort()
+   st.gui.title:RecurseResort()
+end
+
 function gui:Redraw(recurse)
    gui:ClearAllPoints()
    gui:SetPoint(st.cfg.anchorFrom, UIParent, st.cfg.anchorTo, st.cfg.posX, st.cfg.posY)
@@ -121,6 +125,15 @@ function guiFunc:GetWidth(textWidth, counterWidth)
    end
 
    return textWidth, counterWidth
+end
+
+function guiFunc:RecurseResort()
+   if #self.children > 0 then
+      for k,v in ipairs(self.children) do
+	 v:RecurseResort()
+      end
+      self:Sort()
+   end
 end
 
 function guiFunc:Release(recursed)
