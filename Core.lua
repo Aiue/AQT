@@ -1,6 +1,6 @@
 local _,st = ...
 
-local AQT = LibStub("AceAddon-3.0"):NewAddon("AQT", "AceEvent-3.0", "AceTimer-3.0", "LibSink-2.0")
+local AQT = LibStub("AceAddon-3.0"):NewAddon("AQT", "AceEvent-3.0", "LibSink-2.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 local Prism = LibStub("LibPrism-1.0")
 
@@ -411,7 +411,7 @@ function AQT:QuestLogUpdate(...)
    local sound
    local i = 1
    local timers = {GetQuestTimers()}
-   for k,v in ipairs(timers) do timers[k] = {timeleft = timers[k],index = GetQuestIndexForTimer(k)} end
+   for k,v in ipairs(timers) do timers[k] = {timeleft = timers[k],index = GetQuestIndexForTimer(k), started = time(), expires = time()+timers[k]} end
    while i do
       local qTitle,qLevel,qTag,qHeader,qCollapsed,qComplete,qFreq,qID = GetQuestLogTitle(i)
 
@@ -425,14 +425,14 @@ function AQT:QuestLogUpdate(...)
 	 else
 	    local timer
 	    for k,v in ipairs(timers) do
-	       if v.index == i then timer = v.timeleft end
+	       if v.index == i then timer = v end
 	    end
 	    localQuestCache[qID] = true
 	    if not QuestCache[qID] then
-	       Quest:New({title = qTitle, level = qLevel, tag = qTag, complete = qComplete, id = qID, header = currentHeader, timer = timer})
+	       Quest:New({title = qTitle, level = qLevel, tag = qTag, complete = qComplete, id = qID, header = currentHeader, timer = timer)
 	    else 
 	       local q = QuestCache[qID]
-	       local sound = q:Update()
+	       local sound = q:Update(timer)
 	       if sound and not playSound then playSound = sound -- true, quest completed
 	       elseif sound == false and not playSound then playSound = sound -- false, objective completed
 	       end -- else it's nil, nothing completed
@@ -472,11 +472,10 @@ function AQT:QuestLogUpdate(...)
 end
 
 function AQT:PlayerLevelUp()
-   self:ScheduleTimer("PlayerLevelUpUpdate", 1)
-end
-
-function AQT:PlayerLevelUpUpdate()
-   for k,v in pairs(QuestCache) do if v.uiObject then v.uiObject:UpdateText() end end
+   local function Update()
+      for k,v in pairs(QuestCache) do if v.uiObject then v.uiObject:UpdateText() end end
+   end
+   C_Timer.After(1, Update)
 end
 
 function AQT:ResortHeaders()
