@@ -39,6 +39,13 @@ local defaults = {
       edgeSize = 12,
       insets = 3,
    },
+   barText = {
+      r = 1,
+      g = 1,
+      b = 1,
+      a = 1,
+   },
+   barTexture = "Blizzard",
    completionSoundName = "Peon: Work Complete",
    font = {
       name = "Friz Quadrata TT",
@@ -52,6 +59,7 @@ local defaults = {
       wrap = true,
    },
    hideQuestWatch = true,
+   indent = 0,
    maxHeight = 650,
    minWidth = 100,
    maxWidth = 250,
@@ -74,7 +82,9 @@ local defaults = {
    showHeaderCount = true,
    showHeaders = true,
    showTags = true,
+   showTimers = true,
    suppressErrorFrame = true,
+   timerType = 2, -- 1 = StatusBar, 2 = FontString (uses counter). Using number instead of tristate boolean in case we want to add more later.
    trackAll = true,
    useDifficultyColor = true,
    useFactionCompletionSound = true,

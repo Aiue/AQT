@@ -352,7 +352,7 @@ function Quest:Untrack()
    self.header:Update()
 end
 
-function Quest:Update()
+function Quest:Update(timer)
    local index = GetQuestLogIndexByID(self.id)
    if not index then error("Quest:Update(): Unable to find quest '" .. self.title .. "' in log.") end
 
@@ -360,6 +360,19 @@ function Quest:Update()
    local sound = nil
    local update = nil
    local title
+
+   if timer then
+      if self.timer then -- There already is a timer, update it if needed.
+	 self.timer.timeleft = timeleft -- this should only really be relevant for sorting purposes, and will not be needed in continuous updates beyond QLU
+	 if not(difftime(self.timer.expires, timer.expires) < 5 or diffctime(self.timer.expires, timer.expires) > 5) then -- unless expires-5<expires<expires+5 it's well outside of error margin, so the timer has changed
+	    print("Timer changed!")
+	    self.timer.expires = timer.expires
+	    self.timer.started = timer.started
+	 end
+      else
+	 self.timer = timer
+      end
+   end
 
    if self.title ~= qTitle or self.level ~= qLevel or self.tag  ~= qTag or self.complete ~= qComplete then update = true end
 
@@ -381,7 +394,10 @@ function Quest:Update()
    self.complete = qComplete
 
    if not qComplete then sound = self:UpdateObjectives() end
-   if update then self.uiObject:Update() end
+   if self.uiObject then
+      if update then self.uiObject:Update() end
+      if self.timer then self.uiObject:UpdateTimer() end
+   end
    self.header:Update()
    return sound
 end
@@ -411,7 +427,11 @@ function AQT:QuestLogUpdate(...)
    local sound
    local i = 1
    local timers = {GetQuestTimers()}
-   for k,v in ipairs(timers) do timers[k] = {timeleft = timers[k],index = GetQuestIndexForTimer(k), started = time(), expires = time()+timers[k]} end
+   for k,v in ipairs(timers) do
+      local now = date("*t")
+      now.sec = now.sec + timers[k] -- Yes, despite documentation stating this field is between 0--61, lua seems to actually support this. This table now represents the expiracy time.
+      timers[k] = {timeleft = timers[k],index = GetQuestIndexForTimer(k), started = time(), expires = time(now)}
+   end
    while i do
       local qTitle,qLevel,qTag,qHeader,qCollapsed,qComplete,qFreq,qID = GetQuestLogTitle(i)
 
@@ -429,7 +449,7 @@ function AQT:QuestLogUpdate(...)
 	    end
 	    localQuestCache[qID] = true
 	    if not QuestCache[qID] then
-	       Quest:New({title = qTitle, level = qLevel, tag = qTag, complete = qComplete, id = qID, header = currentHeader, timer = timer)
+	       Quest:New({title = qTitle, level = qLevel, tag = qTag, complete = qComplete, id = qID, header = currentHeader, timer = timer})
 	    else 
 	       local q = QuestCache[qID]
 	       local sound = q:Update(timer)

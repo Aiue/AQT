@@ -9,6 +9,7 @@ local tinsert,tremove,tsort = table.insert,table.remove,table.sort
 local recycler = {
    buttons = {},
    icons = {},
+   statusbars = {},
 }
 
 local function getAvailableName(name) -- Version for debug purposes.
@@ -158,6 +159,7 @@ function guiFunc:Release(recursed)
 
    self:ReleaseButton()
    self:ReleaseIcon()
+   self:ReleaseTimer()
 
    self.container:Show()
    self:SetParent(nil)
@@ -189,18 +191,25 @@ function guiFunc:ReleaseIcon()
 end
 
 function guiFunc:UnlinkChildren()
-   for k,v in ipairs(self.children) do
-      v:SetPoint("TOPLEFT", nil)
-      v:SetPoint("TOPRIGHT", nil)
-   end
+   if self.timer and self.timer:IsObjectType("StatusBar") then self.timer:ClearAllPoints() end
+   for k,v in ipairs(self.children) do v:ClearAllPoints() end
 end
 
 function guiFunc:RelinkChildren()
    self:UnlinkChildren() -- While we shouldn't get any circular links, play it safe and unlink everything first
+   if self.timer and self.timer:IsObjectType("StatusBar") then
+      self.timer:SetPoint("TOPLEFT", self.container, "TOPLEFT", st.cfg.indent+st.cfg.font.size, 0)
+      self.timer:SetPoint("TOPRIGHT", self.container, "TOPRIGHT")
+   end
    for k,v in ipairs(self.children) do
       if k == 1 then
-	 v:SetPoint("TOPLEFT", self.container, "TOPLEFT", st.cfg.indent, 0)
-	 v:SetPoint("TOPRIGHT", self.container, "TOPRIGHT")
+	 if self.timer and self.timer:IsObjectType("StatusBar") then
+	    v:SetPoint("TOPLEFT", self.timer, "BOTTOMLEFT", -(st.cfg.indent+st.cfg.font.size), -1)
+	    v:SetPoint("TOPRIGHT", self.timer, "BOTTOMRIGHT")
+	 else
+	    v:SetPoint("TOPLEFT", self.container, "TOPLEFT", st.cfg.indent, 0)
+	    v:SetPoint("TOPRIGHT", self.container, "TOPRIGHT")
+	 end
       else
 	 v:SetPoint("TOPLEFT", self.children[k-1].container, "BOTTOMLEFT")
 	 v:SetPoint("TOPRIGHT", self.children[k-1].container, "BOTTOMRIGHT")
@@ -217,12 +226,12 @@ function guiFunc:New(owner)
       object:SetParent(self.container)
    else
       object = CreateFrame("Frame", getAvailableName("AQTRow"), self.container)
-      object.text = object:CreateFontString(getAvailableName("AQTText"), object)
+      object.text = object:CreateFontString(getAvailableName("AQTText"))
       object.text:SetFontObject(gui.font)
       object.text:SetJustifyH("LEFT")
       object.text:SetPoint("TOPLEFT", object, "TOPLEFT", st.cfg.font.size, 0)
       object.text:SetWordWrap(st.cfg.font.wrap)
-      object.counter = object:CreateFontString(getAvailableName("AQTCounter"), object)
+      object.counter = object:CreateFontString(getAvailableName("AQTCounter"))
       object.counter:SetFontObject(gui.font)
       object.counter:SetJustifyH("RIGHT")
       object.counter:SetPoint("TOPRIGHT", object)
@@ -371,6 +380,11 @@ function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for s
       h = h + v:GetHeight() + (v.container:IsShown() and v.container:GetHeight() or 0)
    end
 
+   if self.timer and self.timer:IsObjectType("StatusBar") then
+      self.timer:SetHeight(st.cfg.font.size) -- probably good?
+      h = h + self.timer:GetHeight()
+   end
+
    if self.button then self.button:SetSize(st.cfg.font.size, st.cfg.font.size) end
    if self.icon then self.icon:SetSize(st.cfg.font.size, st.cfg.font.size) end
 
@@ -410,4 +424,128 @@ function guiFunc:UpdateText(recurse)
    if recurse then
       for k,v in ipairs(self.children) do v:UpdateText(true) end
    end
+end
+
+-- Timer functions.
+local active_timers = {}
+
+local function timer_OnUpdate(self)
+   local owner = self:GetParent().owner
+   if not owner then error("timer missing data") end
+
+   local remains = owner.timer.expires - owner.timer.started
+   local duration = time() - owner.timer.started
+   local progress = 1-(duration/remains)
+
+   local cstring,r,g,b = Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, progress)
+
+   local timeleft = difftime(owner.timer.expires, time()) -- remaining time in seconds
+   local timestring = ""
+   if timeleft >= 86400 then -- Days. Shouldn't happen, and would make formatting by splitting with : slightly weird, and dhms would make more sense, but eeh, since it probably won't happen, let's just stick with that anyway.
+      timestring = tostring(math.floor(timeleft/86400))
+      timeleft = timeleft%86400
+   end
+   local fmt = ":%02d"
+   if timeleft >= 3600 or timestring ~= "" then -- Hours
+      local hours = math.floor(timeleft/3600)
+      timeleft = timeleft%3600
+      if timestring == "" then timestring = tostring(hours)
+      else timestring = timestring .. fmt:format(hours) end
+   end
+   if timeleft > 60 or timestring ~= "" then -- Minutes
+      local minutes = math.floor(timeleft/60)
+      timeleft = timeleft%60
+      if timestring == "" then timestring = tostring(minutes)
+      else timestring = timestring .. fmt:format(minutes) end
+   end
+   if timestring == "" then timestring = tostring(timeleft)
+   else timestring = timestring .. fmt:format(timeleft) end
+
+   return cstring, timestring, r, g, b, progress
+end
+
+local function timer_FontString_OnUpdate(self)
+   local cstring,text = timer_OnUpdate(self.timer)
+   self.timer:SetText("|cff" .. cstring .. text .. "|r")
+end
+
+local function timer_StatusBar_OnUpdate(self)
+   local _,text,r,g,b,progress = timer_OnUpdate(self)
+   self:SetValue(progress) -- !!!RE!!! return to this, want it inverted
+   self:SetStatusBarColor(r, g, b)
+   self.text:SetText(text)
+end
+
+local function getTimerType()
+   local timerType
+   if st.cfg.timerType == 1 then timerType = "StatusBar"
+   elseif st.cfg.timerType == 2 then timerType = "FontString"
+   else error("Unknown timer type configuration.") end
+   return timerType
+end
+
+function guiFunc:UpdateTimer()
+   if (not st.cfg.showTimers or not self.owner.timer or self.owner.timer.expires < time()) and self.timer then self:ReleaseTimer()
+   elseif st.cfg.showTimers and self.owner.timer and self.owner.timer.expires >= time() then
+      local timerType = getTimerType()
+      if self.timer and not self.timer:IsObjectType(timerType) then self:ReleaseTimer() end
+      if not self.timer then self.timer = self:NewTimer() end
+      if self.timer:IsObjectType("fontstring") then timer_FontString_OnUpdate(self)
+      elseif self.timer:IsObjectType("statusbar") then
+	 self.timer.text:SetTextColor(st.cfg.barText.r, st.cfg.barText.g, st.cfg.barText.b, st.cfg.barText.a)
+	 self.timer:SetMinMaxValues(0,1)
+	 self.timer:SetStatusBarTexture(LSM:Fetch("statusbar", st.cfg.barTexture))
+	 timer_StatusBar_OnUpdate(self.timer)
+      else error("Unknown object type for timer.") end
+   end
+end
+
+function guiFunc:NewTimer()
+   local timer
+   local timerType = getTimerType()
+   -- yes, this is silly, but I'll just tell myself I'll thank myself later in case I want to add more types later
+   if timerType == "FontString" then
+      timer = self.counter
+      self:SetScript("OnUpdate", timer_FontString_OnUpdate)
+   else
+      if #recycler.statusbars > 0 then
+	 timer = tremove(recycler.statusbars)
+	 timer:SetParent(self)
+      else
+	 timer = CreateFrame("StatusBar", nil, self)
+	 timer.text = timer:CreateFontString(nil, "OVERLAY")
+	 timer.text:SetFontObject(gui.font)
+	 timer.text:SetJustifyH("CENTER")
+	 timer.text:SetJustifyV("CENTER")
+	 timer.text:SetAllPoints(timer)
+      end
+      timer:SetScript("OnUpdate", timer_StatusBar_OnUpdate)
+      self:RelinkChildren()
+      self:UpdateSize(true)
+   end
+   timer:Show()
+   tinsert(active_timers, timer)
+   return timer
+end
+
+function guiFunc:ReleaseTimer()
+   if not self.timer then return end
+   self.timer:SetScript("OnUpdate", nil)
+   if self.timer:IsObjectType("StatusBar") then
+      self.timer:ClearAllPoints() -- potential for breakage if we have objectives linked to this, be mindful
+      self.timer:SetParent(nil)
+      tinsert(recycler.statusbars, self.timer)
+   end
+   self.timer:Hide()
+   for k,v in ipairs(active_timers) do
+      if v == timer then
+	 tremove(active_timers, k)
+	 break
+      end
+   end
+   self.timer = nil
+end
+
+function gui:UpdateTimers()
+   for k,v in ipairs(active_timers) do v:GetParent():UpdateTimer() end
 end
