@@ -11,8 +11,9 @@ local recycler = {
    icons = {},
    statusbars = {},
 }
+local active_timers = {}
 
-local function getAvailableName(name) -- Version for debug purposes.
+local function getAvailableName(name) -- JUST removed this, because a recursive function was really stupid for this purpose. Still. Fonts need names, and I need recursion, so to hell with it.
    if not _G[name] then return name else
       local count = string.match(name, "%d+")
       if not count then count = 0 end
@@ -20,8 +21,6 @@ local function getAvailableName(name) -- Version for debug purposes.
       return getAvailableName(string.sub(name, string.find(name, "%a+")) .. tostring(count))
    end
 end
-
---local function getAvailableName(name) return nil end
 
 local gui = CreateFrame("Frame", getAvailableName("AQTParent"), UIParent)
 st.gui = gui
@@ -32,9 +31,12 @@ setmetatable(guiFunc, getmetatable(UIParent))
 function gui:OnEnable()
    gui.font = CreateFont(getAvailableName("AQTFont"))
    gui.font:SetJustifyV("TOP")
+   gui.barFont = CreateFont(getAvailableName("AQTBarFont"))
+   gui.barFont:SetJustifyV("CENTER")
+   gui.barFont:SetJustifyH("CENTER")
 
-   gui.scrollFrame = CreateFrame("ScrollFrame", getAvailableName("AQTScrollFrame"), gui)
-   gui.scrollChild = CreateFrame("Frame", getAvailableName("AQTScrollChild"), gui.scrollFrame)
+   gui.scrollFrame = CreateFrame("ScrollFrame", nil, gui)
+   gui.scrollChild = CreateFrame("Frame", nil, gui.scrollFrame)
    gui.container = gui.scrollChild -- Hack to support new relational structure. Will make this the only reference after going through the code to make sure nothing else references it.
    gui.scrollFrame:SetScrollChild(gui.scrollChild)
    gui.scrollFrame:SetScript("OnSizeChanged", function(self, width, height)
@@ -81,6 +83,9 @@ function gui:Redraw(recurse)
    gui.font:SetFont(LSM:Fetch("font", st.cfg.font.name), st.cfg.font.size, st.cfg.font.outline)
    gui.font:SetSpacing(st.cfg.font.spacing)
 
+   gui.barFont:SetFont(LSM:Fetch("font", st.cfg.barFont.name), st.cfg.barFont.size, st.cfg.barFont.outline)
+   gui.barFont:SetSpacing(st.cfg.barFont.spacing)
+
    gui.scrollFrame:SetPoint("TOPLEFT", gui, "TOPLEFT", st.cfg.padding, -st.cfg.padding)
    gui.scrollFrame:SetPoint("BOTTOMRIGHT", gui, "BOTTOMRIGHT", -st.cfg.padding, st.cfg.padding)
 
@@ -109,8 +114,11 @@ end
 
 function gui:RedrawColor()
    gui.font:SetTextColor(st.cfg.font.r, st.cfg.font.g, st.cfg.font.b, st.cfg.font.a)   
+   gui.barFont:SetTextColor(st.cfg.barFont.r, st.cfg.barFont.g, st.cfg.barFont.b, st.cfg.barFont.a)
    gui:SetBackdropColor(st.cfg.backdrop.background.r, st.cfg.backdrop.background.g, st.cfg.backdrop.background.b, st.cfg.backdrop.background.a)
    gui:SetBackdropBorderColor(st.cfg.backdrop.border.r, st.cfg.backdrop.border.g, st.cfg.backdrop.border.b, st.cfg.backdrop.border.a)
+   for k,v in ipairs(active_timers) do v:GetParent():UpdateTimer() end
+      
 end
 
 local mt = {__index = function(t, k) return guiFunc[k] end}
@@ -191,20 +199,20 @@ function guiFunc:ReleaseIcon()
 end
 
 function guiFunc:UnlinkChildren()
-   if self.timer and self.timer:IsObjectType("StatusBar") then self.timer:ClearAllPoints() end
+   if self.timer and self.timer.sb then self.timer:ClearAllPoints() end
    for k,v in ipairs(self.children) do v:ClearAllPoints() end
 end
 
 function guiFunc:RelinkChildren()
    self:UnlinkChildren() -- While we shouldn't get any circular links, play it safe and unlink everything first
-   if self.timer and self.timer:IsObjectType("StatusBar") then
+   if self.timer and self.timer.sb then
       self.timer:SetPoint("TOPLEFT", self.container, "TOPLEFT", st.cfg.indent+st.cfg.font.size, 0)
       self.timer:SetPoint("TOPRIGHT", self.container, "TOPRIGHT")
    end
    for k,v in ipairs(self.children) do
       if k == 1 then
-	 if self.timer and self.timer:IsObjectType("StatusBar") then
-	    v:SetPoint("TOPLEFT", self.timer, "BOTTOMLEFT", -(st.cfg.indent+st.cfg.font.size), -1)
+	 if self.timer and self.timer.sb then
+	    v:SetPoint("TOPLEFT", self.timer, "BOTTOMLEFT", -(st.cfg.indent+st.cfg.font.size), 0)
 	    v:SetPoint("TOPRIGHT", self.timer, "BOTTOMRIGHT")
 	 else
 	    v:SetPoint("TOPLEFT", self.container, "TOPLEFT", st.cfg.indent, 0)
@@ -225,20 +233,20 @@ function guiFunc:New(owner)
       object.container:Show()
       object:SetParent(self.container)
    else
-      object = CreateFrame("Frame", getAvailableName("AQTRow"), self.container)
-      object.text = object:CreateFontString(getAvailableName("AQTText"))
+      object = CreateFrame("Frame", nil, self.container)
+      object.text = object:CreateFontString(nil)
       object.text:SetFontObject(gui.font)
       object.text:SetJustifyH("LEFT")
       object.text:SetPoint("TOPLEFT", object, "TOPLEFT", st.cfg.font.size, 0)
       object.text:SetWordWrap(st.cfg.font.wrap)
-      object.counter = object:CreateFontString(getAvailableName("AQTCounter"))
+      object.counter = object:CreateFontString(nil)
       object.counter:SetFontObject(gui.font)
       object.counter:SetJustifyH("RIGHT")
       object.counter:SetPoint("TOPRIGHT", object)
       object.counter:SetWordWrap(st.cfg.font.wrap)
       object.text:SetPoint("TOPRIGHT", object.counter, "TOPLEFT", -10, 0)
       -- Create a container. May want to have these ones also be on-demand. It's a whole lot easier keeping it as is, though.
-      object.container = CreateFrame("Frame", getAvailableName("AQTContainer"), object)
+      object.container = CreateFrame("Frame", nil, object)
       object.container:SetPoint("TOPLEFT", object, "BOTTOMLEFT")
       object.container:SetPoint("TOPRIGHT", object, "BOTTOMRIGHT")
       object.children = {}
@@ -268,7 +276,7 @@ function guiFunc:NewButton()
    if #recycler.buttons > 0 then
       button = tremove(recycler.buttons)
    else
-      button = CreateFrame("Button", getAvailableName("AQTButton"), self)
+      button = CreateFrame("Button", nil, self)
       button:SetScript("OnClick", clickButton)
    end
 
@@ -284,7 +292,7 @@ function guiFunc:NewIcon()
    if #recycler.icons > 0 then
       icon = tremove(recycler.icons)
    else
-      icon = self:CreateTexture(getAvailableName("AQTIcon"))
+      icon = self:CreateTexture(nil)
    end
 
    self.icon = icon
@@ -380,8 +388,8 @@ function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for s
       h = h + v:GetHeight() + (v.container:IsShown() and v.container:GetHeight() or 0)
    end
 
-   if self.timer and self.timer:IsObjectType("StatusBar") then
-      self.timer:SetHeight(st.cfg.font.size) -- probably good?
+   if self.timer and self.timer.sb then
+      self.timer:SetHeight(st.cfg.barFont.size*1.5) -- probably good?
       h = h + self.timer:GetHeight()
    end
 
@@ -427,8 +435,6 @@ function guiFunc:UpdateText(recurse)
 end
 
 -- Timer functions.
-local active_timers = {}
-
 local function timer_OnUpdate(self)
    local owner = self:GetParent().owner
    if not owner then error("timer missing data") end
@@ -471,14 +477,14 @@ end
 
 local function timer_StatusBar_OnUpdate(self)
    local _,text,r,g,b,progress = timer_OnUpdate(self)
-   self:SetValue(progress) -- !!!RE!!! return to this, want it inverted
-   self:SetStatusBarColor(r, g, b)
-   self.text:SetText(text)
+   self.sb:SetValue(progress) -- !!!RE!!! return to this, want it inverted
+   self.sb:SetStatusBarColor(r, g, b)
+   self.sb.text:SetText(text)
 end
 
 local function getTimerType()
    local timerType
-   if st.cfg.timerType == 1 then timerType = "StatusBar"
+   if st.cfg.timerType == 1 then timerType = "Frame"
    elseif st.cfg.timerType == 2 then timerType = "FontString"
    else error("Unknown timer type configuration.") end
    return timerType
@@ -491,10 +497,28 @@ function guiFunc:UpdateTimer()
       if self.timer and not self.timer:IsObjectType(timerType) then self:ReleaseTimer() end
       if not self.timer then self.timer = self:NewTimer() end
       if self.timer:IsObjectType("fontstring") then timer_FontString_OnUpdate(self)
-      elseif self.timer:IsObjectType("statusbar") then
-	 self.timer.text:SetTextColor(st.cfg.barText.r, st.cfg.barText.g, st.cfg.barText.b, st.cfg.barText.a)
-	 self.timer:SetMinMaxValues(0,1)
-	 self.timer:SetStatusBarTexture(LSM:Fetch("statusbar", st.cfg.barTexture))
+      elseif self.timer:IsObjectType("frame") then
+	 self.timer.sb:SetMinMaxValues(0,1)
+	 self.timer.sb:SetStatusBarTexture(LSM:Fetch("statusbar", st.cfg.barTexture))
+	 local backdrop = {
+	    bgFile = LSM:Fetch("background", st.cfg.barBackdrop.background.name),
+	    edgeFile = LSM:Fetch("border", st.cfg.barBackdrop.border.name),
+	    tileSize = st.cfg.barBackdrop.tileSize,
+	    edgeSize = st.cfg.barBackdrop.edgeSize,
+	    tile = st.cfg.barBackdrop.tile,
+	    insets = {
+	       left = st.cfg.barBackdrop.insets,
+	       right = st.cfg.barBackdrop.insets,
+	       top = st.cfg.barBackdrop.insets,
+	       bottom = st.cfg.barBackdrop.insets,
+	    }
+	 }
+	 self.timer:SetBackdrop(backdrop)
+	 self.timer:SetBackdropColor(st.cfg.barBackdrop.background.r, st.cfg.barBackdrop.background.g, st.cfg.barBackdrop.background.b, st.cfg.barBackdrop.background.a)
+	 self.timer:SetBackdropBorderColor(st.cfg.barBackdrop.border.r, st.cfg.barBackdrop.border.g, st.cfg.barBackdrop.border.b, st.cfg.barBackdrop.border.a)
+
+	 self:RelinkChildren()
+	 self:UpdateSize(true)
 	 timer_StatusBar_OnUpdate(self.timer)
       else error("Unknown object type for timer.") end
    end
@@ -512,16 +536,15 @@ function guiFunc:NewTimer()
 	 timer = tremove(recycler.statusbars)
 	 timer:SetParent(self)
       else
-	 timer = CreateFrame("StatusBar", nil, self)
-	 timer.text = timer:CreateFontString(nil, "OVERLAY")
-	 timer.text:SetFontObject(gui.font)
-	 timer.text:SetJustifyH("CENTER")
-	 timer.text:SetJustifyV("CENTER")
-	 timer.text:SetAllPoints(timer)
+	 timer = CreateFrame("Frame", nil, self)
+	 timer.sb = CreateFrame("StatusBar", nil, timer)
+	 timer.sb:SetPoint("TOPLEFT", st.cfg.barBackdrop.insets+1, -(st.cfg.barBackdrop.insets+1))
+	 timer.sb:SetPoint("BOTTOMRIGHT", -(st.cfg.barBackdrop.insets+1), st.cfg.barBackdrop.insets+1)
+	 timer.sb.text = timer.sb:CreateFontString(nil, "OVERLAY")
+	 timer.sb.text:SetFontObject(gui.barFont)
+	 timer.sb.text:SetAllPoints(timer.sb)
       end
       timer:SetScript("OnUpdate", timer_StatusBar_OnUpdate)
-      self:RelinkChildren()
-      self:UpdateSize(true)
    end
    timer:Show()
    tinsert(active_timers, timer)
@@ -530,22 +553,31 @@ end
 
 function guiFunc:ReleaseTimer()
    if not self.timer then return end
-   self.timer:SetScript("OnUpdate", nil)
-   if self.timer:IsObjectType("StatusBar") then
+   if self.timer:IsObjectType("Frame") then
       self.timer:ClearAllPoints() -- potential for breakage if we have objectives linked to this, be mindful
       self.timer:SetParent(nil)
+      self.timer:SetScript("OnUpdate", nil)
       tinsert(recycler.statusbars, self.timer)
+   else
+      self:SetScript("OnUpdate", nil)
    end
    self.timer:Hide()
    for k,v in ipairs(active_timers) do
-      if v == timer then
+      if v == self.timer then
 	 tremove(active_timers, k)
 	 break
       end
    end
    self.timer = nil
+   self:RelinkChildren()
+   self:UpdateSize(true)
+end
+
+function guiFunc:UpdateTimers()
+   self:UpdateTimer()
+   for k,v in ipairs(self.children) do v:UpdateTimers() end
 end
 
 function gui:UpdateTimers()
-   for k,v in ipairs(active_timers) do v:GetParent():UpdateTimer() end
+   for k,v in ipairs(self.children) do v:UpdateTimers() end
 end

@@ -98,10 +98,15 @@ function AQT:OnInitialize()
 end
 
 function AQT:OnEnable()
+   QuestTimerFrame:SetScript("OnShow", function(self)
+				if st.cfg.hideQuestTimerFrame then self:Hide() end
+   end)
+
    QuestWatchFrame:SetScript("OnShow", function(self)
 				if st.cfg.hideQuestWatch then self:Hide() end
    end)
 
+   if st.cfg.hideQuestTimerFrame then QuestTimerFrame:Hide() end
    if st.cfg.hideQuestWatch then QuestWatchFrame:Hide() end
 
    st.gui:OnEnable()
@@ -365,7 +370,6 @@ function Quest:Update(timer)
       if self.timer then -- There already is a timer, update it if needed.
 	 self.timer.timeleft = timeleft -- this should only really be relevant for sorting purposes, and will not be needed in continuous updates beyond QLU
 	 if not(difftime(self.timer.expires, timer.expires) < 5 or diffctime(self.timer.expires, timer.expires) > 5) then -- unless expires-5<expires<expires+5 it's well outside of error margin, so the timer has changed
-	    print("Timer changed!")
 	    self.timer.expires = timer.expires
 	    self.timer.started = timer.started
 	 end

@@ -39,11 +39,36 @@ local defaults = {
       edgeSize = 12,
       insets = 3,
    },
-   barText = {
+   barBackdrop = {
+      background = {
+	 name = "Blizzard Tooltip",
+	 r = 1,
+	 g = 1,
+	 b = 1,
+	 a = 1,
+      },
+      border = {
+	 name = "Blizzard Tooltip",
+	 r = .4,
+	 g = .4,
+	 b = .4,
+	 a = 1,
+      },
+      tile = false,
+      tileSize = 0,
+      edgeSize = 12,
+      insets = 3,
+   },
+   barFont = {
+      name = "Friz Quadrata TT",
+      outline = "OUTLINE",
+      spacing = 1,
+      size = 12,
       r = 1,
       g = 1,
       b = 1,
       a = 1,
+      wrap = false,
    },
    barTexture = "Blizzard",
    completionSoundName = "Peon: Work Complete",
@@ -58,6 +83,7 @@ local defaults = {
       a = 1,
       wrap = true,
    },
+   hideQuestTimerFrame = true,
    hideQuestWatch = true,
    indent = 0,
    maxHeight = 650,
@@ -84,7 +110,7 @@ local defaults = {
    showTags = true,
    showTimers = true,
    suppressErrorFrame = true,
-   timerType = 2, -- 1 = StatusBar, 2 = FontString (uses counter). Using number instead of tristate boolean in case we want to add more later.
+   timerType = 1, -- 1 = StatusBar, 2 = FontString (uses counter). Using number instead of tristate boolean in case we want to add more later.
    trackAll = true,
    useDifficultyColor = true,
    useFactionCompletionSound = true,
@@ -127,6 +153,56 @@ local CFGHandler = {
 	 st.gui:Redraw()
       end,
    },
+   bars = {
+      backdrop = { -- Yeah, I'm just doing copypasta at this point, meaning I _really_ need to look over this. Look, now I'm even copypasting this comment.
+	 get = function(info)
+	    if info.type == "color" then
+	       local key = info[#info]
+	       key = key:sub(1, key:find("Color")-1)
+	       return st.cfg.barBackdrop[key].r, st.cfg.barBackdrop[key].g, st.cfg.barBackdrop[key].b, st.cfg.barBackdrop[key].a
+	    else
+	       return type(st.cfg.barBackdrop[info[#info]]) == "table"  and st.cfg.barBackdrop[info[#info]].name or st.cfg.barBackdrop[info[#info]]
+	    end
+	 end,
+	 set = function(info, v1, v2, v3, v4)
+	    if info.type == "color" then
+	       local key = info[#info]
+	       key = key:sub(1, key:find("Color")-1)
+	       st.cfg.barBackdrop[key].r = v1
+	       st.cfg.barBackdrop[key].g = v2
+	       st.cfg.barBackdrop[key].b = v3
+	       st.cfg.barBackdrop[key].a = v4
+	    else
+	       if type(st.cfg.backdrop[info[#info]]) == "table" then
+		  st.cfg.barBackdrop[info[#info]].name = v1
+	       else
+		  st.cfg.barBackdrop[info[#info]] = v1
+	       end
+	    end
+	    st.gui:Redraw()
+	 end,
+      },
+      font = { -- Yeah, I'm just doing copypasta at this point, meaning I _really_ need to look over this.
+	 get = function(info)
+	    if info.type == "color" then
+	       return st.cfg.barFont.r, st.cfg.barFont.g, st.cfg.barFont.b, st.cfg.barFont.a
+	    else
+	       return st.cfg.barFont[info[#info]]
+	    end
+	 end,
+	 set = function(info, v1, v2, v3, v4)
+	    if info.type == "color" then
+	       st.cfg.barFont.r = v1
+	       st.cfg.barFont.g = v2
+	       st.cfg.barFont.b = v3
+	       st.cfg.barFont.a = v4
+	    else
+	       st.cfg.barFont[info[#info]] = v1
+	    end
+	    st.gui:Redraw() -- only needed for some settings, return to this
+	 end,
+      },
+   },
    coloring = {
       set = function(info, v1, v2, v3, v4)
 	 if info.type == "color" then
@@ -155,8 +231,12 @@ local CFGHandler = {
 	    st.gui.title:UpdateText(true)
 	 elseif info[#info] == "hideQuestWatch" then
 	    if val then QuestWatchFrame:Hide() else QuestWatchFrame:Show() end
+	 elseif info[#info] == "hideQuestTimerFrame" then
+	    if val then QuestTimerFrame:Hide() elseif GetQuestTimers() then QuestTimerFrame:Show() end
 	 elseif info[#info] == "suppressErrorFrame" then
 	    AQT:SuppressionCheck()
+	 elseif info[#info] == "showTimers" or info[#info] == "timerType" then
+	    st.gui:UpdateTimers()
 	 end
       end,
    },
@@ -281,54 +361,103 @@ local options = {
 	 name = L.General,
 	 type = "group",
 	 order = 0,
+	 childGroups = "tab",
 	 args = {
-	    uncategorized = {
+	    general = {
 	       type = "group",
-	       name = L.Uncategorized,
+	       name = L.General, -- Most of this is to be moved elsewhere eventually.
 	       order = 0,
-	       inline = true,
 	       args = {
-		  showHeaders = {
-		     type = "toggle",
-		     name = L["Show Headers"],
+		  uncategorized = {
+		     type = "group",
+		     name = L.Uncategorized,
 		     order = 0,
-		     disabled = true, -- Doesn't work properly yet.
+		     inline = true,
+		     args = {
+			descr = {
+			   type="description",
+			   name = "Sorry about the mess. Some of these are currently disabled as they are awaiting proper implementation. Further, most of these configuration options ended up here because I couldn't quite figure out where to place them. Meaning, I may well move them elsewhere eventually.",
+			   order = 0,
+			},
+			showHeaders = {
+			   type = "toggle",
+			   name = L["Show Headers"],
+			   order = 1,
+			   disabled = true, -- Doesn't work properly yet.
+			},
+			showHeaderCount = {
+			   type = "toggle",
+			   name = L["Show Header Count"],
+			   order = 2,
+			},
+			trackAll = {
+			   type = "toggle",
+			   name = L["Track All Quests"] .. " (recommended for now, no way of manually tracking things yet)",
+			   width = "full",
+			   order = 3,
+			   disabled = true, --disabled until I've create my own questlog
+			},
+			showTags = {
+			   type = "toggle",
+			   name = L["Show Quest Tags"],
+			   order = 4,
+			},
+			indent = {
+			   type = "range",
+			   name = L.Indentation,
+			   order = 8,
+			   min = 0,
+			   max = 5,
+			   step = .1,
+			   disabled = true, -- lacks proper update handling at the moment
+			},
+		     },
 		  },
-		  showHeaderCount = {
-		     type = "toggle",
-		     name = L["Show Header Count"],
+		  hideDefaults = {
+		     type = "group",
+		     name = L["Suppress Default Interface"],
 		     order = 1,
+		     inline = true,
+		     args = {
+			hideQuestWatch = {
+			   type = "toggle",
+			   name = L["Hide Blizzard QuestWatchFrame"],
+			   width = "double",
+			   order = 5,
+			},
+			hideQuestTimerFrame = {
+			   type = "toggle",
+			   name = L["Hide Blizzard Quest Timer Frame"],
+			   width = "double",
+			   order = 6,
+			},
+			suppressErrorFrame = {
+			   type = "toggle",
+			   name = L["Suppress Blizzard Quest Updates"],
+			   width = "double",
+			   order = 7,
+			},
+		     },
 		  },
-		  trackAll = {
-		     type = "toggle",
-		     name = L["Track All Quests"] .. " (recommended for now, no way of manually tracking things yet)",
-		     width = "full",
+		  timers = {
+		     type = "group",
+		     name = L.Timers,
 		     order = 2,
-		     disabled = true, --disabled until I've create my own questlog
-		  },
-		  showTags = {
-		     type = "toggle",
-		     name = L["Show Quest Tags"],
-		     order = 3,
-		  },
-		  hideQuestWatch = {
-		     type = "toggle",
-		     name = L["Hide Blizzard QuestWatchFrame"],
-		     order = 4,
-		  },
-		  indent = {
-		     type = "range",
-		     name = L.Indentation,
-		     order = 5,
-		     min = 0,
-		     max = 5,
-		     step = .1,
-		     disabled = true, -- lacks proper update handling at the moment
-		  },
-		  suppressErrorFrame = {
-		     type = "toggle",
-		     name = L["Suppress Blizzard Quest Updates"],
-		     order = 6,
+		     inline = true,
+		     args = {
+			showTimers = {
+			   type = "toggle",
+			   name = L["Show Quest Timers"],
+			   order = 9,
+			},
+			timerType = {
+			   type = "select",
+			   name = L["Timer Style"],
+			   order = 10,
+			   values = {L.Statusbar, L.Counter},
+			   style = "radio",
+			},
+		     },
 		  },
 	       },
 	    },
@@ -336,7 +465,6 @@ local options = {
 	       name = L.Sound,
 	       type = "group",
 	       order = 1,
-	       inline = true,
 	       args = {
 		  playObjectiveSound = {
 		     type = "toggle",
@@ -493,61 +621,10 @@ local options = {
 	 order = 3,
 	 childGroups = "tab",
 	 args = {
-	    font = {
-	       name = L.Font,
-	       type = "group",
-	       order = 0,
-	       get = CFGHandler.font.get,
-	       set = CFGHandler.font.set,
-	       args = {
-		  name = {
-		     name = L.Font,
-		     type = "select",
-		     order = 0,
-		     values = AceGUIWidgetLSMlists.font,
-		     dialogControl = "LSM30_Font",
-		     width = "double",
-		  },
-		  color = {
-		     type = "color",
-		     name = L["Font Color"],
-		     order = 1,
-		  },
-		  outline = {
-		     type = "select",
-		     name = L.Outline,
-		     order = 2,
-		     values = {[""] = "None",OUTLINE = "Thin Outline", THICKOUTLINE = "Thick Outline"},
-		  },
-		  size = {
-		     name = L.Size,
-		     type = "range",
-		     min = 4,
-		     max = 32,
-		     step = 1,
-		     order = 3,
-		  },
-		  spacing = {
-		     name = L.Spacing,
-		     type = "range",
-		     min = 0,
-		     max = 120,
-		     step = 1,
-		     order = 4,
-		     disabled = true,
-		  },
-		  wrap = {
-		     name = L["Wrap Long Lines"],
-		     type = "toggle",
-		     order = 5,
-		     disabled = true,
-		  },
-	       },
-	    },
 	    backdrop = {
 	       name = L.Backdrop,
 	       type = "group",
-	       order = 1,
+	       order = 0,
 	       get = CFGHandler.backdrop.get,
 	       set = CFGHandler.backdrop.set,
 	       args = {
@@ -610,6 +687,139 @@ local options = {
 		  },
 	       },
 	    },
+	    bars = {
+	       name = L.Bars,
+	       type = "group",
+	       order = 1,
+	       args = {
+		  backdrop = {
+		     name = L.Backdrop,
+		     type = "group",
+		     order = 0,
+		     get = CFGHandler.bars.backdrop.get,
+		     set = CFGHandler.bars.backdrop.set,
+		     inline = true,
+		     args = {
+			background = {
+			   name = L["Background Texture"],
+			   type = "select",
+			   order = 0,
+			   values = AceGUIWidgetLSMlists.background,
+			   dialogControl = "LSM30_Background",
+			   width = "double",
+			},
+			backgroundColor = {
+			   name = L["Background Color"],
+			   type = "color",
+			   order = 1,
+			   hasAlpha = true,
+			},
+			tile = {
+			   name = L.Tile,
+			   order = 2,
+			   type = "toggle",
+			},
+			tileSize = {
+			   name = L["Tile Size"],
+			   order = 3,
+			   type = "range",
+			   min = 0,
+			   max = 64,
+			   step = .5,
+			},
+			border = {
+			   name = L["Border Texture"],
+			   type = "select",
+			   order = 4,
+			   values = AceGUIWidgetLSMlists.border,
+			   dialogControl = "LSM30_Border",
+			   width = "double",
+			},
+			borderColor = {
+			   name = L["Border Color"],
+			   type = "color",
+			   order = 5,
+			   hasAlpha = true,
+			},
+			edgeSize = {
+			   name = L["Border Size"],
+			   order = 6,
+			   type = "range",
+			   min = 1,
+			   max = 64,
+			   step = .5,
+			},
+			insets = {
+			   name = L.Insets,
+			   order = 7,
+			   type = "range",
+			   min = 0,
+			   max = 32,
+			   step = .5,
+			},
+		     },
+		  },
+		  font = {
+		     name = L.Font,
+		     type = "group",
+		     order = 1,
+		     get = CFGHandler.bars.font.get,
+		     set = CFGHandler.bars.font.set,
+		     inline = true,
+		     args = {
+			name = {
+			   name = L.Font,
+			   type = "select",
+			   order = 0,
+			   values = AceGUIWidgetLSMlists.font,
+			   dialogControl = "LSM30_Font",
+			   width = "double",
+			},
+			color = {
+			   type = "color",
+			   name = L["Font Color"],
+			   order = 1,
+			},
+			outline = {
+			   type = "select",
+			   name = L.Outline,
+			   order = 2,
+			   values = {[""] = "None",OUTLINE = "Thin Outline", THICKOUTLINE = "Thick Outline"},
+			},
+			size = {
+			   name = L.Size,
+			   type = "range",
+			   min = 4,
+			   max = 32,
+			   step = 1,
+			   order = 3,
+			},
+			spacing = {
+			   name = L.Spacing,
+			   type = "range",
+			   min = 0,
+			   max = 120,
+			   step = 1,
+			   order = 4,
+			   disabled = true,
+			},
+			wrap = {
+			   name = L["Wrap Long Lines"],
+			   type = "toggle",
+			   order = 5,
+			   disabled = true,
+			},
+		     },
+		  },
+		  barTexture = {
+		     name = L.Texture,
+		     type = "select",
+		     order = 2,
+		     values = AceGUIWidgetLSMlists.statusbar,
+		     dialogControl = "LSM30_Statusbar",
+		  },
+	       },
+	    },
 	    coloring = {
 	       name = L.Coloring,
 	       type = "group",
@@ -669,12 +879,61 @@ local options = {
 		  },
 	       },
 	    },
+	    font = {
+	       name = L.Font,
+	       type = "group",
+	       order = 3,
+	       get = CFGHandler.font.get,
+	       set = CFGHandler.font.set,
+	       args = {
+		  name = {
+		     name = L.Font,
+		     type = "select",
+		     order = 0,
+		     values = AceGUIWidgetLSMlists.font,
+		     dialogControl = "LSM30_Font",
+		     width = "double",
+		  },
+		  color = {
+		     type = "color",
+		     name = L["Font Color"],
+		     order = 1,
+		  },
+		  outline = {
+		     type = "select",
+		     name = L.Outline,
+		     order = 2,
+		     values = {[""] = "None",OUTLINE = "Thin Outline", THICKOUTLINE = "Thick Outline"},
+		  },
+		  size = {
+		     name = L.Size,
+		     type = "range",
+		     min = 4,
+		     max = 32,
+		     step = 1,
+		     order = 3,
+		  },
+		  spacing = {
+		     name = L.Spacing,
+		     type = "range",
+		     min = 0,
+		     max = 120,
+		     step = 1,
+		     order = 4,
+		     disabled = true,
+		  },
+		  wrap = {
+		     name = L["Wrap Long Lines"],
+		     type = "toggle",
+		     order = 5,
+		     disabled = true,
+		  },
+	       },
+	    },
 	 },
       },
    },
 }
-
-options.args.general.args.sink.inline = true
 
 local editSortOptions = {
    ascdesc = {
