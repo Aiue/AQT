@@ -52,6 +52,7 @@ local Header = baseObject:New(
       sortFields = {
 	 name = L.Title,
 	 IsCurrentZone = L["Matches Current Zone"],
+	 lastUpdate = L["Last Update"],
       },
    }
 )
@@ -59,6 +60,10 @@ local Header = baseObject:New(
 local Objective = baseObject:New(
    {
       name = "Objective",
+      sortFields = {
+	 index = L.Index,
+	 lastUpdate = L["Last Update"],
+      },
    }
 )
 
@@ -70,6 +75,7 @@ local Quest = baseObject:New(
 	 level = L.Level,
 	 tag = L.Tag,
 	 title = L.Title,
+	 lastUpdate = L["Last Update"],
       },
    }
 )
@@ -158,6 +164,7 @@ function Header:New(o)
    setmetatable(o, self)
    if not o.quests then o.quests = {} end
    HeaderCache[o.name] = o
+   o.lastUpdate = time()
    return o
 end
 
@@ -244,7 +251,10 @@ function Objective:Update(qIndex, oIndex)
       text = "(" .. oType .. ")" .. cstring .. oText .. "|r"
    end
 
-   if self.text ~= text or self.have ~= have or self.need ~= need or self.complete ~= complete then update = true end
+   if self.text ~= text or self.have ~= have or self.need ~= need or self.complete ~= complete then
+      update = true
+      self.lastUpdate = time()
+   end
 
    if not self.new then
       local pour,_,r,g,b
@@ -378,7 +388,11 @@ function Quest:Update(timer)
       end
    end
 
-   if self.title ~= qTitle or self.level ~= qLevel or self.tag  ~= qTag or self.complete ~= qComplete then update = true end
+   if self.title ~= qTitle or self.level ~= qLevel or self.tag  ~= qTag or self.complete ~= qComplete then
+      update = true
+      lastUpdate = time()
+      self.header.lastUpdate = time()
+   end
 
    if qComplete then
       for k,v in ipairs(self.objectives) do
@@ -397,7 +411,10 @@ function Quest:Update(timer)
    self.tag = qTag
    self.complete = qComplete
 
-   if not qComplete then sound = self:UpdateObjectives() end
+   if not qComplete then
+      sound = self:UpdateObjectives()
+      if sound == false then self.lastUpdate = time() end
+   end
    if self.uiObject then
       if update then self.uiObject:Update() end
       if self.timer then self.uiObject:UpdateTimer() end
