@@ -312,6 +312,7 @@ local CFGHandler = {
       end,
    
       set = function(info, val) -- only for new stuff
+	 print(val)
 	 sortcfg[info[#info]] = val
       end,
    
@@ -1077,11 +1078,12 @@ function st.initConfig()
 	 tinsert(sfCache, k)
       end
       tsort(sfCache, function(a,b) return a<b end)
-      if #sfCache ~= sfCache[#sfCache] then st.cfg.sortFields[oType] = nil -- We have a gap, consider the entire table corrupt.
+      if #sfCache ~= sfCache[#sfCache] then
+	 st.cfg.sortFields[oType] = nil -- We have a gap, consider the entire table corrupt.
       else
 	 sfCache = {} -- This time, cache anything that we want to remove from the table.
 	 for k,v in ipairs(sortTable) do -- We can assume there is no gap.
-	    if type(v) ~= table then tinsert(sfCache, k) end
+	    if type(v) ~= "table" then tinsert(sfCache, k) end
 	 end
 	 for i = #sfCache, 1, -1 do
 	    tremove(sortTable, sfCache[i]) -- Remove any corruption. Do it backwards to preserve indices.
@@ -1089,7 +1091,6 @@ function st.initConfig()
 	 if #sfCache > 0 and #sortTable == 0 then st.cfg.sortFields[oType] = nil end -- If we end up with an empty table, remove it to allow defaults to be reset, but only if we actually caught something.
       end
    end
-   -- End corruption fixing.
 
    if not st.cfg.sortFields then st.cfg.sortFields = defaultSortFields
    else
