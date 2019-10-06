@@ -12,7 +12,20 @@ LSM:Register("sound", "Peon: Ready to Work", [[Sound\Creature\Peon\PeonReady1.og
 LSM:Register("sound", "Peon: Work Complete", [[Sound\Creature\Peon\PeonBuildingComplete1.ogg]])
 LSM:Register("sound", "Peon: Work Work", [[Sound\Creature\Peon\PeonYes3.ogg]])
 
+-- Some strings that are of interest to us.
+local ERR_QUEST_UNKNOWN_COMPLETE = ERR_QUEST_UNKNOWN_COMPLETE
+local FACTION_STANDING_DECREASED = FACTION_STANDING_DECREASED:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)"):gsub("%%(d)", "(%%d+)")
+local FACTION_STANDING_INCREASED = FACTION_STANDING_INCREASED:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)"):gsub("%%(d)", "(%%d+)")
+local QUEST_COMPLETE = QUEST_COMPLETE
+local QUEST_FACTION_NEEDED = QUEST_FACTION_NEEDED:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)")
+local QUEST_ITEMS_NEEDED = QUEST_ITEMS_NEEDED:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)"):gsub("%%(d)", "(%%d+)")
+local QUEST_MONSTERS_KILLED = QUEST_MONSTERS_KILLED:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)"):gsub("%%(d)", "(%%d+)")
+local QUEST_OBJECTIVE_COMPLETE_S = ERR_QUEST_OBJECTIVE_COMPLETE_S:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)")
+local QUEST_OBJECTS_FOUND = QUEST_OBJECTS_FOUND:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)"):gsub("%%(d)", "(%%d+)")
+
 local tinsert,tremove = table.insert,table.remove
+
+local factionCache = {}
 
 function AQT:OnDisable()
 end
@@ -116,9 +129,47 @@ function AQT:OnEnable()
    if st.cfg.hideQuestWatch then QuestWatchFrame:Hide() end
 
    st.gui:OnEnable()
+   local i = 1
+   local otherfound
+   while i do
+      local faction,_,standing,_,_,value = GetFactionInfo(i)
+      -- This looks really strange, but GetFactionInfo(i) will:
+      -- * Return the "Other" entry at the proper place.
+      -- * Eventually return the "Inactive"
+      -- * Then, after, I would assume, cycling through the inactives return "Other" again for each incremental value of i.
+      -- So yes, this looks really strange. But there's a reason for it. I give you: The Blizzard WoW API.
+      if faction == "Other" then
+	 if otherfound then
+	    i = nil
+	    break
+	 else
+	    otherfound = true
+	 end
+      end
+      local val
+
+      if standing == 8 then val = value + 84000 -- Exalted
+      elseif standing == 7 then val = value + 63000 -- Revered
+      elseif standing == 6 then val = value + 51000 -- Honored
+      elseif standing == 5 then val = value + 45000 -- Friendly
+      elseif standing == 4 then val = value + 42000 -- Neutral
+      elseif standing == 3 then val = value + 39000 -- Unfriendly
+      elseif standing == 2 then val = value + 36000 -- Hostile
+      else val = value end -- Hated, defaults to.  standing SHOULDN'T be other than 1 in this case, but never know..
+
+      factionCache[faction] = {
+	 raw = val,
+	 relative = value,
+	 standing = standing,
+	 objectives = {},
+      }
+      i = i + 1
+   end
+      
    self:RegisterEvent("QUEST_LOG_UPDATE", "QuestLogUpdate")
    self:RegisterEvent("PLAYER_LEVEL_UP", "PlayerLevelUp")
    self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ResortHeaders")
+   self:RegisterEvent("CHAT_MSG_SYSTEM", "Event_ChatMsgSystem")
    self:SuppressionCheck()
 end
 
@@ -228,19 +279,36 @@ function Objective:Update(qIndex, oIndex)
    local sound
 
    if oType == "monster" then
-      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(string.gsub(QUEST_MONSTERS_KILLED, "%%%d($)", "%%"), "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
+      text,have,need = string.match(oText, "^" .. QUEST_MONSTERS_KILLED .. "$")
       if not have then -- Some of these objectives apparently do not follow this string pattern.
 	 text,have,need = string.match(oText, "^(.+): (%d+)/(%d+)$")
       end
    elseif oType == "item" then
-      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(string.gsub(QUEST_ITEMS_NEEDED, "%%%d($)", "%%"), "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
+      text,have,need = string.match(oText, "^" .. QUEST_ITEMS_NEEDED .. "$")
+
    elseif oType == "object" then
-      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(string.gsub(QUEST_OBJECTS_FOUND, "%%%d($)", "%%"), "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$")
+      text,have,need = string.match(oText, "^" .. QUEST_OBJECTS_FOUND .. "$")
+
    elseif oType == "reputation" then
-      text,have,need = string.match(oText, "^" .. string.gsub(string.gsub(QUEST_FACTION_NEEDED, "%%%d($)", "%%"),"%%(s)", "(.+)") .. "$")
-      --!!!RE!!! Return to this and see if we can fetch actual numerical values for string colourization later.
-      countertext = have:sub(1,1) .. "/" .. need:sub(1,1)
-      have,need = (complete and 1 or 0),1
+      text,have,need = string.match(oText, "^" .. QUEST_FACTION_NEEDED .. "$")
+      if not factionCache[text] then
+	 countertext = have:sub(1,1) .. "/" .. need:sub(1,1)
+	 have,need = (complete and 1 or 0),1
+      else
+	 have = factionCache[text].raw
+	 if need == FACTION_STANDING_LABEL1 then need = 0 -- Hated. This would be strange, but uh, ok.
+	 elseif need == FACTION_STANDING_LABEL2 then need = 36000 -- Hostile
+	 elseif need == FACTION_STANDING_LABEL3 then need = 39000 -- Unfriendly
+	 elseif need == FACTION_STANDING_LABEL4 then need = 42000 -- Neutral
+	 elseif need == FACTION_STANDING_LABEL5 then need = 45000 -- Friendly
+	 elseif need == FACTION_STANDING_LABEL6 then need = 51000 -- Honored
+	 elseif need == FACTION_STANDING_LABEL7 then need = 63000 -- Revered
+	 elseif need == FACTION_STANDING_LABEL8 then need = 84000 -- Exalted
+	 else need = have end -- Just default to something.
+	 local fmt = "%.1fk/%.1fk"
+	 countertext = fmt:format(need/1000,have/1000)
+      end
+
    elseif oType == "event" then
       have,need = (complete and 1 or 0),1
       countertext = ""
@@ -277,7 +345,7 @@ function Objective:Update(qIndex, oIndex)
    self.have = have
    self.need = need
    self.complete = complete
-   self.counterString = countertext and countertext or (tostring(have) .. "/" .. tostring(need))
+   self.counterString = countertext and countertext or nil --(tostring(have) .. "/" .. tostring(need))
    self.index = oIndex
 
    if self.complete then
@@ -456,31 +524,30 @@ function AQT:QuestLogUpdate(...)
    while i do
       local qTitle,qLevel,qTag,qHeader,qCollapsed,qComplete,qFreq,qID = GetQuestLogTitle(i)
 
-      if not qTitle then i = nil
+      if not qTitle then i = nil;break end
+
+      if currentHeader and i > entries then currentHeader = nil end
+      if qHeader then
+	 localHeaderCache[qTitle] = true
+	 -- Separate if rather than "and" so we can use else.
+	 if not HeaderCache[qTitle] then currentHeader = Header:New({name = qTitle}) else currentHeader = HeaderCache[qTitle] end
       else
-	 if currentHeader and i > entries then currentHeader = nil end
-	 if qHeader then
-	    localHeaderCache[qTitle] = true
-	    -- Separate if rather than "and" so we can use else.
-	    if not HeaderCache[qTitle] then currentHeader = Header:New({name = qTitle}) else currentHeader = HeaderCache[qTitle] end
-	 else
-	    local timer
-	    for k,v in ipairs(timers) do
-	       if v.index == i then timer = v end
-	    end
-	    localQuestCache[qID] = true
-	    if not QuestCache[qID] then
-	       Quest:New({title = qTitle, level = qLevel, tag = qTag, complete = qComplete, id = qID, header = currentHeader, timer = timer})
-	    else 
-	       local q = QuestCache[qID]
-	       local sound = q:Update(timer)
-	       if sound and not playSound then playSound = sound -- true, quest completed
-	       elseif sound == false and not playSound then playSound = sound -- false, objective completed
-	       end -- else it's nil, nothing completed
-	    end
+	 local timer
+	 for k,v in ipairs(timers) do
+	    if v.index == i then timer = v end
 	 end
-	 i = i + 1
+	 localQuestCache[qID] = true
+	 if not QuestCache[qID] then
+	    Quest:New({title = qTitle, level = qLevel, tag = qTag, complete = qComplete, id = qID, header = currentHeader, timer = timer})
+	 else 
+	    local q = QuestCache[qID]
+	    local sound = q:Update(timer)
+	    if sound and not playSound then playSound = sound -- true, quest completed
+	    elseif sound == false and not playSound then playSound = sound -- false, objective completed
+	    end -- else it's nil, nothing completed
+	 end
       end
+      i = i + 1
    end
    -- Find any removed quests or headers.
    for k,v in pairs(QuestCache) do
@@ -529,11 +596,11 @@ local function errorFrameAddMessage(self, msg, r, g, b, a)
    if r == 1 and g == 1 and b == 0 and not msg:match("^|cff") then -- All relevant default quest messages are in yellow, and should have no colour string. This should be a good first filter for anything we don't want to suppress.
       if msg == QUEST_COMPLETE then return -- Don't think this is in UIErrorsFrame, but just in case?
       elseif msg == ERR_QUEST_UNKNOWN_COMPLETE then return
-      elseif msg:match("^" .. string.gsub(string.gsub(string.gsub(QUEST_MONSTERS_KILLED, "%%%d($)", "%%"), "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$") then return
-      elseif msg:match("^" .. string.gsub(string.gsub(string.gsub(QUEST_ITEMS_NEEDED, "%%%d($)", "%%"), "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$") then return
-      elseif msg:match("^" .. string.gsub(string.gsub(string.gsub(QUEST_OBJECTS_FOUND, "%%%d($)", "%%"), "%%(s)", "(.+)"), "%%(d)", "(%%d+)") .. "$") then return
-      elseif msg:match("^" .. string.gsub(string.gsub(QUEST_FACTION_NEEDED, "%%%d($)", "%%"),"%%(s)", "(.+)") .. "$") then return
-      elseif msg:match("^" .. string.gsub(string.gsub(ERR_QUEST_OBJECTIVE_COMPLETE_S, "%%%d($)", "%%"), "%%(s)", "(.+)") .. "$") then return end
+      elseif msg:match("^" .. QUEST_MONSTERS_KILLED .. "$") then return
+      elseif msg:match("^" .. QUEST_ITEMS_NEEDED .. "$") then return
+      elseif msg:match("^" .. QUEST_OBJECTS_FOUND .. "$") then return
+      elseif msg:match("^" .. QUEST_FACTION_NEEDED .. "$") then return
+      elseif msg:match("^" .. ERR_QUEST_OBJECTIVE_COMPLETE_S .. "$") then return end
    end
    AQT.ErrorFrameAddMessage(UIErrorsFrame, msg, r, g, b, a)
 end
@@ -555,5 +622,47 @@ function AQT:PrePour(msg, r, g, b)
       msg:format("|cff%02x%02x%02x" .. msg .. "|r", r*255, g*255, b*255)
       if r == 1 and g == 1 and b == 0 then b = .001 end -- Just to make sure we don't suppress our own messages, if Sink is directed to the errorframe.
       self:Pour(msg, r, g, b)
+   end
+end
+
+function AQT:Event_ChatMsgSystem(msg)
+   local faction,change
+   -- Yes, I'll be repeating myself a bit below, but.. eh, I probably have to, anyway. If only because it's either increase or decrease. Uh. Yes, I'm slightly tired at the moment.
+   if msg:match("^" .. FACTION_STANDING_DECREASED .. "$") then
+      faction,change = msg:match("^" .. FACTION_STANDING_DECREASED .. "$")
+      change = -change
+   elseif msg:match("^" .. FACTION_STANDING_INCREASED .. "$") then faction,change = msg:match("^" .. FACTION_STANDING_INCREASED .. "$")
+   else return end
+
+   if not factionCache[faction] then return end
+
+   
+
+   local fcf = factionCache[faction]
+   fcf.raw = fcf.raw + change
+   fcf.relative = fcf.relative + change
+
+   if fcf.relative < 0 then fcf.standing = fcf.standing - 1 end
+
+   local max = 0
+
+   if fcf.standing == 1 then max = 36000 -- Hated
+   elseif fcf.standing == 2 then max = 3000 -- Hostile
+   elseif fcf.standing == 3 then max = 3000 -- Unfriendly
+   elseif fcf.standing == 4 then max = 3000 -- Neutral
+   elseif fcf.standing == 5 then max = 6000 -- Friendly
+   elseif fcf.standing == 6 then max = 12000 -- Honored
+   elseif fcf.standing == 7 then max = 21000 -- Revered
+   else max = 0 end -- Exalted. Assume it's at 8 if none of the others.
+
+   if fcf.relative > max then
+      fcf.standing = max
+      fcf.relative = fcf.relative - max
+   end
+
+   if fcf.relative < 0 then fcf.relative = max + fcf.relative end -- Yes, we need to check if this is < 0 again, but it's better than the alternative of doing the longer chain again.
+
+   if fcf.objectives then
+      for k,v in ipairs(fcf.objectives) do v:Update() end
    end
 end
