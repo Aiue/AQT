@@ -293,48 +293,19 @@ local CFGHandler = {
 	 local index = info.options.args.sorting.args[obj].args[info[#info-1]].order
 	 if info[#info] == "ascdesc" then
 	    st.cfg.sortFields[obj][index].descending = not st.cfg.sortFields[obj][index].descending
-	 elseif info[#info] == "moveup" or info[#info] == "movedown" then
-	    print("Pre-move:")
-	    print("st.cfg.sortFields[" .. info[#info-2] .. "] = {")
-	    for k,v in pairs(st.cfg.sortFields[info[#info-2]]) do
-	       print("{field=" .. tostring(v.field) ..",descending="..tostring(v.descending).."}--"..tostring(k))
-	    end
-	    print("}")
 
-	    newindex = (info[#info] == "moveup" and (index - 1) or (index + 1))
+	 elseif info[#info] == "moveup" or info[#info] == "movedown" then
+	    local newindex = (info[#info] == "moveup" and (index - 1) or (index + 1))
 	    for k,v in pairs(info.options.args.sorting.args[obj].args) do
 	       if v.order == newindex then v.order = index end
 	    end
-	    info.options.args.sorting.args[obj].args[info[#info-1]].order = (info[#info] == "moveup" and (index - 1) or (index + 1))
-	    tinsert(st.cfg.sortFields[obj], newindex, tremove(st.cfg.sortFields[obj], index))
-
-	    print("Post-move:")
-	    print("st.cfg.sortFields[" .. info[#info-2] .. "] = {")
-	    for k,v in pairs(st.cfg.sortFields[info[#info-2]]) do
-	       print("{field=" .. tostring(v.field) ..",descending="..tostring(v.descending).."}--"..tostring(k))
-	    end
-	    print("}")
+	    info.options.args.sorting.args[obj].args[info[#info-1]].order = newindex
+	    local sf = tremove(st.cfg.sortFields[obj], index)
+	    tinsert(st.cfg.sortFields[obj], newindex, sf)
 
 	 elseif info[#info] == "remove" then
-	    print("Pre-remove:")
-	    print("st.cfg.sortFields[" .. info[#info-2] .. "] = {")
-	    for k,v in pairs(st.cfg.sortFields[info[#info-2]]) do
-	       print("{field=" .. tostring(v.field) ..",descending="..tostring(v.descending).."}--"..tostring(k))
-	    end
-	    print("}")
-
-
 	    info.options.args.sorting.args[obj].args[info[#info-1]] = nil
 	    tremove(st.cfg.sortFields[obj], index)
-
-	    print("Post-remove:")
-	    print("st.cfg.sortFields[" .. info[#info-2] .. "] = {")
-	    for k,v in pairs(st.cfg.sortFields[info[#info-2]]) do
-	       print("{field=" .. tostring(v.field) ..",descending="..tostring(v.descending).."}--"..tostring(k))
-	    end
-	    print("}")
-
-
 	 end
 	 st.gui:RecurseResort()
       end,
@@ -1025,21 +996,8 @@ end
 
 -- This needs to be here to be able to call addSortOption()
 CFGHandler.sorting.addExecute = function(info)
-   print("Adding '" .. sortcfg.field .. "', descending = " .. tostring(sortcfg.descending) .. ", index: " .. tostring(#st.cfg.sortFields[info[#info-2]] + 1))
-   print("Pre-add:")
-   print("st.cfg.sortFields[" .. info[#info-2] .. "] = {")
-   for k,v in pairs(st.cfg.sortFields[info[#info-2]]) do
-      print("{field=" .. tostring(v.field) ..",descending="..tostring(v.descending).."}--"..tostring(k))
-   end
-   print("}")
    tinsert(st.cfg.sortFields[info[#info-2]], {field=sortcfg.field,descending=sortcfg.descending or nil})
-   print("Post-add:")
-   print("st.cfg.sortFields[" .. info[#info-2] .. "] = {")
-   for k,v in pairs(st.cfg.sortFields[info[#info-2]]) do
-      print("{field=" .. tostring(v.field) ..",descending="..tostring(v.descending).."}--"..tostring(k))
-   end
-   print("}")
-   addSortOption(info[#info-2], sortcfg.field, (#st.cfg.sortFields[info[#info-2]] + 1))
+   addSortOption(info[#info-2], sortcfg.field, (#st.cfg.sortFields[info[#info-2]]))
    sortcfg.field = nil
    sortcfg.descending = nil
    st.gui:RecurseResort()
@@ -1113,29 +1071,30 @@ function st.initConfig()
    LibStub("AceConfig-3.0"):RegisterOptionsTable("AQT", options)
    LibStub("AceConsole-3.0"):RegisterChatCommand("aqt", function() LibStub("AceConfigDialog-3.0"):Open("AQT") end)
 
-   if not st.cfg.sortFields then st.cfg.sortFields = defaultSortFields
-
    -- Since I made a release with broken configuration, try to fix any sortField configuration corruption.
-   for oType,sortTable in pairs(st.cfg.sortFields) do
-      local sfCache = {} -- Cache all indexes.
-      for k,v in pairs(sortTable) do -- Using pairs rather than ipairs in case we have gaps.
-	 tinsert(sfCache, k)
-      end
-      tsort(sfCache, function(a,b) return a<b end)
-      if #sfCache ~= sfCache[#sfCache] then
-	 st.cfg.sortFields[oType] = nil -- We have a gap, consider the entire table corrupt.
-      else
-	 sfCache = {} -- This time, cache anything that we want to remove from the table.
-	 for k,v in ipairs(sortTable) do -- We can assume there is no gap.
-	    if type(v) ~= "table" then tinsert(sfCache, k) end
+   if st.cfg.sortFields then
+      for oType,sortTable in pairs(st.cfg.sortFields) do
+	 local sfCache = {} -- Cache all indexes.
+	 for k,v in pairs(sortTable) do -- Using pairs rather than ipairs in case we have gaps.
+	    tinsert(sfCache, k)
 	 end
-	 for i = #sfCache, 1, -1 do
-	    tremove(sortTable, sfCache[i]) -- Remove any corruption. Do it backwards to preserve indices.
+	 tsort(sfCache, function(a,b) return a<b end)
+	 if #sfCache ~= sfCache[#sfCache] then
+	    st.cfg.sortFields[oType] = nil -- We have a gap, consider the entire table corrupt.
+	 else
+	    sfCache = {} -- This time, cache anything that we want to remove from the table.
+	    for k,v in ipairs(sortTable) do -- We can assume there is no gap.
+	       if type(v) ~= "table" then tinsert(sfCache, k) end
+	    end
+	    for i = #sfCache, 1, -1 do
+	       tremove(sortTable, sfCache[i]) -- Remove any corruption. Do it backwards to preserve indices.
+	    end
+	    if #sfCache > 0 and #sortTable == 0 then st.cfg.sortFields[oType] = nil end -- If we end up with an empty table, remove it to allow defaults to be reset, but only if we actually caught something.
 	 end
-	 if #sfCache > 0 and #sortTable == 0 then st.cfg.sortFields[oType] = nil end -- If we end up with an empty table, remove it to allow defaults to be reset, but only if we actually caught something.
       end
    end
 
+   if not st.cfg.sortFields then st.cfg.sortFields = defaultSortFields
    else
       for k,v in pairs(defaultSortFields) do
 	 if not st.cfg.sortFields[k] then
