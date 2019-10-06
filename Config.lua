@@ -295,8 +295,6 @@ local CFGHandler = {
 	    st.cfg.sortFields[obj][index].descending = not st.cfg.sortFields[obj][index].descending
 	 elseif info[#info] == "moveup" or info[#info] == "movedown" then
 	    newindex = (info[#info] == "moveup" and (index - 1) or (index + 1))
-	    print(index)
-	    print(newindex)
 	    for k,v in pairs(info.options.args.sorting.args[obj].args) do
 	       if v.order == newindex then v.order = index end
 	    end
