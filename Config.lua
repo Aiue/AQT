@@ -288,7 +288,7 @@ local CFGHandler = {
 	 return returnastable and values or (#sfCache == 0)
       end,
 
-      edit = function(info)
+      edit = function(info) -- add debug info here
 	 local obj = info[#info-2]
 	 local index = info.options.args.sorting.args[obj].args[info[#info-1]].order
 	 if info[#info] == "ascdesc" then
@@ -312,7 +312,6 @@ local CFGHandler = {
       end,
    
       set = function(info, val) -- only for new stuff
-	 print(val)
 	 sortcfg[info[#info]] = val
       end,
    
@@ -320,7 +319,7 @@ local CFGHandler = {
 	 if not st.types[info[#info-2]].sortFields[info[#info-1]] then return "Unknown sort field." end
       end,
    
-      addExecute = function(info)
+      addExecute = function(info) -- add debug info here
 	 tinsert(st.cfg.sortFields[info[#info-2]], {field=sortcfg.field,descending=sortcfg.descending or nil})
 	 sortcfg.field = nil
 	 sortcfg.descending = nil
