@@ -181,8 +181,8 @@ function Header:Update() -- Probably redundant after the latest abstraction fix.
    if #self.quests > 0 then
       if not self.uiObject then
 	 self:CreateUIObject()
-	 self.uiObject:Update()
       end
+      self.uiObject:Update()
    elseif self.uiObject then
       self.uiObject:Release()
    end
