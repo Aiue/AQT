@@ -288,21 +288,53 @@ local CFGHandler = {
 	 return returnastable and values or (#sfCache == 0)
       end,
 
-      edit = function(info) -- add debug info here
+      edit = function(info)
 	 local obj = info[#info-2]
 	 local index = info.options.args.sorting.args[obj].args[info[#info-1]].order
 	 if info[#info] == "ascdesc" then
 	    st.cfg.sortFields[obj][index].descending = not st.cfg.sortFields[obj][index].descending
 	 elseif info[#info] == "moveup" or info[#info] == "movedown" then
+	    print("Pre-move:")
+	    print("st.cfg.sortFields[" .. info[#info-2] .. "] = {")
+	    for k,v in pairs(st.cfg.sortFields[info[#info-2]]) do
+	       print("{field=" .. tostring(v.field) ..",descending="..tostring(v.descending).."}--"..tostring(k))
+	    end
+	    print("}")
+
 	    newindex = (info[#info] == "moveup" and (index - 1) or (index + 1))
 	    for k,v in pairs(info.options.args.sorting.args[obj].args) do
 	       if v.order == newindex then v.order = index end
 	    end
 	    info.options.args.sorting.args[obj].args[info[#info-1]].order = (info[#info] == "moveup" and (index - 1) or (index + 1))
 	    tinsert(st.cfg.sortFields[obj], newindex, tremove(st.cfg.sortFields[obj], index))
+
+	    print("Post-move:")
+	    print("st.cfg.sortFields[" .. info[#info-2] .. "] = {")
+	    for k,v in pairs(st.cfg.sortFields[info[#info-2]]) do
+	       print("{field=" .. tostring(v.field) ..",descending="..tostring(v.descending).."}--"..tostring(k))
+	    end
+	    print("}")
+
 	 elseif info[#info] == "remove" then
+	    print("Pre-remove:")
+	    print("st.cfg.sortFields[" .. info[#info-2] .. "] = {")
+	    for k,v in pairs(st.cfg.sortFields[info[#info-2]]) do
+	       print("{field=" .. tostring(v.field) ..",descending="..tostring(v.descending).."}--"..tostring(k))
+	    end
+	    print("}")
+
+
 	    info.options.args.sorting.args[obj].args[info[#info-1]] = nil
 	    tremove(st.cfg.sortFields[obj], index)
+
+	    print("Post-remove:")
+	    print("st.cfg.sortFields[" .. info[#info-2] .. "] = {")
+	    for k,v in pairs(st.cfg.sortFields[info[#info-2]]) do
+	       print("{field=" .. tostring(v.field) ..",descending="..tostring(v.descending).."}--"..tostring(k))
+	    end
+	    print("}")
+
+
 	 end
 	 st.gui:RecurseResort()
       end,
@@ -317,13 +349,6 @@ local CFGHandler = {
    
       addValidate = function(info)
 	 if not st.types[info[#info-2]].sortFields[info[#info-1]] then return "Unknown sort field." end
-      end,
-   
-      addExecute = function(info) -- add debug info here
-	 tinsert(st.cfg.sortFields[info[#info-2]], {field=sortcfg.field,descending=sortcfg.descending or nil})
-	 sortcfg.field = nil
-	 sortcfg.descending = nil
-	 st.gui:RecurseResort()
       end,
    
       addDisabled = function(info)
@@ -997,12 +1022,30 @@ local function addSortOption(objType, sortField, index)
       args = editSortOptions,
    }
 end
- 
-addSortOptions.add.func = function(info)
-   tinsert(st.cfg.sortFields[info[#info-2]], {field=sortcfg.field, descending=sortcfg.descending or nil})
-   addSortOption(info[#info-2], sortcfg.field, #st.cfg.sortFields[info[#info-2]] + 1)
+
+-- This needs to be here to be able to call addSortOption()
+CFGHandler.sorting.addExecute = function(info)
+   print("Adding '" .. sortcfg.field .. "', descending = " .. tostring(sortcfg.descending) .. ", index: " .. tostring(#st.cfg.sortFields[info[#info-2]] + 1))
+   print("Pre-add:")
+   print("st.cfg.sortFields[" .. info[#info-2] .. "] = {")
+   for k,v in pairs(st.cfg.sortFields[info[#info-2]]) do
+      print("{field=" .. tostring(v.field) ..",descending="..tostring(v.descending).."}--"..tostring(k))
+   end
+   print("}")
+   tinsert(st.cfg.sortFields[info[#info-2]], {field=sortcfg.field,descending=sortcfg.descending or nil})
+   print("Post-add:")
+   print("st.cfg.sortFields[" .. info[#info-2] .. "] = {")
+   for k,v in pairs(st.cfg.sortFields[info[#info-2]]) do
+      print("{field=" .. tostring(v.field) ..",descending="..tostring(v.descending).."}--"..tostring(k))
+   end
+   print("}")
+   addSortOption(info[#info-2], sortcfg.field, (#st.cfg.sortFields[info[#info-2]] + 1))
+   sortcfg.field = nil
+   sortcfg.descending = nil
    st.gui:RecurseResort()
 end
+
+addSortOptions.add.func = CFGHandler.sorting.addExecute
 
 local function buildSortOptions()
    for k,v in pairs(st.types) do
@@ -1070,6 +1113,8 @@ function st.initConfig()
    LibStub("AceConfig-3.0"):RegisterOptionsTable("AQT", options)
    LibStub("AceConsole-3.0"):RegisterChatCommand("aqt", function() LibStub("AceConfigDialog-3.0"):Open("AQT") end)
 
+   if not st.cfg.sortFields then st.cfg.sortFields = defaultSortFields
+
    -- Since I made a release with broken configuration, try to fix any sortField configuration corruption.
    for oType,sortTable in pairs(st.cfg.sortFields) do
       local sfCache = {} -- Cache all indexes.
@@ -1091,7 +1136,6 @@ function st.initConfig()
       end
    end
 
-   if not st.cfg.sortFields then st.cfg.sortFields = defaultSortFields
    else
       for k,v in pairs(defaultSortFields) do
 	 if not st.cfg.sortFields[k] then
