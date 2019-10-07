@@ -68,6 +68,16 @@ function gui:OnEnable()
    gui.title = guiFunc.New(gui, st.types.Title)
    gui.title:SetPoint("TOPLEFT", gui.scrollChild, "TOPLEFT")
    gui.title:SetPoint("TOPRIGHT", gui.scrollChild, "TOPRIGHT")
+   gui.title.optionsButton = CreateFrame("Button", nil, gui.title)
+   gui.title.optionsButton:SetNormalTexture([[Interface\GossipFrame\HealerGossipIcon]])
+   gui.title.optionsButton:SetHighlightTexture([[Interface\Buttons\UI-CheckBox-Highlight]])
+   gui.title.optionsButton:SetPoint("TOPRIGHT", gui.title.counter, "TOPLEFT")
+   gui.title.optionsButton:SetSize(st.cfg.font.size, st.cfg.font.size)
+   gui.title.text:SetPoint("TOPRIGHT", gui.title.optionsButton, "TOPLEFT") -- Not really needed, but do it anyway. Because reaons.
+   gui.title.optionsButton:SetScript("OnClick", function(self, button, down)
+					if button == "LeftButton" then LibStub("AceConfigDialog-3.0"):Open("AQT") end
+   end)
+
    gui:Redraw(false)
    gui.title:Update()
 end
@@ -314,13 +324,13 @@ function guiFunc:ButtonCheck() -- May want to rewrite this later and simply use 
       if #self.children > 0 then
 	 if not self.button then self:NewButton() end
 	 if self.container:IsShown() then
-	    self.button:SetNormalTexture([[Interface\BUTTONS\UI-MinusButton-Up]])
-	    self.button:SetHighlightTexture([[Interface\BUTTONS\UI-PlusButton-Hilight]])
-	    self.button:SetPushedTexture([[Interface\BUTTONS\UI-MinusButton-Down]])
+	    self.button:SetNormalTexture([[Interface\Buttons\UI-MinusButton-Up]])
+	    self.button:SetHighlightTexture([[Interface\Buttons\UI-PlusButton-Hilight]])
+	    self.button:SetPushedTexture([[Interface\Buttons\UI-MinusButton-Down]])
 	 else
-	    self.button:SetNormalTexture([[Interface\BUTTONS\UI-PlusButton-Up]])
-	    self.button:SetHighlightTexture([[Interface\BUTTONS\UI-PlusButton-Hilight]])
-	    self.button:SetPushedTexture([[Interface\BUTTONS\UI-PlusButton-Down]])
+	    self.button:SetNormalTexture([[Interface\Buttons\UI-PlusButton-Up]])
+	    self.button:SetHighlightTexture([[Interface\Buttons\UI-PlusButton-Hilight]])
+	    self.button:SetPushedTexture([[Interface\Buttons\UI-PlusButton-Down]])
 	 end
       else
 	 self:ReleaseButton()
