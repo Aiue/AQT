@@ -240,7 +240,7 @@ local CFGHandler = {
 	 elseif info[#info] == "showTimers" or info[#info] == "timerType" or info[#info] == "barTexture" then
 	    st.gui:UpdateTimers()
 	 elseif info[#info] == "LDBIcon" then AQT:UpdateLDBIcon()
-	 elseif info[#info] == "automaticCollapseExpand" then AQT:ZoneChangedNewArea() end
+	 elseif info[#info] == "automaticCollapseExpand" then AQT:ZoneChangedNewArea() end -- Tiny bit hacky, but does the job.
       end,
    },
    font = {

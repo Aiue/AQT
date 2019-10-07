@@ -240,12 +240,19 @@ function Header:Remove()
 end
 ]]--
 
+function Header:TestCollapsedState()
+   if st.cfg.automaticCollapseExpand and self.uiObject then
+      if self:IsCurrentZone() then self.uiObject:ExpandHeader() else self.uiObject:CollapseHeader() end
+   end
+end
+
 function Header:Update() -- Probably redundant after the latest abstraction fix. Should be able to move these things elsewhere without breaking abstraction.
    self.TitleText = self.name
    if #self.quests > 0 then
       if not self.uiObject then
 	 self:CreateUIObject()
       end
+      self:TestCollapsedState() -- Should probably put this here too, in case we pick up something new that should be under a collapsed header.
       self.uiObject:Update()
    elseif self.uiObject then
       self.uiObject:Release()
@@ -601,7 +608,7 @@ end
 
 function AQT:ZoneChangedNewArea()
    st.gui.title:Sort()
-   if st.cfg.automaticCollapseExpand then return end
+   if st.cfg.automaticCollapseExpand then for k,v in pairs(HeaderCache) do v:TestCollapsedState() end end
 end
 
 -- This is ugly, but AceHook didn't seem to deliver quite according to documentation.
