@@ -174,7 +174,7 @@ function AQT:OnEnable()
    self:SuppressionCheck()
 
    local icon = [[Interface\GossipFrame\AvailableQuestIcon]]
-   AQT.LDBObject = LDB:NewDataObject("AQT", {type = "launcher",icon = icon,OnClick = function(self, button) LibStub("AceConfigDialog-3.0"):Open("AQT") end,tocname = "AQT"})
+   AQT.LDBObject = LDB:NewDataObject("AQT", {type = "launcher",icon = icon,OnClick = function(self, button) if button == "LeftButton" then AQT:ToggleConfig() end end,tocname = "AQT"})
    self:UpdateLDBIcon()
 end
 

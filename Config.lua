@@ -1071,7 +1071,7 @@ function st.initConfig()
    st.cfg = st.db.global
    AQT:SetSinkStorage(st.cfg)
    LibStub("AceConfig-3.0"):RegisterOptionsTable("AQT", options)
-   LibStub("AceConsole-3.0"):RegisterChatCommand("aqt", function() ACD:Open("AQT") end)
+   LibStub("AceConsole-3.0"):RegisterChatCommand("aqt", function() AQT:ToggleConfig() end)
 
    -- Since I made a release with broken configuration, try to fix any sortField configuration corruption.
    if st.cfg.sortFields then
@@ -1107,4 +1107,7 @@ function st.initConfig()
    buildSortOptions()
 end
 
+function AQT:ToggleConfig()
+   if ACD.OpenFrames["AQT"] then ACD:Close("AQT") else ACD:Open("AQT") end -- A bit silly, the library should already provide this without me having to dig through the code to find it.
+end
 

@@ -74,9 +74,7 @@ function gui:OnEnable()
    gui.title.optionsButton:SetPoint("TOPRIGHT", gui.title.counter, "TOPLEFT")
    gui.title.optionsButton:SetSize(st.cfg.font.size, st.cfg.font.size)
    gui.title.text:SetPoint("TOPRIGHT", gui.title.optionsButton, "TOPLEFT") -- Not really needed, but do it anyway. Because reaons.
-   gui.title.optionsButton:SetScript("OnClick", function(self, button, down)
-					if button == "LeftButton" then LibStub("AceConfigDialog-3.0"):Open("AQT") end
-   end)
+   gui.title.optionsButton:SetScript("OnClick", function(self, button, down)if button == "LeftButton" then AQT:ToggleConfig() end end)
 
    gui:Redraw(false)
    gui.title:Update()
