@@ -2,7 +2,7 @@ local _,st = ...
 
 local AQT = LibStub("AceAddon-3.0"):GetAddon("AQT")
 
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+local ACD = LibStub("AceConfigDialog-3.0")
 local Prism = LibStub("LibPrism-1.0")
 
 local L = st.L
@@ -998,6 +998,7 @@ end
 CFGHandler.sorting.addExecute = function(info)
    tinsert(st.cfg.sortFields[info[#info-2]], {field=sortcfg.field,descending=sortcfg.descending or nil})
    addSortOption(info[#info-2], sortcfg.field, (#st.cfg.sortFields[info[#info-2]]))
+   if CFGHandler.sorting.AddSortValuesOrNot(info[#info-2], false) then ACD:SelectGroup("AQT", "sorting", info[#info-2], sortcfg.field) end
    sortcfg.field = nil
    sortcfg.descending = nil
    st.gui:RecurseResort()
@@ -1069,7 +1070,7 @@ function st.initConfig()
    st.cfg = st.db.global
    AQT:SetSinkStorage(st.cfg)
    LibStub("AceConfig-3.0"):RegisterOptionsTable("AQT", options)
-   LibStub("AceConsole-3.0"):RegisterChatCommand("aqt", function() LibStub("AceConfigDialog-3.0"):Open("AQT") end)
+   LibStub("AceConsole-3.0"):RegisterChatCommand("aqt", function() ACD:Open("AQT") end)
 
    -- Since I made a release with broken configuration, try to fix any sortField configuration corruption.
    if st.cfg.sortFields then
