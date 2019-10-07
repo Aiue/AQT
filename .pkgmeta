@@ -25,6 +25,7 @@ externals:
     libs/CallBackHandler-1.0:
         url: svn://svn.wowace.com/wow/callbackhandler/mainline/trunk/CallbackHandler-1.0
         tag: latest
+    libs/LibDataBroker-1.1: https://github.com/tekkub/libdatabroker-1-1
     libs/LibPrism-1.0: https://github.com/Aiue/LibPrism
     libs/LibSharedMedia-3.0:
         url: svn://svn.wowace.com/wow/libsharedmedia-3-0/mainline/trunk/LibSharedMedia-3.0
