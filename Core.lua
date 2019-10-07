@@ -180,9 +180,9 @@ end
 
 function AQT:UpdateLDBIcon()
    local icon = [[Interface\ICONS\INV_MISC_Book_%02d]]
-   if st.cfg.LDBIcon == -2 then self.LDBObject.icon = [[Interface\GossipFrame\AvailableQuestIcon]]
-   elseif st.cfg.LDBIcon == -1 then self.LDBObject.icon = icon:format(random(1,15))
-   else self.LDBObject.icon = icon:format(se.cfg.LDBIcon) end
+   if st.cfg.LDBIcon == -1 then self.LDBObject.icon = [[Interface\GossipFrame\AvailableQuestIcon]]
+   elseif st.cfg.LDBIcon == 0 then self.LDBObject.icon = icon:format(random(1,15))
+   else self.LDBObject.icon = icon:format(st.cfg.LDBIcon) end
 end
 
 function Header:CounterText()

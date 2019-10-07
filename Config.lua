@@ -238,7 +238,7 @@ local CFGHandler = {
 	    AQT:SuppressionCheck()
 	 elseif info[#info] == "showTimers" or info[#info] == "timerType" or info[#info] == "barTexture" then
 	    st.gui:UpdateTimers()
-	 end
+	 elseif info[#info] == "LDBIcon" then AQT:UpdateLDBIcon() end
       end,
    },
    font = {
@@ -405,6 +405,14 @@ local options = {
 			   max = 5,
 			   step = .1,
 			   disabled = true, -- lacks proper update handling at the moment
+			},
+			LDBIcon = {
+			   type = "range",
+			   name = L["LibDataBroker Icon"],
+			   min = -1,
+			   max = 15,
+			   step = 1,
+			   order = 10,
 			},
 		     },
 		  },
