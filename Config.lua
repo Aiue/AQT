@@ -179,7 +179,7 @@ local CFGHandler = {
 		  st.cfg.barBackdrop[info[#info]] = v1
 	       end
 	    end
-	    st.gui:Redraw()
+	    st.gui:UpdateTimers()
 	 end,
       },
       font = { -- Yeah, I'm just doing copypasta at this point, meaning I _really_ need to look over this.
@@ -235,7 +235,7 @@ local CFGHandler = {
 	    if val then QuestTimerFrame:Hide() elseif GetQuestTimers() then QuestTimerFrame:Show() end
 	 elseif info[#info] == "suppressErrorFrame" then
 	    AQT:SuppressionCheck()
-	 elseif info[#info] == "showTimers" or info[#info] == "timerType" then
+	 elseif info[#info] == "showTimers" or info[#info] == "timerType" or info[#info] == "barTexture" then
 	    st.gui:UpdateTimers()
 	 end
       end,
