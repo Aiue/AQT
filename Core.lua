@@ -687,3 +687,7 @@ function AQT:Event_ChatMsgSystem(msg)
       for k,v in ipairs(fcf.objectives) do v:Update() end
    end
 end
+
+function AQT:ExpandHeaders() -- While it seems to make more sense to stick this with the gui functions, this is where we have the iterator. So.. well, possibly make it accessible from elsewhere, or just keep this here.
+   for k,v in pairs(HeaderCache) do if v.uiObject then v.uiObject:ExpandHeader() end end
+end

@@ -416,6 +416,11 @@ local options = {
 			   desc = L["Automatically collapse/expand headers to match your current zone."],
 			   order = 3,
 			},
+			expandHeaders = {
+			   type = "execute",
+			   name = L["Expand All Headersg"], -- Except the main title one.
+			   func = AQT.ExpandHeaders,
+			},
 		     },
 		  },
 		  hideDefaults = {

@@ -28,7 +28,7 @@ st.gui = gui
 local guiFunc = {}
 setmetatable(guiFunc, getmetatable(UIParent))
 
-function gui:OnEnable()
+function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.font = CreateFont(getAvailableName("AQTFont"))
    gui.font:SetJustifyV("TOP")
    gui.barFont = CreateFont(getAvailableName("AQTBarFont"))
