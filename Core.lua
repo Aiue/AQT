@@ -171,7 +171,7 @@ function AQT:OnEnable()
    self:RegisterEvent("CHAT_MSG_SYSTEM", "Event_ChatMsgSystem")
    self:RegisterEvent("PLAYER_LEVEL_UP", "PlayerLevelUp")
    self:RegisterEvent("QUEST_LOG_UPDATE", "QuestLogUpdate")
-   self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ResortHeaders")
+   self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ZoneChangedNewArea")
    self:SuppressionCheck()
 
    local icon = [[Interface\GossipFrame\AvailableQuestIcon]]
@@ -599,8 +599,9 @@ function AQT:PlayerLevelUp()
    C_Timer.After(1, Update)
 end
 
-function AQT:ResortHeaders()
+function AQT:ZoneChangedNewArea()
    st.gui.title:Sort()
+   if st.cfg.automaticCollapseExpand then return end
 end
 
 -- This is ugly, but AceHook didn't seem to deliver quite according to documentation.

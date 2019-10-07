@@ -19,6 +19,7 @@ local defaultSortFields = { -- Because AceDB will kind of screw things up for us
 local defaults = {
    anchorFrom = "TOPRIGHT",
    anchorTo = "TOPRIGHT",
+   automaticCollapseExpand = false,
    backdrop = {
       background = {
 	 name = "Blizzard Tooltip",
@@ -238,7 +239,8 @@ local CFGHandler = {
 	    AQT:SuppressionCheck()
 	 elseif info[#info] == "showTimers" or info[#info] == "timerType" or info[#info] == "barTexture" then
 	    st.gui:UpdateTimers()
-	 elseif info[#info] == "LDBIcon" then AQT:UpdateLDBIcon() end
+	 elseif info[#info] == "LDBIcon" then AQT:UpdateLDBIcon()
+	 elseif info[#info] == "automaticCollapseExpand" then AQT:ZoneChangedNewArea() end
       end,
    },
    font = {
@@ -374,6 +376,29 @@ local options = {
 			   name = "Sorry about the mess. Some of these are currently disabled as they are awaiting proper implementation. Further, most of these configuration options ended up here because I couldn't quite figure out where to place them. Meaning, I may well move them elsewhere eventually.",
 			   order = 0,
 			},
+			indent = {
+			   type = "range",
+			   name = L.Indentation,
+			   order = 8,
+			   min = 0,
+			   max = 5,
+			   step = .1,
+			   disabled = true, -- lacks proper update handling at the moment
+			},
+			LDBIcon = {
+			   type = "select",
+			   name = L["LibDataBroker Icon"],
+			   values = {}, -- Fill these later.
+			   order = 10,
+			},
+		     },
+		  },
+		  headers = {
+		     type = "group",
+		     name = L.Headers,
+		     inline = true,
+		     order = 1,
+		     args = {
 			showHeaders = {
 			   type = "toggle",
 			   name = L["Show Headers"],
@@ -385,41 +410,18 @@ local options = {
 			   name = L["Show Header Count"],
 			   order = 2,
 			},
-			trackAll = {
+			automaticCollapseExpand = {
 			   type = "toggle",
-			   name = L["Track All Quests"] .. " (recommended for now, no way of manually tracking things yet)",
-			   width = "full",
+			   name = L["Automated Collapse/Expand"],
+			   desc = L["Automatically collapse/expand headers to match your current zone."],
 			   order = 3,
-			   disabled = true, --disabled until I've create my own questlog
-			},
-			showTags = {
-			   type = "toggle",
-			   name = L["Show Quest Tags"],
-			   order = 4,
-			},
-			indent = {
-			   type = "range",
-			   name = L.Indentation,
-			   order = 8,
-			   min = 0,
-			   max = 5,
-			   step = .1,
-			   disabled = true, -- lacks proper update handling at the moment
-			},
-			LDBIcon = {
-			   type = "range",
-			   name = L["LibDataBroker Icon"],
-			   min = -1,
-			   max = 15,
-			   step = 1,
-			   order = 10,
 			},
 		     },
 		  },
 		  hideDefaults = {
 		     type = "group",
 		     name = L["Suppress Default Interface"],
-		     order = 1,
+		     order = 2,
 		     inline = true,
 		     args = {
 			hideQuestWatch = {
@@ -434,18 +436,12 @@ local options = {
 			   width = "double",
 			   order = 6,
 			},
-			suppressErrorFrame = {
-			   type = "toggle",
-			   name = L["Suppress Blizzard Quest Updates"],
-			   width = "double",
-			   order = 7,
-			},
 		     },
 		  },
 		  timers = {
 		     type = "group",
 		     name = L.Timers,
-		     order = 2,
+		     order = 3,
 		     inline = true,
 		     args = {
 			showTimers = {
@@ -464,10 +460,56 @@ local options = {
 		  },
 	       },
 	    },
+	    output = {
+	       type = "group",
+	       name = L.Output,
+	       order = 1,
+	       args = {
+		  suppressErrorFrame = {
+		     type = "toggle",
+		     name = L["Suppress Blizzard Quest Updates"],
+		     width = "double",
+		     order = 0,
+		  },
+		  sink = AQT:GetSinkAce3OptionsDataTable(),
+	       },
+	    },
+	    quests = {
+	       type = "group",
+	       name = L.Quests,
+	       order = 2,
+	       args = {
+		  tracking = {
+		     type = "group",
+		     inline = true,
+		     name = L.Tracking,
+		     order = 0,
+		     args = {
+			trackAll = {
+			   type = "toggle",
+			   name = L["Track All Quests"] .. " (recommended for now, no way of manually tracking things yet)",
+			   width = "full",
+			   order = 3,
+			   disabled = true, --disabled until I've create my own questlog .. or at least hooked into the default one as an intermediary measure
+			},
+		     },
+		  },
+		  showTags = {
+		     type = "toggle",
+		     name = L["Show Quest Tags"],
+		     order = 1,
+		  },
+		  apology = {
+		     type = "description",
+		     name = "Yeah, I know, this section is rather empty right now. So why move stuff here?\nWell. I'm planning to fill it with more stuff soon. :)",
+		     order = 2,
+		  },
+	       },
+	    },
 	    sound = {
 	       name = L.Sound,
 	       type = "group",
-	       order = 1,
+	       order = 3,
 	       args = {
 		  playObjectiveSound = {
 		     type = "toggle",
@@ -514,8 +556,6 @@ local options = {
 		  },
 	       },
 	    },
-	    
-	    sink = AQT:GetSinkAce3OptionsDataTable(),
 	 },
       },
       layout = {
@@ -937,6 +977,15 @@ local options = {
       },
    },
 }
+
+options.args.general.args.output.args.sink.order = 1
+options.args.general.args.output.args.sink.inline = true
+options.args.general.args.general.args.uncategorized.args.LDBIcon.values[-1] = [[|TInterface\GossipFrame\AvailableQuestIcon:0|t]]
+options.args.general.args.general.args.uncategorized.args.LDBIcon.values[0] = "Random Book"
+for i = 1,15 do
+   local fmt = [[|TInterface\ICONS\INV_MISC_Book_%02d:18|t]]
+   options.args.general.args.general.args.uncategorized.args.LDBIcon.values[i] = fmt:format(i)
+end
 
 local editSortOptions = {
    ascdesc = {

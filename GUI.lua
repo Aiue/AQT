@@ -266,17 +266,34 @@ function guiFunc:New(owner)
    return object
 end
 
-local function clickButton(self, button, down)
-   if button == "LeftButton" then -- Right now this is the only button registered for clicks, but in case we want to add more later.
-      if self:GetParent().container:IsShown() then
-	 self:GetParent().container:Hide()
-      else
-	 self:GetParent().container:Show()
-      end
+function guiFunc:CollapseHeader()
+   if not self.container then error("Missing container.")
+   elseif self:IsCollapsed() then return end
 
-      self:GetParent():ButtonCheck()
-      self:GetParent():UpdateSize(true)
-   end
+   self.container:Hide()
+   self:ButtonCheck()
+   self:UpdateSize(true)
+end
+
+function guiFunc:ExpandHeader()
+   if not self.container then error("Missing container.")
+   elseif not self:IsCollapsed() then return end
+
+   self.container:Show()
+   self:ButtonCheck()
+   self:UpdateSize(true)
+end
+
+function guiFunc:ToggleCollapsed()
+   if not self.container then error("Missing container.")
+   elseif self:IsCollapsed() then self:ExpandHeader()
+   else self:CollapseHeader() end
+end
+
+function guiFunc:IsCollapsed() return self.container and not self.container:IsShown() end -- Yes, I could just as well just check for this, but I want to create more abstraction. I'm breaking it enough as it is already.
+
+local function clickButton(self, button, down)
+   if button == "LeftButton" then self:GetParent():ToggleCollapsed() end -- Right now this is the only button registered for clicks, but in case we want to add more later.
 end
 
 function guiFunc:NewButton()
