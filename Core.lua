@@ -166,11 +166,12 @@ function AQT:OnEnable()
       }
       i = i + 1
    end
-      
-   self:RegisterEvent("QUEST_LOG_UPDATE", "QuestLogUpdate")
-   self:RegisterEvent("PLAYER_LEVEL_UP", "PlayerLevelUp")
-   self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ResortHeaders")
+
+   self:RegisterEvent("BAG_UPDATE_DELAYED", "QuestLogUpdate")
    self:RegisterEvent("CHAT_MSG_SYSTEM", "Event_ChatMsgSystem")
+   self:RegisterEvent("PLAYER_LEVEL_UP", "PlayerLevelUp")
+   self:RegisterEvent("QUEST_LOG_UPDATE", "QuestLogUpdate")
+   self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ResortHeaders")
    self:SuppressionCheck()
 
    local icon = [[Interface\GossipFrame\AvailableQuestIcon]]
