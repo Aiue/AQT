@@ -1,6 +1,7 @@
 local _,st = ...
 
 local AQT = LibStub("AceAddon-3.0"):NewAddon("AQT", "AceEvent-3.0", "LibSink-2.0")
+local LDB = LibStub("LibDataBroker-1.1")
 local LSM = LibStub("LibSharedMedia-3.0")
 local Prism = LibStub("LibPrism-1.0")
 
@@ -171,6 +172,17 @@ function AQT:OnEnable()
    self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ResortHeaders")
    self:RegisterEvent("CHAT_MSG_SYSTEM", "Event_ChatMsgSystem")
    self:SuppressionCheck()
+
+   local icon = [[Interface\GossipFrame\AvailableQuestIcon]]
+   AQT.LDBObject = LDB:NewDataObject("AQT", {type = "launcher",icon = icon,OnClick = function(self, button) LibStub("AceConfigDialog-3.0"):Open("AQT") end,tocname = "AQT"})
+   self:UpdateLDBIcon()
+end
+
+function AQT:UpdateLDBIcon()
+   local icon = [[Interface\ICONS\INV_MISC_Book_%02d]]
+   if st.cfg.LDBIcon == -2 then self.LDBObject.icon = [[Interface\GossipFrame\AvailableQuestIcon]]
+   elseif st.cfg.LDBIcon == -1 then self.LDBObject.icon = icon:format(random(1,15))
+   else self.LDBObject.icon = icon:format(se.cfg.LDBIcon) end
 end
 
 function Header:CounterText()

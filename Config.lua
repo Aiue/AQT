@@ -86,6 +86,7 @@ local defaults = {
    hideQuestTimerFrame = true,
    hideQuestWatch = true,
    indent = 0,
+   LDBIcon = -1,
    maxHeight = 650,
    minWidth = 100,
    maxWidth = 250,
@@ -1105,3 +1106,5 @@ function st.initConfig()
    end
    buildSortOptions()
 end
+
+
