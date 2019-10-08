@@ -418,7 +418,7 @@ local options = {
 			},
 			expandHeaders = {
 			   type = "execute",
-			   name = L["Expand All Headersg"], -- Except the main title one.
+			   name = L["Expand All Headers"], -- Except the main title one.
 			   func = AQT.ExpandHeaders,
 			},
 		     },
