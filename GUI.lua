@@ -27,6 +27,7 @@ st.gui = gui
 
 local guiFunc = {}
 setmetatable(guiFunc, getmetatable(UIParent))
+local mt = {__index = function(t, k) return guiFunc[k] end}
 
 function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.font = CreateFont(getAvailableName("AQTFont"))
@@ -126,10 +127,7 @@ function gui:RedrawColor()
    gui:SetBackdropColor(st.cfg.backdrop.background.r, st.cfg.backdrop.background.g, st.cfg.backdrop.background.b, st.cfg.backdrop.background.a)
    gui:SetBackdropBorderColor(st.cfg.backdrop.border.r, st.cfg.backdrop.border.g, st.cfg.backdrop.border.b, st.cfg.backdrop.border.a)
    for k,v in ipairs(active_timers) do v:GetParent():UpdateTimer() end
-      
 end
-
-local mt = {__index = function(t, k) return guiFunc[k] end}
 
 function guiFunc:GetWidth(textWidth, counterWidth)
    textWidth = (self.text:GetStringWidth() > textWidth) and self.text:GetStringWidth() or textWidth
@@ -162,7 +160,7 @@ function guiFunc:Release(recursed)
 
    local found
 
-   for k,v in ipairs(parent.children) do -- This sometimes fails. Figure out why. (Parent should never be nil.)
+   for k,v in ipairs(parent.children) do
       if self == v then tinsert(recycler, tremove(parent.children, k));found = true end
    end
 

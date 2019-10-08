@@ -228,7 +228,7 @@ local CFGHandler = {
       set = function(info, val)
 	 st.cfg[info[#info]] = val
 	 if info[#info] == "showHeaders" then
-	    print("Not showing headers is currently buggy, also, this will not immediately apply just yet.")
+	    AQT:ToggleHeaders()
 	 elseif info[#info] == "showHeaderCount" or info[#info] == "showTags" then
 	    st.gui.title:UpdateText(true)
 	 elseif info[#info] == "hideQuestWatch" then
@@ -403,7 +403,7 @@ local options = {
 			   type = "toggle",
 			   name = L["Show Headers"],
 			   order = 1,
-			   disabled = true, -- Doesn't work properly yet.
+			   disabled = true, -- Still broken, and I need to push a release that should fix some issues. Can't work on this while having that hanging over me.
 			},
 			showHeaderCount = {
 			   type = "toggle",

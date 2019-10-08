@@ -240,6 +240,7 @@ function Header:New(o)
    if not o.name then error("Header:New() requires header name to be set.") end
    setmetatable(o, self)
    if not o.quests then o.quests = {} end
+   if not o.trackedQuests then o.trackedQuests = {} end
    HeaderCache[o.name] = o
    o.lastUpdate = time()
    return o
@@ -257,9 +258,9 @@ function Header:TestCollapsedState()
    end
 end
 
-function Header:Update() -- Probably redundant after the latest abstraction fix. Should be able to move these things elsewhere without breaking abstraction.
+function Header:Update()
    self.TitleText = self.name
-   if #self.quests > 0 then
+   if st.cfg.showHeaders and #self.trackedQuests > 0 then
       if not self.uiObject then
 	 self:CreateUIObject()
       end
@@ -412,6 +413,9 @@ end
 
 function Quest:Remove()
    if self.uiObject then self:Untrack() end
+   for i,v in ipairs(self.header.quests) do
+      if self == v then tremove(self.header.quests, i) end
+   end
    self.header = nil
    QuestCache[self.id] = nil
 end
@@ -446,6 +450,7 @@ function Quest:Track()
       parent = self.header.uiObject
    else parent = st.gui.title end
 
+   tinsert(self.header.trackedQuests, self)
    self.uiObject = parent:New(self)
    self:Update() -- Temporary fix
    self.header:Update()
@@ -455,8 +460,8 @@ end
 function Quest:Untrack()
    if not self.uiObject then error("Attempting to untrack untracked quest, '" .. self.title .. "'.") end
 
-   for i,v in ipairs(self.header.quests) do
-      if self == v then tremove(self.header.quests, i) end
+   for i,v in ipairs(self.header.trackedQuests) do
+      if self == v then tremove(self.header.trackedQuests, i) end
    end
 
    self.uiObject:Release()
@@ -696,4 +701,19 @@ end
 
 function AQT:ExpandHeaders() -- While it seems to make more sense to stick this with the gui functions, this is where we have the iterator. So.. well, possibly make it accessible from elsewhere, or just keep this here.
    for k,v in pairs(HeaderCache) do if v.uiObject then v.uiObject:ExpandHeader() end end
+end
+
+function AQT:ToggleHeaders() -- Yes, this is hacky, but it should do the trick.
+   print("Sorry, still broken.")
+   if true then return end
+   for k,v in pairs(HeaderCache) do
+      for i = #v.trackedQuests, 1, -1 do
+	 v.trackedQuests[i]:Untrack()
+	 v.trackedQuests[i]:Track()
+      end
+   end
+end
+
+function AQT:UpdateHeaders()
+   for k,v in pairs(HeaderCache) do v:Update() end
 end
