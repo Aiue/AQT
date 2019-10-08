@@ -117,19 +117,13 @@ function AQT:OnInitialize()
    st.initConfig()
 end
 
-function AQT:OnEnable()
-   QuestTimerFrame:SetScript("OnShow", function(self)
-				if st.cfg.hideQuestTimerFrame then self:Hide() end
-   end)
+local function factionInit()
+   if not GetFactionInfo(1) then
+      print("GetFactionInfo(1) returned nil, retrying in ten seconds..")
+      C_Timer.After(10, factionInit())
+      return
+   end
 
-   QuestWatchFrame:SetScript("OnShow", function(self)
-				if st.cfg.hideQuestWatch then self:Hide() end
-   end)
-
-   if st.cfg.hideQuestTimerFrame then QuestTimerFrame:Hide() end
-   if st.cfg.hideQuestWatch then QuestWatchFrame:Hide() end
-
-   st.gui:OnEnable()
    local i = 1
    local otherfound
    while i do
@@ -166,6 +160,23 @@ function AQT:OnEnable()
       }
       i = i + 1
    end
+end
+
+function AQT:OnEnable()
+   QuestTimerFrame:SetScript("OnShow", function(self)
+				if st.cfg.hideQuestTimerFrame then self:Hide() end
+   end)
+
+   QuestWatchFrame:SetScript("OnShow", function(self)
+				if st.cfg.hideQuestWatch then self:Hide() end
+   end)
+
+   if st.cfg.hideQuestTimerFrame then QuestTimerFrame:Hide() end
+   if st.cfg.hideQuestWatch then QuestWatchFrame:Hide() end
+
+   st.gui:OnEnable()
+
+   factionInit()
 
    self:RegisterEvent("BAG_UPDATE_DELAYED", "QuestLogUpdate")
    self:RegisterEvent("CHAT_MSG_SYSTEM", "Event_ChatMsgSystem")
@@ -656,8 +667,6 @@ function AQT:Event_ChatMsgSystem(msg)
    else return end
 
    if not factionCache[faction] then return end
-
-   
 
    local fcf = factionCache[faction]
    fcf.raw = fcf.raw + change
