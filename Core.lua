@@ -414,9 +414,6 @@ end
 
 function Quest:Remove()
    if self.uiObject then self:Untrack() end
-   for k,v in ipairs(self.header.quests) do
-      if v == self then tremove(self.header.quests, k) end
-   end
    self.header = nil
    QuestCache[self.id] = nil
 end
