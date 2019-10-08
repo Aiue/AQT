@@ -133,7 +133,7 @@ local function factionInit()
       -- * Eventually return the "Inactive"
       -- * Then, after, I would assume, cycling through the inactives return "Other" again for each incremental value of i.
       -- So yes, this looks really strange. But there's a reason for it. I give you: The Blizzard WoW API.
-      if faction == "Other" then
+      if not faction or faction == "Other" then
 	 if otherfound then
 	    i = nil
 	    break
