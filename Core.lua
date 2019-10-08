@@ -160,6 +160,8 @@ local function factionInit()
       }
       i = i + 1
    end
+
+   factionInit = nil
 end
 
 function AQT:OnEnable()
