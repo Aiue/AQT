@@ -245,13 +245,11 @@ function Header:New(o)
    return o
 end
 
---[[ Never called.
 function Header:Remove()
    if #self.quests > 0 then error("Header:Remove(): '" .. self.name .. "': trying to remove header that still has quests attached.") end
    if self.uiObject then self.uiObject:Release() end
    HeaderCache[self.name] = nil
 end
-]]--
 
 function Header:TestCollapsedState()
    if st.cfg.automaticCollapseExpand and self.uiObject then
@@ -583,9 +581,9 @@ function AQT:QuestLogUpdate(...)
    for k,v in pairs(QuestCache) do
       if not localQuestCache[k] then v:Remove() end
    end
---   for k,v in pairs(HeaderCache) do
---      if not localHeaderCache[k] then self:RemoveHeader(k) end
---   end
+   for k,v in pairs(HeaderCache) do
+      if k ~= "Unknown" and not localHeaderCache[k] then v:Remove() end
+   end
 
    if playSound then -- quest complete
       if st.cfg.playCompletionSound then
