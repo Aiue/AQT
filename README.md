@@ -7,7 +7,7 @@ What it will do is:
 * Optionally show quest tags/levels.
 * Configurable sorting, with more options to be added.
 * Sounds, if you're into that kind of thing. I am. Defaults to faction-based sounds, but can be reconfigured. Makes use of LibSharedMedia.
-* Direct quest updates via LibSink, and optionally suppres the standard errorframe update.
+* Direct quest updates via LibSink, and optionally suppress the standard errorframe update.
 
 Apart from improving on the current functionality, some of which I will admit is somewhat lackluster, future plans include:
 
