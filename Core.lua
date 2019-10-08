@@ -380,7 +380,7 @@ function Objective:Update(qIndex, oIndex)
    self.counterString = countertext and countertext or nil --(tostring(have) .. "/" .. tostring(need))
    self.index = oIndex
 
-   if self.complete then
+   if self.complete and st.cfg.hideCompletedObjectives then
       if self.uiObject then
 	 self.uiObject:Release()
 	 update = false -- just in case

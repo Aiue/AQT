@@ -84,6 +84,7 @@ local defaults = {
       a = 1,
       wrap = true,
    },
+   hideCompletedObjectives = true,
    hideQuestTimerFrame = true,
    hideQuestWatch = true,
    indent = 0,
@@ -240,7 +241,8 @@ local CFGHandler = {
 	 elseif info[#info] == "showTimers" or info[#info] == "timerType" or info[#info] == "barTexture" then
 	    st.gui:UpdateTimers()
 	 elseif info[#info] == "LDBIcon" then AQT:UpdateLDBIcon()
-	 elseif info[#info] == "automaticCollapseExpand" then AQT:ZoneChangedNewArea() end -- Tiny bit hacky, but does the job.
+	 elseif info[#info] == "automaticCollapseExpand" then AQT:ZoneChangedNewArea() -- Tiny bit hacky, but does the job.
+	 elseif info[#info] == "hideCompletedObjectives" then AQT:QuestLogUpdate() end
       end,
    },
    font = {
@@ -504,10 +506,15 @@ local options = {
 		     name = L["Show Quest Tags"],
 		     order = 1,
 		  },
+		  hideCompletedObjectives = {
+		     type = "toggle",
+		     name = L["Hide Completed Objectives"],
+		     order = 2,
+		  },
 		  apology = {
 		     type = "description",
 		     name = "Yeah, I know, this section is rather empty right now. So why move stuff here?\nWell. I'm planning to fill it with more stuff soon. :)",
-		     order = 2,
+		     order = 50,
 		  },
 	       },
 	    },
