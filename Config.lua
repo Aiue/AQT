@@ -723,8 +723,9 @@ local options = {
 	       min = 50,
 	       max = 1000,
 	       step = .5,
-	       validate = function(info, val) if st.cfg.maxWidth > val then return "Minimum width cannot exceed maximum." end end,
+	       validate = function(info, val) if st.cfg.maxWidth < val then return "Minimum width cannot exceed maximum." end end,
 	       order = 4,
+	       disabled = true,
 	    },
 	    maxWidth = {
 	       name = L["Maximum Width"],
@@ -732,7 +733,7 @@ local options = {
 	       min = 50,
 	       max = 1000,
 	       step = .5,
-	       validate = function(info, val) if st.cfg.minWidth < val then return "Maximum width cannot be lower than minimum." end end,
+	       validate = function(info, val) if st.cfg.minWidth > val then return "Maximum width cannot be lower than minimum." else return true end end,
 	       order = 5,
 	    },
 	    maxHeight = {
