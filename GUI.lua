@@ -30,6 +30,9 @@ setmetatable(guiFunc, getmetatable(UIParent))
 local mt = {__index = function(t, k) return guiFunc[k] end}
 
 function gui:OnEnable() -- Might want to attach this one elsewhere.
+   gui.artwork = gui:CreateTexture(nil)
+   gui.artwork:SetDrawLayer("artwork")
+
    gui.font = CreateFont(getAvailableName("AQTFont"))
    gui.font:SetJustifyV("TOP")
    gui.barFont = CreateFont(getAvailableName("AQTBarFont"))
@@ -87,7 +90,7 @@ function gui:RecurseResort()
    st.gui.title:RecurseResort()
 end
 
-function gui:Redraw(recurse)
+function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an argument for recursing.. yet it's never used. Damn, that's silly of me.
    gui:ClearAllPoints()
    gui:SetPoint(st.cfg.anchorFrom, UIParent, st.cfg.anchorTo, st.cfg.posX, st.cfg.posY)
 
@@ -122,6 +125,69 @@ function gui:Redraw(recurse)
 
    gui:RedrawColor(false)
    gui:SetAlpha(st.cfg.alpha)
+
+   if not st.cfg.artwork.texture and st.cfg.artwork.LSMTexture == "None" then
+      gui.artwork:Hide()
+   else
+      if st.cfg.artwork.useLSMtexture then
+	 gui.artwork:SetTexture(LSM:Fetch("background", st.cfg.artwork.LSMTexture))
+      else
+	 gui.artwork:SetTexture(st.cfg.artwork.texture)
+      end
+
+      gui.artwork:SetVertexColor(st.cfg.artwork.vertexColor.r, st.cfg.artwork.vertexColor.g, st.cfg.artwork.vertexColor.b, st.cfg.artwork.vertexColor.a)
+
+      gui.artwork:ClearAllPoints()
+
+      if st.cfg.artwork.stretching == 4 then
+	 -- Would be nice to be able to simply use SetAllPoints() here, but we need to account for offset. So instead, set TOPLEFT and BOTTOMRIGHT, and invert offset for BOTTOMRIGHT.
+	 gui.artwork:SetPoint("TOPLEFT", gui, "TOPLEFT", st.cfg.artwork.offsetX, -st.cfg.artwork.offsetY)
+	 gui.artwork:SetPoint("BOTTOMRIGHT", gui, "BOTTOMRIGHT", -st.cfg.artwork.offsetX, st.cfg.artwork.offsetY)
+      elseif st.cfg.artwork.stretching == 3 then
+	 local l,r = "LEFT", "RIGHT"
+	 if st.cfg.artwork.anchor ~= "CENTER" then
+	    b = st.cfg.artwork.anchor .. l
+	    t = st.cfg.artwork.anchor .. r
+	 end
+
+	 gui.artwork:SetPoint(l, gui, l, st.cfg.artwork.offsetX, -st.cfg.artwork.offsetY)
+	 gui.artwork:SetPoint(r, gui, r, -st.cfg.artwork.offsetX, st.cfg.artwork.offsetY)
+      elseif st.cfg.artwork.stretching == 2 then
+	 local b,t = "BOTTOM", "TOP"
+	 if st.cfg.artwork.anchor ~= "CENTER" then
+	    b = b .. st.cfg.artwork.anchor
+	    t = t .. st.cfg.artwork.anchor
+	 end
+
+	 gui.artwork:SetPoint(b, gui, b, st.cfg.artwork.offsetX, -st.cfg.artwork.offsetY)
+	 gui.artwork:SetPoint(t, gui, t, -st.cfg.artwork.offsetX, st.cfg.artwork.offsetY)
+      else
+	 gui.artwork:SetPoint(st.cfg.artwork.anchor, gui, st.cfg.artwork.anchor, st.cfg.artwork.offsetX, st.cfg.artwork.offsetY) -- This should be enough.
+      end
+
+      if st.cfg.artwork.height then gui.artwork:SetHeight(st.cfg.artwork.height) end
+      if st.cfg.artwork.width then gui.artwork:SetWidth(st.cfg.artwork.width) end
+
+      if st.cfg.artwork.zoom then
+	 local l,r,t,b
+	 if st.cfg.artwork.symmetricZoom then
+	    local zoom = st.cfg.artwork.symmetric/2
+	    l = zoom
+	    r = 1-zoom
+	    t = zoom
+	    b = 1-zoom
+	 else
+	    l = st.cfg.artwork.left
+	    r = st.cfg.artwork.right
+	    t = st.cfg.artwork.top
+	    b = st.cfg.artwork.bottom
+	 end
+
+	 gui.artwork:SetTexCoord(l,r,t,b)
+      else
+	 gui.artwork:SetTexCoord(0,1,0,1)
+      end
+   end
 end
 
 function gui:RedrawColor()

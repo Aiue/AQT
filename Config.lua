@@ -20,6 +20,23 @@ local defaults = {
    alpha = .9,
    anchorFrom = "TOPRIGHT",
    anchorTo = "TOPRIGHT",
+   artwork = {
+      anchor = "BOTTOMRIGHT",
+      bottom = 1,
+      left = 0,
+      LSMTexture = "None",
+      offsetX = 0,
+      offsetY = 0,
+      right = 1,
+      stretching = 1,
+      symmetric = 0,
+      symmetricZoom = true,
+      texture = nil,
+      top = 0,
+      useLSMtexture = nil,
+      vertexColor = {r=1,g=1,b=1,a=1},
+      zoom = false,
+   },
    automaticCollapseExpand = false,
    backdrop = {
       background = {
@@ -129,6 +146,73 @@ local aceDBdefaults = {
 }
 
 local CFGHandler = {
+   artwork = {
+      get = function(info)
+	 if info.type == "color" then
+	    return st.cfg.artwork[info[#info]].r, st.cfg.artwork[info[#info]].g, st.cfg.artwork[info[#info]].b, st.cfg.artwork[info[#info]].a
+	 elseif info[#info] == "height" then
+	    if st.cfg.artwork.height then return st.cfg.artwork.height else return st.gui.artwork:GetHeight() end
+	 elseif info[#info] == "width" then
+	    if st.cfg.artwork.width then return st.cfg.artwork.width else return st.gui.artwork:GetWidth() end
+	 else
+	    return st.cfg.artwork[info[#info]]
+	 end
+      end,
+      set = function(info, v1, v2, v3, v4)
+	 if info.type == "color" then
+	    st.cfg.artwork[info[#info]].r = v1
+	    st.cfg.artwork[info[#info]].g = v2
+	    st.cfg.artwork[info[#info]].b = v3
+	    st.cfg.artwork[info[#info]].a = v4
+	 else
+	    st.cfg.artwork[info[#info]] = v1
+	 end
+
+	 if info[#info] == "LSMTexture" then
+	    if v1 == "None" then st.cfg.artwork.useLSMtexture = nil
+	    else st.cfg.artwork.useLSMtexture = true end
+	    st.cfg.artwork.texture = nil
+	    st.cfg.artwork.height = nil
+	    st.cfg.artwork.width = nil
+	 elseif info[#info] == "texture" then
+	    st.cfg.artwork.useLSMtexture = false
+	    st.cfg.artwork.LSMTexture = "None"
+	    st.cfg.artwork.height = nil
+	    st.cfg.artwork.width = nil
+	 elseif info[#info] == "stretching" then
+	    if v1 == 2 or v1 == 3 then st.cfg.artwork.anchor = "CENTER" end
+	 end
+
+	 st.gui:Redraw()
+      end,
+      stretchValues = function(info)
+	 if st.cfg.artwork.stretching == 1 then
+	    return {
+	       BOTTOM = L.Bottom,
+	       BOTTOMLEFT = L["Bottom Left"],
+	       BOTTOMRIGHT = L["Bottom Right"],
+	       CENTER = L.Center,
+	       LEFT = L.Left,
+	       RIGHT = L.Right,
+	       TOP = L.Top,
+	       TOPLEFT = L["Top Left"],
+	       TOPRIGHT = L["Top Right"],
+	    }
+	 elseif st.cfg.artwork.stretching == 2 then
+	    return {
+	       LEFT = L.Left,
+	       CENTER = L.Center,
+	       RIGHT = L.Right,
+	    }
+	 elseif st.cfg.artwork.stretching == 3 then
+	    return {
+	       BOTTOM = L.Bottom,
+	       CENTER = L.Center,
+	       TOP = L.Top,
+	    }
+	 else return {} end
+      end,
+   },
    backdrop = {
       get = function(info)
 	 if info.type == "color" then
@@ -769,6 +853,173 @@ local options = {
 			   min = 0,
 			   max = 32,
 			   step = .5,
+			},
+		     },
+		  },
+		  art = {
+		     name = L["Artwork Texture"],
+		     type = "group",
+		     inline = true,
+		     get = CFGHandler.artwork.get,
+		     set = CFGHandler.artwork.set,
+		     args = {
+			LSMTexture = {
+			   type = "select",
+			   name = L.Texture,
+			   values = AceGUIWidgetLSMlists.background,
+			   dialogControl = "LSM30_Background",
+			   width = "double",
+			   order = 0,
+			},
+			texture = {
+			   type = "input",
+			   name = L["Other Texture (Path or ID)"],
+			   width = "double",
+			   order = 1,
+			},
+			vertexColor = {
+			   name = L["Vertex Color"],
+			   type = "color",
+			   hasAlpha = true,
+			   order = 2,
+			},
+			zoom = {
+			   name = L.Zoom,
+			   type = "group",
+			   inline = true,
+			   order = 3,
+			   get = CFGHandler.artwork.zoomget,
+			   set = CFGHandler.artwork.zoomset,
+			   args = {
+			      zoom = {
+				 name = L.Zoom,
+				 type = "toggle",
+				 order = 0,
+			      },
+			      symmetricZoom = {
+				 name = L["Symmetric Zoom"],
+				 type = "toggle",
+				 order = 1,
+				 hidden = function(info) return not st.cfg.artwork.zoom end,
+			      },
+			      zoomRanges = {
+				 name = "",
+				 type = "group",
+				 inline = true,
+				 order = 2,
+				 hidden = function(info) return not st.cfg.artwork.zoom end,
+				 args = {
+				    symmetric = {
+				       name = L.Zoom,
+				       type = "range",
+				       min = 0,
+				       max = 1,
+				       isPercent = true,
+				       order = 0,
+				       hidden = function(info) 
+					  if st.cfg.artwork.symmetricZoom then return false else return true end
+				       end,
+				    },
+				    left = {
+				       name = L.Left,
+				       type = "range",
+				       min = 0,
+				       max = 1,
+				       isPercent = true,
+				       order = 0,
+				       hidden = function(info)
+					  if st.cfg.artwork.symmetricZoom then return true else return false end
+				       end,
+				    },
+				    right = {
+				       name = L.Right,
+				       type = "range",
+				       min = 0,
+				       max = 1,
+				       isPercent = true,
+				       order = 1,
+				       hidden = function(info)
+					  if st.cfg.artwork.symmetricZoom then return true else return false end
+				       end,
+				    },
+				    top = {
+				       name = L.Top,
+				       type = "range",
+				       min = 0,
+				       max = 1,
+				       isPercent = true,
+				       order = 2,
+				       hidden = function(info)
+					  if st.cfg.artwork.symmetricZoom then return true else return false end
+				       end,
+				    },
+				    bottom = {
+				       name = L.Bottom,
+				       type = "range",
+				       min = 0,
+				       max = 1,
+				       isPercent = true,
+				       order = 0,
+				       hidden = function(info)
+					  if st.cfg.artwork.symmetricZoom then return true else return false end
+				       end,
+				    },
+				 },
+			      },
+			   },
+			},
+			stretching = {
+			   name = L.Stretching,
+			   type = "select",
+			   values = {L.None, L.Vertical, L.Horizontal, L.Full},
+			   order = 4,
+			},
+			anchor = {
+			   name = L.Position,
+			   type = "select",
+			   values = CFGHandler.artwork.stretchValues,
+			   order = 5,
+			   hidden = function(info) 
+			      if st.cfg.artwork.stretching == 4 then return true else return false end
+			   end,
+			},
+			offsetX = {
+			   name = L["X Offset"],
+			   type = "range",
+			   order = 6,
+			   softMin = -500,
+			   softMax = 500,
+			   step = 1,
+			},
+			offsetY = {
+			   name = L["Y Offset"],
+			   type = "range",
+			   order = 7,
+			   softMin = -500,
+			   softMax = 500,
+			   step = 1,
+			},
+			height = {
+			   name = L.Height,
+			   type = "range",
+			   order = 8,
+			   softMin = 0,
+			   softMax = 500,
+			   step = 1,
+			   hidden = function(info)
+			      if st.cfg.artwork.stretching == 2 or st.cfg.artwork.stretching == 4 then return true else return false end
+			   end,
+			},
+			width = {
+			   name = L.Width,
+			   type = "range",
+			   order = 9,
+			   softMin = 0,
+			   softMax = 500,
+			   step = 1,
+			   hidden = function(info)
+			      if st.cfg.artwork.stretching == 3 or st.cfg.artwork.stretching == 4 then return true else return false end
+			   end,
 			},
 		     },
 		  },
