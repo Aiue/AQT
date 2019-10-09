@@ -15,7 +15,6 @@ Apart from improving on the current functionality, some of which I will admit is
 * Keep track of quest progress within your party. Would only work for party members running the addon. May make it library-based.
 * Make it more modular to accomodate for things like achievements, so that a retail version could also be considered. Or other addons display things in the frame, should they so wish. This is currently a lower priority.
 * Probably more. If it isn't here, I might've just forgotten about it.
-* Configuration is currently only available via /aqt
 
 Please use the [Issue Tracker](https://github.com/Aiue/AQT/issues) on GitHub for bug reports or feature requests.
 
