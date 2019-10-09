@@ -121,6 +121,7 @@ function gui:Redraw(recurse)
    gui:UpdateSize()
 
    gui:RedrawColor(false)
+   gui:SetAlpha(st.cfg.alpha)
 end
 
 function gui:RedrawColor()

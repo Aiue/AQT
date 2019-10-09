@@ -17,6 +17,7 @@ local defaultSortFields = { -- Because AceDB will kind of screw things up for us
 }
 
 local defaults = {
+   alpha = .9,
    anchorFrom = "TOPRIGHT",
    anchorTo = "TOPRIGHT",
    automaticCollapseExpand = false,
@@ -243,7 +244,8 @@ local CFGHandler = {
 	 elseif info[#info] == "LDBIcon" then AQT:UpdateLDBIcon()
 	 elseif info[#info] == "automaticCollapseExpand" then AQT:ZoneChangedNewArea() -- Tiny bit hacky, but does the job.
 	 elseif info[#info] == "hideCompletedObjectives" then AQT:QuestLogUpdate()
-	 elseif info[#info] == "hideConfigButton" then st.gui:UpdateConfigButton() end
+	 elseif info[#info] == "hideConfigButton" then st.gui:UpdateConfigButton()
+	 elseif info[#info] == "alpha" then st.gui:Redraw() end
       end,
    },
    font = {
@@ -682,69 +684,93 @@ local options = {
 	 order = 3,
 	 childGroups = "tab",
 	 args = {
-	    backdrop = {
-	       name = L.Backdrop,
+	    background ={
+	       name = L.Background,
 	       type = "group",
 	       order = 0,
-	       get = CFGHandler.backdrop.get,
-	       set = CFGHandler.backdrop.set,
 	       args = {
-		  background = {
-		     name = L["Background Texture"],
-		     type = "select",
+		  general = {
+		     type = "group",
+		     name = L.General,
 		     order = 0,
-		     values = AceGUIWidgetLSMlists.background,
-		     dialogControl = "LSM30_Background",
-		     width = "double",
+		     inline = true,
+		     args = {
+			alpha = {
+			   name = L.Alpha,
+			   type = "range",
+			   min = 0,
+			   max = 1,
+			   isPercent = true,
+			   order = 2,
+			},
+		     },
 		  },
-		  backgroundColor = {
-		     name = L["Background Color"],
-		     type = "color",
+		  backdrop = {
+		     name = L.Backdrop,
+		     type = "group",
 		     order = 1,
-		     hasAlpha = true,
-		  },
-		  tile = {
-		     name = L.Tile,
-		     order = 2,
-		     type = "toggle",
-		  },
-		  tileSize = {
-		     name = L["Tile Size"],
-		     order = 3,
-		     type = "range",
-		     min = 0,
-		     max = 64,
-		     step = .5,
-		  },
-		  border = {
-		     name = L["Border Texture"],
-		     type = "select",
-		     order = 4,
-		     values = AceGUIWidgetLSMlists.border,
-		     dialogControl = "LSM30_Border",
-		     width = "double",
-		  },
-		  borderColor = {
-		     name = L["Border Color"],
-		     type = "color",
-		     order = 5,
-		     hasAlpha = true,
-		  },
-		  edgeSize = {
-		     name = L["Border Size"],
-		     order = 6,
-		     type = "range",
-		     min = 1,
-		     max = 64,
-		     step = .5,
-		  },
-		  insets = {
-		     name = L.Insets,
-		     order = 7,
-		     type = "range",
-		     min = 0,
-		     max = 32,
-		     step = .5,
+		     get = CFGHandler.backdrop.get,
+		     set = CFGHandler.backdrop.set,
+		     inline = true,
+		     args = {
+			background = {
+			   name = L["Background Texture"],
+			   type = "select",
+			   order = 0,
+			   values = AceGUIWidgetLSMlists.background,
+			   dialogControl = "LSM30_Background",
+			   width = "double",
+			},
+			backgroundColor = {
+			   name = L["Background Color"],
+			   type = "color",
+			   order = 1,
+			   hasAlpha = true,
+			},
+			tile = {
+			   name = L.Tile,
+			   order = 2,
+			   type = "toggle",
+			},
+			tileSize = {
+			   name = L["Tile Size"],
+			   order = 3,
+			   type = "range",
+			   min = 0,
+			   max = 64,
+			   step = .5,
+			},
+			border = {
+			   name = L["Border Texture"],
+			   type = "select",
+			   order = 4,
+			   values = AceGUIWidgetLSMlists.border,
+			   dialogControl = "LSM30_Border",
+			   width = "double",
+			},
+			borderColor = {
+			   name = L["Border Color"],
+			   type = "color",
+			   order = 5,
+			   hasAlpha = true,
+			},
+			edgeSize = {
+			   name = L["Border Size"],
+			   order = 6,
+			   type = "range",
+			   min = 1,
+			   max = 64,
+			   step = .5,
+			},
+			insets = {
+			   name = L.Insets,
+			   order = 7,
+			   type = "range",
+			   min = 0,
+			   max = 32,
+			   step = .5,
+			},
+		     },
 		  },
 	       },
 	    },
