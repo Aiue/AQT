@@ -411,7 +411,7 @@ local CFGHandler = {
       end,
    
       addValidate = function(info)
-	 if not st.types[info[#info-2]].sortFields[info[#info-1]] then return "Unknown sort field." end
+	 if not st.types[info[#info-2]].sortFields[info[#info-1]] then return "Unknown sort field." else return true end
       end,
    
       addDisabled = function(info)
@@ -723,12 +723,13 @@ local options = {
 	       min = 50,
 	       max = 1000,
 	       step = .5,
-	       validate = function(info, val) if st.cfg.maxWidth < val then return "Minimum width cannot exceed maximum." end end,
+	       validate = function(info, val) if st.cfg.maxWidth < val then return "Minimum width cannot exceed maximum." else return true end end,
 	       order = 4,
 	       disabled = true,
 	    },
 	    maxWidth = {
 	       name = L["Maximum Width"],
+	       desc = "...current a fixed width, variable width coming soon.",
 	       type = "range",
 	       min = 50,
 	       max = 1000,
