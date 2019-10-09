@@ -75,8 +75,10 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.title.optionsButton:SetPoint("TOPRIGHT", gui.title.counter, "TOPLEFT")
    gui.title.optionsButton:SetSize(st.cfg.font.size, st.cfg.font.size)
    gui.title.text:SetPoint("TOPRIGHT", gui.title.optionsButton, "TOPLEFT") -- Not really needed, but do it anyway. Because reaons.
-   gui.title.optionsButton:SetScript("OnClick", function(self, button, down) if button == "LeftButton" then AQT:ToggleConfig() end end)
-
+   gui.title.optionsButton:SetScript("OnClick", function(self, button, down)
+					if button == "LeftButton" then AQT:ToggleConfig() end 
+   end)
+   gui:UpdateConfigButton()
    gui:Redraw(false)
    gui.title:Update()
 end
@@ -140,6 +142,10 @@ function guiFunc:GetWidth(textWidth, counterWidth)
    end
 
    return textWidth, counterWidth
+end
+
+function gui:UpdateConfigButton()
+   if st.cfg.hideConfigButton then self.title.optionsButton:Hide() else self.title.optionsButton:Show() end
 end
 
 function guiFunc:RecurseResort()

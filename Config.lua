@@ -242,7 +242,8 @@ local CFGHandler = {
 	    st.gui:UpdateTimers()
 	 elseif info[#info] == "LDBIcon" then AQT:UpdateLDBIcon()
 	 elseif info[#info] == "automaticCollapseExpand" then AQT:ZoneChangedNewArea() -- Tiny bit hacky, but does the job.
-	 elseif info[#info] == "hideCompletedObjectives" then AQT:QuestLogUpdate() end
+	 elseif info[#info] == "hideCompletedObjectives" then AQT:QuestLogUpdate()
+	 elseif info[#info] == "hideConfigButton" then st.gui:UpdateConfigButton() end
       end,
    },
    font = {
@@ -381,7 +382,7 @@ local options = {
 			indent = {
 			   type = "range",
 			   name = L.Indentation,
-			   order = 8,
+			   order = 1,
 			   min = 0,
 			   max = 5,
 			   step = .1,
@@ -391,7 +392,12 @@ local options = {
 			   type = "select",
 			   name = L["LibDataBroker Icon"],
 			   values = {}, -- Fill these later.
-			   order = 10,
+			   order = 2,
+			},
+			hideConfigButton = {
+			   type = "toggle",
+			   name = L["Hide Cogwheel"],
+			   order = 3,
 			},
 		     },
 		  },
