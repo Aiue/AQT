@@ -187,6 +187,7 @@ function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an a
       else
 	 gui.artwork:SetTexCoord(0,1,0,1)
       end
+      gui.artwork:Show()
    end
 end
 
