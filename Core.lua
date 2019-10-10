@@ -699,19 +699,31 @@ function AQT:Event_ChatMsgSystem(msg)
    end
 end
 
-function AQT:ExpandHeaders() -- While it seems to make more sense to stick this with the gui functions, this is where we have the iterator. So.. well, possibly make it accessible from elsewhere, or just keep this here.
+function AQT:ExpandHeaders() -- While it seems to make more sense to stick this with the gui functions, this is where we have the iterator cache. So.. well, possibly make it accessible from elsewhere, or just keep this here.
    for k,v in pairs(HeaderCache) do if v.uiObject then v.uiObject:ExpandHeader() end end
 end
 
-function AQT:ToggleHeaders() -- Yes, this is hacky, but it should do the trick.
-   print("Sorry, still broken.")
-   if true then return end
-   for k,v in pairs(HeaderCache) do
-      for i = #v.trackedQuests, 1, -1 do
-	 v.trackedQuests[i]:Untrack()
-	 v.trackedQuests[i]:Track()
+function AQT:ToggleHeaders()
+   local cache = {} -- Only iterate over the ones with uiObjects the second time around.
+   for k,v in pairs(QuestCache) do
+      if v.uiObject then
+	 tinsert(cache, v)
+	 v.uiObject:Orphan()
       end
    end
+
+   for k,v in ipairs(cache) do
+      local parent
+      if st.cfg.showHeaders then
+	 if not v.header.uiObject then v.header:CreateUIObject() end
+	 parent = v.header.uiObject
+      else
+	 parent = st.gui.title
+      end
+      v.uiObject:GetAdopted(parent)
+   end
+   if not st.cfg.showHeaders then st.gui.title:Update() end
+   AQT:UpdateHeaders()
 end
 
 function AQT:UpdateHeaders()

@@ -497,7 +497,7 @@ local options = {
 			   type = "toggle",
 			   name = L["Show Headers"],
 			   order = 1,
-			   disabled = true, -- Still broken, and I need to push a release that should fix some issues. Can't work on this while having that hanging over me.
+--			   disabled = true, -- Still broken, and I need to push a release that should fix some issues. Can't work on this while having that hanging over me.
 			},
 			showHeaderCount = {
 			   type = "toggle",

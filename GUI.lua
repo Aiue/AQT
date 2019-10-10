@@ -212,6 +212,24 @@ function guiFunc:GetWidth(textWidth, counterWidth)
    return textWidth, counterWidth
 end
 
+function guiFunc:Orphan()
+   local parent = self:Parent()
+
+   for k,v in ipairs(parent.children) do
+      if self == v then
+	 tremove(parent.children, k)
+      end
+   end
+
+   self:SetParent(nil)
+   self:ClearAllPoints()
+end
+
+function guiFunc:GetAdopted(parent)
+   tinsert(parent.children, self)
+   self:SetParent(parent.container)
+end
+
 function gui:UpdateConfigButton()
    if st.cfg.hideConfigButton then self.title.optionsButton:Hide() else self.title.optionsButton:Show() end
 end
@@ -228,7 +246,7 @@ end
 function guiFunc:Release(recursed)
    local parent = self:Parent()
    while #self.children > 0 do
-      self.children[1]:SetPoint("TOPLEFT", nil)
+      self.children[1]:ClearAllPoints()
       self.children[1]:Release(true)
    end
 
