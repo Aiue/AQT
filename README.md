@@ -20,4 +20,4 @@ Please use the [Issue Tracker](https://github.com/Aiue/AQT/issues) on GitHub for
 
 Translators wanted! Let me know if you want to contribute with translations!
 
-As per request, you can now [Donate](https://paypal.me/JensNilssonSahlin).
+As per request, you can now [donate](https://paypal.me/JensNilssonSahlin).
