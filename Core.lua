@@ -65,6 +65,7 @@ local Header = baseObject:New(
       testTable = {1,2,3},
       sortFields = {
 	 name = L.Title,
+	 IsClass = L["Matches Class Name"],
 	 IsCurrentZone = L["Matches Current Zone"],
 	 lastUpdate = L["Last Update"],
       },
@@ -230,6 +231,10 @@ end
 function Header:CreateUIObject()
    if self.uiObject then error("Header:CreateUIObject(): '" .. self.name .. "' already has an uiObject.") end
    self.uiObject = st.gui.title:New(self)
+end
+
+function Header:IsClass()
+   return (UnitClass("player") == self.name)
 end
 
 function Header:IsCurrentZone()
