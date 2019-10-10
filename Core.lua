@@ -89,6 +89,7 @@ local Quest = baseObject:New(
       name = "Quest",
       sortFields = {
 	 complete = L.Completion,
+	 HasTimer = L["Has Timer"],
 	 level = L.Level,
 	 tag = L.Tag,
 	 title = L.Title,
@@ -406,6 +407,10 @@ function Objective:Update(qIndex, oIndex)
 
    if update and self.uiObject then self.uiObject:Update() end
    return sound
+end
+
+function Quest:HasTimer()
+   if v.timer then return true else return false end
 end
 
 function Quest:New(o)
