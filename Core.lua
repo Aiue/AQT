@@ -78,6 +78,7 @@ local Objective = baseObject:New(
       sortFields = {
 	 index = L.Index,
 	 lastUpdate = L["Last Update"],
+	 text = L.Description,
       },
    }
 )
