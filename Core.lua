@@ -65,6 +65,7 @@ local Header = baseObject:New(
       testTable = {1,2,3},
       sortFields = {
 	 name = L.Title,
+	 HasTimer = L["Has Timed Quest"],
 	 IsClass = L["Matches Class Name"],
 	 IsCurrentZone = L["Matches Current Zone"],
 	 lastUpdate = L["Last Update"],
@@ -232,6 +233,13 @@ end
 function Header:CreateUIObject()
    if self.uiObject then error("Header:CreateUIObject(): '" .. self.name .. "' already has an uiObject.") end
    self.uiObject = st.gui.title:New(self)
+end
+
+function Header:HasTimer()
+   for k,v in ipairs(self.trackedQuests) do
+      if v.timer then return true end
+   end
+   return false
 end
 
 function Header:IsClass()
