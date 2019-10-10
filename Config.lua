@@ -977,7 +977,7 @@ local options = {
 			   order = 4,
 			},
 			anchor = {
-			   name = L.Position,
+			   name = L.Anchor,
 			   type = "select",
 			   values = CFGHandler.artwork.stretchValues,
 			   order = 5,
