@@ -19,3 +19,5 @@ Apart from improving on the current functionality, some of which I will admit is
 Please use the [Issue Tracker](https://github.com/Aiue/AQT/issues) on GitHub for bug reports or feature requests.
 
 Translators wanted! Let me know if you want to contribute with translations!
+
+As per request, you can now [Donate](https://paypal.me/JensNilssonSahlin).
