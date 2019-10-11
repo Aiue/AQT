@@ -14,6 +14,11 @@ LSM:Register("sound", "Peon: Ready to Work", [[Sound\Creature\Peon\PeonReady1.og
 LSM:Register("sound", "Peon: Work Complete", [[Sound\Creature\Peon\PeonBuildingComplete1.ogg]])
 LSM:Register("sound", "Peon: Work Work", [[Sound\Creature\Peon\PeonYes3.ogg]])
 
+-- Takes up a tiny bit more memory, but even if we consider that we don't have compiler substitutions, it will improve readability. Like what, a few bytes of memory at the most. Use shared table so it can be used in other files as well.
+st.SOUND_COMPLETE = 1
+st.SOUND_OBJECTIVE_COMPLETE = 2
+st.SOUND_OBJECTIVE_PROGRESS = 3
+
 -- Some strings that are of interest to us.
 local ERR_QUEST_OBJECTIVE_COMPLETE_S = ERR_QUEST_OBJECTIVE_COMPLETE_S:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+")
 local ERR_QUEST_UNKNOWN_COMPLETE = ERR_QUEST_UNKNOWN_COMPLETE
@@ -367,6 +372,7 @@ function Objective:Update(qIndex, oIndex)
    end
 
    if self.text ~= text or self.have ~= have or self.need ~= need or self.complete ~= complete then
+      if not self.new then sound = st.SOUND_OBJECTIVE_PROGRESS end
       update = true
       self.lastUpdate = time()
    end
@@ -374,7 +380,7 @@ function Objective:Update(qIndex, oIndex)
    if not self.new then
       local pour,_,r,g,b
       if complete and not self.complete then
-	 sound = false
+	 sound = st.SOUND_OBJECTIVE_COMPLETE
 	 pour = true
 	 self.progress = 1
 	 r,g,b = st.cfg.progressColorMax.r, st.cfg.progressColorMax.g, st.cfg.progressColorMax.b
@@ -521,7 +527,7 @@ function Quest:Update(timer)
 	 end
       end
       if not self.complete and qComplete > 0 then
-	 sound = true
+	 sound = st.SOUND_COMPLETE
 	 AQT:PrePour("Quest Complete: " .. qTitle, st.cfg.progressColorMax.r, st.cfg.progressColorMax.g, st.cfg.progressColorMax.b)
       end
    end
@@ -533,7 +539,7 @@ function Quest:Update(timer)
 
    if not qComplete then
       sound = self:UpdateObjectives()
-      if sound == false then self.lastUpdate = time() end
+      if sound then self.lastUpdate = time() end
    end
    if self.uiObject then
       if update then self.uiObject:Update() end
@@ -552,7 +558,11 @@ function Quest:UpdateObjectives()
    for i = 1, GetNumQuestLeaderBoards(index) do
       if not self.objectives[i] then self.objectives[i] = Objective:New({quest = self.id, index = i, new = true}) end
       local check = self.objectives[i]:Update(index, i)
-      if sound == nil then sound = check end
+      if sound then
+	 if check < sound then sound = check end
+      else
+	 sound = check
+      end
    end
    return sound
 end
@@ -594,9 +604,10 @@ function AQT:QuestLogUpdate(...)
 	 else 
 	    local q = QuestCache[qID]
 	    local sound = q:Update(timer)
-	    if sound and not playSound then playSound = sound -- true, quest completed
-	    elseif sound == false and not playSound then playSound = sound -- false, objective completed
-	    end -- else it's nil, nothing completed
+	    if sound then
+	       if not playSound then playSound = sound
+	       elseif playSound > sound then playSound = sound end
+	    end
 	 end
       end
       i = i + 1
@@ -609,19 +620,26 @@ function AQT:QuestLogUpdate(...)
       if k ~= "Unknown" and not localHeaderCache[k] then v:Remove() end
    end
 
-   if playSound then -- quest complete
+   if playSound == st.SOUND_COMPLETE then
       if st.cfg.playCompletionSound then
 	 if st.cfg.useFactionCompletionSound then
 	    if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: Job's Done"
 	    else sound = "Peon: Work Complete" end -- Should only get here if the player is Horde. Otherwise, the horde is more awesome anyway.
 	 else sound = st.cfg.completionSoundName end
       end
-   elseif playSound == false then -- objective complete
+   elseif playSound == st.SOUND_OBJECTIVE_COMPLETE then -- objective complete
       if st.cfg.playObjectiveSound then
 	 if st.cfg.useFactionObjectiveSound then
 	    if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: Ready to Work"
 	    else sound = "Peon: Ready to Work" end -- default to horde, as it should be!
 	 else sound = st.cfg.objectiveSound end
+      end
+   elseif playSound == st.SOUND_OJECTIVE_PROGRESS then
+      if st.cfg.playObjectiveProgressSound then
+	 if st.cfg.useFactionObjectiveProgressSound then
+	    if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: More Work?"
+	    else sound = "Peon: Work Work" end
+	 else sound = st.cfg.objectiveProgressSound end
       end
    end
 
