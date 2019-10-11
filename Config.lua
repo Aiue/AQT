@@ -135,6 +135,7 @@ local defaults = {
    suppressErrorFrame = true,
    timerType = 1, -- 1 = StatusBar, 2 = FontString (uses counter). Using number instead of tristate boolean in case we want to add more later.
    trackAll = true,
+   unlocked = false,
    useDifficultyColor = true,
    useFactionCompletionSound = true,
    useFactionObjectiveProgressSound = true,
@@ -332,7 +333,8 @@ local CFGHandler = {
 	 elseif info[#info] == "automaticCollapseExpand" then AQT:ZoneChangedNewArea() -- Tiny bit hacky, but does the job.
 	 elseif info[#info] == "hideCompletedObjectives" then AQT:QuestLogUpdate()
 	 elseif info[#info] == "hideConfigButton" then st.gui:UpdateConfigButton()
-	 elseif info[#info] == "alpha" then st.gui:Redraw() end
+	 elseif info[#info] == "alpha" then st.gui:Redraw()
+	 elseif info[#info] == "unlocked" then st.gui:ToggleLock() end
       end,
    },
    font = {

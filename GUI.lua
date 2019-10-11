@@ -81,6 +81,7 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui:UpdateConfigButton()
    gui:Redraw(false)
    gui.title:Update()
+   gui:ToggleLock()
 end
 
 function gui:RecurseResort()
@@ -194,6 +195,22 @@ function gui:RedrawColor()
    gui:SetBackdropColor(st.cfg.backdrop.background.r, st.cfg.backdrop.background.g, st.cfg.backdrop.background.b, st.cfg.backdrop.background.a)
    gui:SetBackdropBorderColor(st.cfg.backdrop.border.r, st.cfg.backdrop.border.g, st.cfg.backdrop.border.b, st.cfg.backdrop.border.a)
    for k,v in ipairs(active_timers) do v:GetParent():UpdateTimer() end
+end
+
+function gui:ToggleLock()
+   if st.cfg.unlocked then
+      self:SetScript("OnDragStart", function(self, button)
+			if button == "LeftButton" then self:StartMoving() end
+      end)
+      self:SetScript("OnDragStop", function(self)
+			self:StopMovingOrSizing()
+			local _,_,_,x,y = self:GetPoint(1) -- We should only have one point set.
+			st.cfg.posX = x
+			st.cfg.posY = y
+      end)
+   else
+      self:SetScript("OnDragStart", nil)
+      self:SetScript("OnDragStop", nil)
 end
 
 function guiFunc:CheckWidth(width)
