@@ -618,48 +618,86 @@ local options = {
 	       type = "group",
 	       order = 3,
 	       args = {
-		  playObjectiveSound = {
-		     type = "toggle",
-		     name = L["Play Objective Completion Sound"],
+		  quest = {
+		     name = L.Quest,
+		     type = "group",
 		     order = 0,
+		     inline = true,
+		     args = {
+			playCompletionSound = {
+			   type = "toggle",
+			   name = L["Play Quest Completion Sound"],
+			   order = 4,
+			},
+			useFactionCompletionSound = {
+			   type = "toggle",
+			   name = L["Use Faction Sound"],
+			   order = 5,
+			   disabled = function(info) return not st.cfg.playCompletionSound end,
+			},
+			completionSoundName = {
+			   type = "select",
+			   name = L.Sound,
+			   order = 6,
+			   disabled = function(info) return (not st.cfg.playCompletionSound or not st.cfg.useFactionCompletionSound) end,
+			   values = AceGUIWidgetLSMlists.sound,
+			   dialogControl = "LSM30_Sound",
+			},
+		     },
 		  },
-		  useFactionObjectiveSound = {
-		     type = "toggle",
-		     name = L["Use Faction Sound"],
+		  objective = {
+		     name = L["Objective Completion"],
+		     type = "group",
 		     order = 1,
-		     disabled = function(info) return not st.cfg.playObjectiveSound end,
+		     inline = true,
+		     args = {
+			playObjectiveSound = {
+			   type = "toggle",
+			   name = L["Play Objective Completion Sound"],
+			   order = 0,
+			},
+			useFactionObjectiveSound = {
+			   type = "toggle",
+			   name = L["Use Faction Sound"],
+			   order = 1,
+			   disabled = function(info) return not st.cfg.playObjectiveSound end,
+			},
+			objectiveSoundName = {
+			   type = "select",
+			   name = L.Sound,
+			   order = 2,
+			   disabled = function(info) return (not st.cfg.playObjectiveSound or not st.cfg.useFactionObjectiveSound) end,
+			   values = AceGUIWidgetLSMlists.sound,
+			   dialogControl = "LSM30_Sound",
+			},
+		     },
 		  },
-		  objectiveSoundName = {
-		     type = "select",
-		     name = L.Sound,
+		  objectiveProgress = {
+		     name = L["Objective Progress"],
+		     type = "group",
 		     order = 2,
-		     disabled = function(info) return (not st.cfg.playObjectiveSound or not st.cfg.useFactionObjectiveSound) end,
-		     values = AceGUIWidgetLSMlists.sound,
-		     dialogControl = "LSM30_Sound",
-		  },
-		  soundBreak = {
-		     type = "header",
-		     order = 3,
-		     name = "",
-		  },
-		  playCompletionSound = {
-		     type = "toggle",
-		     name = L["Play Quest Completion Sound"],
-		     order = 4,
-		  },
-		  useFactionCompletionSound = {
-		     type = "toggle",
-		     name = L["Use Faction Sound"],
-		     order = 5,
-		     disabled = function(info) return not st.cfg.playCompletionSound end,
-		  },
-		  completionSoundName = {
-		     type = "select",
-		     name = L.Sound,
-		     order = 6,
-		     disabled = function(info) return (not st.cfg.playCompletionSound or not st.cfg.useFactionCompletionSound) end,
-		     values = AceGUIWidgetLSMlists.sound,
-		     dialogControl = "LSM30_Sound",
+		     inline = true,
+		     args = {
+			playObjectiveProgressSound = {
+			   type = "toggle",
+			   name = L["Play Objective Progress Sound"],
+			   order = 0,
+			},
+			useFactionObjectiveProgressSound = {
+			   type = "toggle",
+			   name = L["Use Faction Sound"],
+			   order = 1,
+			   disabled = function(info) return not st.cfg.playObjectiveSound end,
+			},
+			objectiveProgressSoundName = {
+			   type = "select",
+			   name = L.Sound,
+			   order = 2,
+			   disabled = function(info) return (not st.cfg.playObjectiveSound or not st.cfg.useFactionObjectiveSound) end,
+			   values = AceGUIWidgetLSMlists.sound,
+			   dialogControl = "LSM30_Sound",
+			},
+		     },
 		  },
 	       },
 	    },
