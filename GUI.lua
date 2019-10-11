@@ -43,7 +43,7 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.scrollChild = CreateFrame("Frame", nil, gui.scrollFrame)
    gui.container = gui.scrollChild -- Hack to support new relational structure. Will make this the only reference after going through the code to make sure nothing else references it.
    gui.scrollFrame:SetScrollChild(gui.scrollChild)
-   gui.scrollFrame:SetScript("OnSizeChanged", function(self, width, height)
+   gui.scrollFrame:SetScript("OnSizeChanged", function(self, width, height) -- I'm not entirely sure what I was thinking here.
 				self:GetScrollChild():SetWidth(width)
    end)
    gui.scrollFrame:EnableMouseWheel(true)
@@ -199,17 +199,14 @@ function gui:RedrawColor()
    for k,v in ipairs(active_timers) do v:GetParent():UpdateTimer() end
 end
 
-function guiFunc:GetWidth(textWidth, counterWidth)
-   textWidth = (self.text:GetStringWidth() > textWidth) and self.text:GetStringWidth() or textWidth
-   counterWidth = (self.counter:GetStringWidth() > counterWidth) and self.counter:GetStringWidth() or counterWidth
-
+function guiFunc:CheckWidth(width)
+   width = width or 0
+   local w = st.cfg.font.size + st.cfg.indent + st.cfg.padding*2 + v.text:GetWidth() + v.counter:GetWidth()
+   if w > width then width = w end
    for k,v in ipairs(self.children) do
-      local childTextWidth,childCounterWidth = v:GetWidth(textWidth, counterWidth)
-      textWidth = (childTextWidth > textWidth) and childTextWidth or textWidth
-      counterWidth = (childCounterWidth > counterWidth) and childCounterWidth or counterWidth
+      width = v:CheckWidth(width)
    end
-
-   return textWidth, counterWidth
+   return width
 end
 
 function guiFunc:Orphan()
