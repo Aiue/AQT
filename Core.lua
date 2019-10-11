@@ -62,7 +62,6 @@ local Header = baseObject:New(
    {
       name = "Header",
       TitleText = "",
-      testTable = {1,2,3},
       sortFields = {
 	 name = L.Title,
 	 HasTimer = L["Has Timed Quest"],
