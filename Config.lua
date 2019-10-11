@@ -464,14 +464,19 @@ local options = {
 		     inline = true,
 		     args = {
 			descr = {
-			   type="description",
+			   type = "description",
 			   name = "Sorry about the mess. Some of these are currently disabled as they are awaiting proper implementation. Further, most of these configuration options ended up here because I couldn't quite figure out where to place them. Meaning, I may well move them elsewhere eventually.",
 			   order = 0,
+			},
+			unlocked = {
+			   type = "toggle",
+			   name = L["Unlock Tracker"],
+			   order = 1,
 			},
 			indent = {
 			   type = "range",
 			   name = L.Indentation,
-			   order = 1,
+			   order = 2,
 			   min = 0,
 			   max = 5,
 			   step = .1,
@@ -481,12 +486,12 @@ local options = {
 			   type = "select",
 			   name = L["LibDataBroker Icon"],
 			   values = {}, -- Fill these later.
-			   order = 2,
+			   order = 3,
 			},
 			hideConfigButton = {
 			   type = "toggle",
 			   name = L["Hide Cogwheel"],
-			   order = 3,
+			   order = 4,
 			},
 		     },
 		  },

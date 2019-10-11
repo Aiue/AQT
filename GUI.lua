@@ -63,11 +63,8 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
 
       gui:SetHeight((h + st.cfg.padding*2) > st.cfg.maxHeight and st.cfg.maxHeight or (h + st.cfg.padding*2))
 
---      print("GetVerticalScroll(): " .. tostring(gui.scrollFrame:GetVerticalScroll()) .. "; GetVerticalScrollRange(): " .. tostring(gui.scrollFrame:GetVerticalScrollRange())) -- So I've concluded it's definitely called too often. But it doesn't seem to do what it should when it should.
-      -- Ok. It's called too frequently, but.. it would appear that it for some reason ends up being called BEFORE something is removed. Definitely not sure why this would be.
       if gui.scrollFrame:GetVerticalScroll() > gui.scrollFrame:GetVerticalScrollRange() then gui.scrollFrame:SetVerticalScroll(gui.scrollFrame:GetVerticalScrollRange()) end
    end
-
 
    gui.title = guiFunc.New(gui, st.types.Title)
    gui.title:SetPoint("TOPLEFT", gui.scrollChild, "TOPLEFT")
@@ -201,6 +198,7 @@ end
 
 function guiFunc:CheckWidth(width)
    width = width or 0
+   -- May want to use GetTextWidth()
    local w = st.cfg.font.size + st.cfg.indent + st.cfg.padding*2 + v.text:GetWidth() + v.counter:GetWidth()
    if w > width then width = w end
    for k,v in ipairs(self.children) do
