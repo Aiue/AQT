@@ -8,6 +8,7 @@ local Prism = LibStub("LibPrism-1.0")
 local L = st.L
 
 LSM:Register("sound", "Peasant: Job's Done", [[Interface\AddOns\AQT\Sounds\Peasant_work_done.mp3]])
+LSM:Register("sound", "Peasant: More Work?", [[Sound\Creature\Peasant\PeasantWhat3.ogg]])
 LSM:Register("sound", "Peasant: Ready to Work", [[Sound\Creature\Peasant\PeasantReady1.ogg]])
 LSM:Register("sound", "Peon: Ready to Work", [[Sound\Creature\Peon\PeonReady1.ogg]])
 LSM:Register("sound", "Peon: Work Complete", [[Sound\Creature\Peon\PeonBuildingComplete1.ogg]])
