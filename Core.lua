@@ -126,11 +126,7 @@ function AQT:OnInitialize()
 end
 
 local function factionInit()
-   if not GetFactionInfo(1) then
-      print("GetFactionInfo(1) returned nil, retrying in ten seconds..")
-      C_Timer.After(10, factionInit())
-      return
-   end
+   if not GetFactionInfo(1) then return end
 
    local i = 1
    local otherfound
@@ -717,6 +713,8 @@ function AQT:Event_ChatMsgSystem(msg)
       change = -change
    elseif msg:match("^" .. FACTION_STANDING_INCREASED .. "$") then faction,change = msg:match("^" .. FACTION_STANDING_INCREASED .. "$")
    else return end
+
+   if factionInit then factionInit() end
 
    if not factionCache[faction] then return end
 
