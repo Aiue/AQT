@@ -67,7 +67,6 @@ end
 local Header = baseObject:New(
    {
       name = "Header",
-      TitleText = "",
       sortFields = {
 	 name = L.Title,
 	 HasTimer = L["Has Timed Quest"],
@@ -278,8 +277,17 @@ function Header:TestCollapsedState()
    end
 end
 
+function Header:TitleText()
+   if st.cfg.highlightCurrentZoneText and Header:IsCurrentZone() then
+      local fmt = "|cff%02x%02x%02x%s|c"
+      local c = st.cfg.highlightCurrentZoneTextColor
+      return fmt:format(c.r, c.g, c.b)
+   else
+      return self.name
+   end
+end
+
 function Header:Update()
-   self.TitleText = self.name
    if st.cfg.showHeaders and #self.trackedQuests > 0 then
       if not self.uiObject then
 	 self:CreateUIObject()
@@ -658,7 +666,10 @@ end
 
 function AQT:ZoneChangedNewArea()
    st.gui.title:Sort()
+   self:UpdateHeaders()
+   --[[ Should no longer be needed, as we'll be updating all headers, which will call this function as well.
    if st.cfg.automaticCollapseExpand then for k,v in pairs(HeaderCache) do v:TestCollapsedState() end end
+   ]]--
 end
 
 -- This is ugly, but AceHook didn't seem to deliver quite according to documentation.

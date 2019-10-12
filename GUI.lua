@@ -32,6 +32,8 @@ local mt = {__index = function(t, k) return guiFunc[k] end}
 function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.artwork = gui:CreateTexture(nil)
    gui.artwork:SetDrawLayer("artwork")
+   gui.highlight = gui:CreateTexture(nil) -- Put this here instead of reusinc the recycler each time.
+   gui.highlight:SetDrawLayer("artwork") -- May want another layer, but use this for now.
 
    gui.font = CreateFont(getAvailableName("AQTFont"))
    gui.font:SetJustifyV("TOP")
