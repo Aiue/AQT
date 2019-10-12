@@ -126,6 +126,9 @@ function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an a
    gui:RedrawColor(false)
    gui:SetAlpha(st.cfg.alpha)
 
+   local c = st.cfg.highlightCurrentZoneBackground
+   gui.highlight:SetColorTexture(c.r, c.g, c.b, c.a)
+
    if not st.cfg.artwork.texture and st.cfg.artwork.LSMTexture == "None" then
       gui.artwork:Hide()
    else
@@ -226,6 +229,13 @@ function guiFunc:CheckWidth(width)
    return width
 end
 
+function guiFunc:SetHighlight()
+   if st.cfg.highlightCurrentZoneBackground then
+      gui.highlight:SetAllPoints(self)
+      gui.highlight:Show()
+   end
+end
+
 function guiFunc:Orphan()
    local parent = self:Parent()
 
@@ -268,6 +278,12 @@ function guiFunc:Release(recursed)
 
    for k,v in ipairs(parent.children) do
       if self == v then tinsert(recycler, tremove(parent.children, k));found = true end
+   end
+
+   local _,rel = gui.highlight:GetPoint(1)
+   if rel == self then
+      gui.highlight:ClearAllPoints()
+      gui.highlight:Hide()
    end
 
    if not found then print("Could not find what we're trying to release..");print(self:Parent().text:GetText() .. "/" .. self.text:GetText()) end

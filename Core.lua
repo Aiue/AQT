@@ -279,9 +279,10 @@ end
 
 function Header:TitleText()
    if st.cfg.highlightCurrentZoneText and Header:IsCurrentZone() then
-      local fmt = "|cff%02x%02x%02x%s|c"
+      self.uiObject:SetHighlight()
+      local fmt = "|cff%02x%02x%02x%s|r"
       local c = st.cfg.highlightCurrentZoneTextColor
-      return fmt:format(c.r, c.g, c.b)
+      return fmt:format(c.r, c.g, c.bm self.name)
    else
       return self.name
    end
@@ -666,6 +667,7 @@ end
 
 function AQT:ZoneChangedNewArea()
    st.gui.title:Sort()
+   st.gui.highlight:Hide()
    self:UpdateHeaders()
    --[[ Should no longer be needed, as we'll be updating all headers, which will call this function as well.
    if st.cfg.automaticCollapseExpand then for k,v in pairs(HeaderCache) do v:TestCollapsedState() end end
