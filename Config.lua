@@ -105,6 +105,20 @@ local defaults = {
    hideCompletedObjectives = true,
    hideQuestTimerFrame = true,
    hideQuestWatch = true,
+   highlightCurrentZoneBackground = false,
+   highlightCurrentZoneBackgroundColor = {
+      r = .5,
+      g = .5,
+      b = .5,
+      a = 1,
+   },
+   highlightCurrentZoneText = false,
+   highlightCurrentZoneTextColor = {
+      r = 0,
+      g = 1,
+      b = 0,
+      a = 1,
+   },
    indent = 0,
    LDBIcon = -1,
    maxHeight = 650,
@@ -1214,6 +1228,32 @@ local options = {
 	       order = 2,
 	       set = CFGHandler.coloring.set,
 	       args = {
+		  highlight = {
+		     type = "group",
+		     name = L.Highlighting,
+		     order = 0,
+		     inline = true,
+		     args = {
+			highlightCurrentZoneText = {
+			   type = "toggle",
+			   name = "Highlight Current Zone Text",
+			   width = "double",
+			},
+			highlightCurrentZoneTextColor = {
+			   type = "color",
+			   name = L.Color,
+			},
+			highlightCurrentZoneBackground = {
+			   type = "toggle",
+			   name = "Highlight Current Zone Background",
+			   width = "double",
+			},
+			highlightCurrentZoneBackgroundColor = {
+			   type = "color",
+			   name = L.Color,
+			},
+		     },
+		  },
 		  useDifficultyColor = {
 		     name = L["Quest Difficulty Coloring"],
 		     type = "toggle",
@@ -1226,42 +1266,50 @@ local options = {
 		     order = 1,
 		     width = double,
 		  },
-		  progressColor = {
-		     name = L["Progress Color"],
+		  misc = {
+		     name = L.Miscellaneous,
 		     type = "group",
+		     order = 1,
 		     inline = true,
-		     order = 2,
-		     disabled = function() return not st.cfg.useProgressColor end,
 		     args = {
-			progressColorMin = {
-			   name = L.Incomplete,
-			   type = "color",
-			   hasAlpha = false,
-			   order = 0,
-			},
-			progressColorMax = {
-			   name = L.Complete,
-			   type = "color",
-			   hasAlpha = false,
-			   order = 1,
-			},
-			useHSVGradient = {
-			   name = L["Use HSV Gradient"],
-			   type = "toggle",
+			progressColor = {
+			   name = L["Progress Color"],
+			   type = "group",
+			   inline = true,
 			   order = 2,
-			},
-			progressionSample = {
-			   name = function()
-			      local output = L.Sample .. ": "
-			      if st.cfg.useProgressColor then
-				 for i = 0, 10 do
-				    output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
-				 end
-			      else output = output .. "0% -> 10% -> 20% -> 30% -> 40% -> 50% -> 60% -> 70% -> 80% -> 90% -> 100%"
-			      end
-			      return output
-			   end,
-			   type = "description",
+			   disabled = function() return not st.cfg.useProgressColor end,
+			   args = {
+			      progressColorMin = {
+				 name = L.Incomplete,
+				 type = "color",
+				 hasAlpha = false,
+				 order = 0,
+			      },
+			      progressColorMax = {
+				 name = L.Complete,
+				 type = "color",
+				 hasAlpha = false,
+				 order = 1,
+			      },
+			      useHSVGradient = {
+				 name = L["Use HSV Gradient"],
+				 type = "toggle",
+				 order = 2,
+			      },
+			      progressionSample = {
+				 name = function()
+				    local output = L.Sample .. ": "
+				    if st.cfg.useProgressColor then
+				       for i = 0, 10 do
+					  output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
+				       end
+				    else output = output .. "0% -> 10% -> 20% -> 30% -> 40% -> 50% -> 60% -> 70% -> 80% -> 90% -> 100%"
+				    end
+				    return output
+				 end,
+				 type = "description",
+			      },
+			   },
 			},
 		     },
 		  },
