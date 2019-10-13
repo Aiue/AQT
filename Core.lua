@@ -639,7 +639,7 @@ function AQT:QuestLogUpdate(...)
 	    else sound = "Peon: Ready to Work" end -- default to horde, as it should be!
 	 else sound = st.cfg.objectiveSound end
       end
-   elseif playSound == st.SOUND_OJECTIVE_PROGRESS then
+   elseif playSound == st.SOUND_OBJECTIVE_PROGRESS then
       if st.cfg.playObjectiveProgressSound then
 	 if st.cfg.useFactionObjectiveProgressSound then
 	    if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: More Work?"
