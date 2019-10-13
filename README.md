@@ -1,5 +1,3 @@
-***Out of town for the weekend, but I'll still push some updates. Just know that I will not be able to test these myself until I get home.***
-
 AQT is yet another quest tracker addon. No, not the kind that will tell you where to go or anything. It merely displays your progress on quests you have in your log. It will only use data supplied by the API, as such, there are no plans to include information on questgiver locations or quest targets or the like.
 
 What it will do is:
