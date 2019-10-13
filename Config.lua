@@ -319,6 +319,7 @@ local CFGHandler = {
 	    st.cfg[info[#info]] = v1
 	 end
 	 st.gui.title:UpdateText(true)
+	 if info[#info] == "highlightCurrentZoneBackground" or info[#info] == "highlightCurrentZoneBackgroundColor" then st.gui:Redraw() end
       end,
    },
    default = {

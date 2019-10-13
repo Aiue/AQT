@@ -128,6 +128,10 @@ function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an a
 
    local c = st.cfg.highlightCurrentZoneBackgroundColor
    gui.highlight:SetColorTexture(c.r, c.g, c.b, c.a)
+   if not st.cfg.highlighCurrentZoneBackground then
+      gui.highlight:ClearAllPoints()
+      gui.highlight:Hide()
+   end
 
    if not st.cfg.artwork.texture and st.cfg.artwork.LSMTexture == "None" then
       gui.artwork:Hide()
