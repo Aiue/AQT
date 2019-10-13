@@ -85,6 +85,21 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui:Redraw(false)
    gui.title:Update()
    gui:ToggleLock()
+
+   -- If tracker is off screen, bring it to the middle.
+   local resolution = select(GetCurrentResolution(), GetScreenResolutions())
+   local match = "^(%d+)x(%d+)$"
+   local x,y = resolution:match(match)
+   x = tonumber(x)
+   y = tonumber(y)
+
+   if gui:GetBottom() < -gui:GetHeight() or gui:GetBottom() > y or gui:GetLeft() < -gui:GetWidth() or gui:GetLeft() > x then
+      st.cfg.anchorFrom = "RIGHT"
+      st.cfg.anchorTo = "RIGHT"
+      st.cfg.posX = 0
+      st.cfg.posY = 0
+      gui:Redraw()
+   end
 end
 
 function gui:RecurseResort()
