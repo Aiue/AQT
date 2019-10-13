@@ -30,6 +30,7 @@ setmetatable(guiFunc, getmetatable(UIParent))
 local mt = {__index = function(t, k) return guiFunc[k] end}
 
 function gui:OnEnable() -- Might want to attach this one elsewhere.
+   gui:SetFrameStrata("BACKGROUND")
    gui.artwork = gui:CreateTexture(nil)
    gui.artwork:SetDrawLayer("artwork")
    gui.highlight = gui:CreateTexture(nil) -- Put this here instead of reusinc the recycler each time.
@@ -216,7 +217,9 @@ function gui:ToggleLock()
       end)
       self:SetScript("OnDragStop", function(self)
 			self:StopMovingOrSizing()
-			local _,_,_,x,y = self:GetPoint(1) -- We should only have one point set.
+			local af,_,at,x,y = self:GetPoint(1) -- We should only have one point set.
+			st.cfg.anchorFrom = af
+			st.cfg.anchorTo = at
 			st.cfg.posX = x
 			st.cfg.posY = y
       end)

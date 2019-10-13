@@ -493,7 +493,6 @@ local options = {
 			   type = "toggle",
 			   name = L["Unlock Tracker"],
 			   order = 1,
-			   disabled = true,
 			},
 			indent = {
 			   type = "range",
