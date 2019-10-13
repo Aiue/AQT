@@ -124,6 +124,7 @@ local defaults = {
    maxHeight = 650,
    minWidth = 100,
    maxWidth = 250,
+   mouseEnabled = true,
    objectiveProgressSoundName = "Peon: Work Work",
    objectiveSoundName = "Peon: Ready to Work",
    padding = 10,
@@ -452,6 +453,10 @@ CFGHandler.sorting.newDisabled = function(info)
    local objType
    if info[#info-1] == "_specialAddNew" then objType = info[#info-2] else objType = info[#info-1] end
    return CFGHandler.sorting.AddSortValuesOrNot(objType, false)
+end
+
+local function getMouseEnabled(info)
+   return st.cfg.mouseEnabled end
 end
 
 local options = {
@@ -817,10 +822,23 @@ local options = {
 	    },
 	 },
       },
+      mouse = {
+	 name L["Mouse Interaction"],
+	 type = "group",
+	 order = 2,
+	 childGroups = "tab",
+	 args = {
+	    mouseEnabled = {
+	       name = L["Enable Mouse"],
+	       type = "toggle",
+	       order = 0,
+	    },
+	 },
+      },
       sorting = {
 	 name = L.Sorting,
 	 type = "group",
-	 order = 2,
+	 order = 3,
 	 childGroups = "tab",
 	 get = CFGHandler.sorting.get,
 	 set = CFGHandler.sorting.set,
@@ -829,7 +847,7 @@ local options = {
       style = {
 	 name = L.Style,
 	 type = "group",
-	 order = 3,
+	 order = 4,
 	 childGroups = "tab",
 	 args = {
 	    background ={
@@ -1186,7 +1204,7 @@ local options = {
 			   type = "select",
 			   name = L.Outline,
 			   order = 2,
-			   values = {[""] = "None",OUTLINE = "Thin Outline", THICKOUTLINE = "Thick Outline"},
+			   values = {[""] = L.None,OUTLINE = L["Thin Outline"], THICKOUTLINE = ["Thick Outline"]},
 			},
 			size = {
 			   name = L.Size,
@@ -1339,7 +1357,7 @@ local options = {
 		     type = "select",
 		     name = L.Outline,
 		     order = 2,
-		     values = {[""] = "None",OUTLINE = "Thin Outline", THICKOUTLINE = "Thick Outline"},
+		     values = {[""] = L.None, OUTLINE = L["Thin Outline"], THICKOUTLINE = L["Thick Outline"]},
 		  },
 		  size = {
 		     name = L.Size,
