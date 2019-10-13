@@ -204,16 +204,24 @@ end
 
 function gui:ToggleLock()
    if st.cfg.unlocked then
+      self:EnableMouse(true)
+      self:SetMovable(true)
+      self:RegisterForDrag("LeftButton")
       self:SetScript("OnDragStart", function(self, button)
 			if button == "LeftButton" then self:StartMoving() end
       end)
       self:SetScript("OnDragStop", function(self)
 			self:StopMovingOrSizing()
 			local _,_,_,x,y = self:GetPoint(1) -- We should only have one point set.
+			print(self:GetPoint(1))
+			print(x)
+			print(y)
 			st.cfg.posX = x
 			st.cfg.posY = y
       end)
    else
+      self:EnableMouse(false)
+      self:SetMovable(false)
       self:SetScript("OnDragStart", nil)
       self:SetScript("OnDragStop", nil)
    end

@@ -493,6 +493,7 @@ local options = {
 			   type = "toggle",
 			   name = L["Unlock Tracker"],
 			   order = 1,
+			   disabled = true,
 			},
 			indent = {
 			   type = "range",
@@ -1251,24 +1252,29 @@ local options = {
 		     name = L.Highlighting,
 		     order = 0,
 		     inline = true,
+		     disabled = true,
 		     args = {
 			highlightCurrentZoneText = {
 			   type = "toggle",
 			   name = "Highlight Current Zone Text",
 			   width = "double",
+			   order = 0,
 			},
 			highlightCurrentZoneTextColor = {
 			   type = "color",
 			   name = L.Color,
+			   order = 1,
 			},
 			highlightCurrentZoneBackground = {
 			   type = "toggle",
 			   name = "Highlight Current Zone Background",
 			   width = "double",
+			   order = 2,
 			},
 			highlightCurrentZoneBackgroundColor = {
 			   type = "color",
 			   name = L.Color,
+			   order = 3,
 			},
 		     },
 		  },
