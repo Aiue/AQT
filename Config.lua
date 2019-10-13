@@ -456,7 +456,7 @@ CFGHandler.sorting.newDisabled = function(info)
 end
 
 local function getMouseEnabled(info)
-   return st.cfg.mouseEnabled end
+   return st.cfg.mouseEnabled
 end
 
 local options = {
@@ -823,7 +823,7 @@ local options = {
 	 },
       },
       mouse = {
-	 name L["Mouse Interaction"],
+	 name = L["Mouse Interaction"],
 	 type = "group",
 	 order = 2,
 	 childGroups = "tab",
@@ -1204,7 +1204,7 @@ local options = {
 			   type = "select",
 			   name = L.Outline,
 			   order = 2,
-			   values = {[""] = L.None,OUTLINE = L["Thin Outline"], THICKOUTLINE = ["Thick Outline"]},
+			   values = {[""] = L.None,OUTLINE = L["Thin Outline"], THICKOUTLINE = L["Thick Outline"]},
 			},
 			size = {
 			   name = L.Size,

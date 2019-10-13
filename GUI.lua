@@ -126,7 +126,7 @@ function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an a
    gui:RedrawColor(false)
    gui:SetAlpha(st.cfg.alpha)
 
-   local c = st.cfg.highlightCurrentZoneBackground
+   local c = st.cfg.highlightCurrentZoneBackgroundColor
    gui.highlight:SetColorTexture(c.r, c.g, c.b, c.a)
 
    if not st.cfg.artwork.texture and st.cfg.artwork.LSMTexture == "None" then
@@ -216,6 +216,7 @@ function gui:ToggleLock()
    else
       self:SetScript("OnDragStart", nil)
       self:SetScript("OnDragStop", nil)
+   end
 end
 
 function guiFunc:CheckWidth(width)

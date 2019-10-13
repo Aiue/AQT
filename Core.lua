@@ -278,7 +278,7 @@ function Header:TitleText()
       self.uiObject:SetHighlight()
       local fmt = "|cff%02x%02x%02x%s|r"
       local c = st.cfg.highlightCurrentZoneTextColor
-      return fmt:format(c.r, c.g, c.bm self.name)
+      return fmt:format(c.r, c.g, c.bm, self.name)
    else
       return self.name
    end
