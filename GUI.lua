@@ -213,9 +213,6 @@ function gui:ToggleLock()
       self:SetScript("OnDragStop", function(self)
 			self:StopMovingOrSizing()
 			local _,_,_,x,y = self:GetPoint(1) -- We should only have one point set.
-			print(self:GetPoint(1))
-			print(x)
-			print(y)
 			st.cfg.posX = x
 			st.cfg.posY = y
       end)

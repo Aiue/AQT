@@ -150,7 +150,6 @@ local defaults = {
    suppressErrorFrame = true,
    timerType = 1, -- 1 = StatusBar, 2 = FontString (uses counter). Using number instead of tristate boolean in case we want to add more later.
    trackAll = true,
-   unlocked = false,
    useDifficultyColor = true,
    useFactionCompletionSound = true,
    useFactionObjectiveProgressSound = true,
@@ -1252,7 +1251,6 @@ local options = {
 		     name = L.Highlighting,
 		     order = 0,
 		     inline = true,
-		     disabled = true,
 		     args = {
 			highlightCurrentZoneText = {
 			   type = "toggle",

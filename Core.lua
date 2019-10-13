@@ -563,7 +563,7 @@ function Quest:UpdateObjectives()
    for i = 1, GetNumQuestLeaderBoards(index) do
       if not self.objectives[i] then self.objectives[i] = Objective:New({quest = self.id, index = i, new = true}) end
       local check = self.objectives[i]:Update(index, i)
-      if sound then
+      if check and sound then
 	 if check < sound then sound = check end
       else
 	 sound = check
