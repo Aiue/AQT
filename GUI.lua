@@ -323,6 +323,8 @@ function guiFunc:Release(recursed)
    self.text:SetText("")
    self.counter:SetText("")
 
+   for k,v in pairs(self.script) do self:SetScript(k) end
+
    self:ReleaseButton()
    self:ReleaseIcon()
    self:ReleaseTimer()
@@ -335,6 +337,13 @@ function guiFunc:Release(recursed)
       parent:UpdateSize(true)
    end
 end
+
+function guiFunc:SetScript(script, func)
+   self:RawSetScript(script, func)
+   self.script[script] = func
+end
+
+guiFunc.RawSetScript = getmetatable(UIParent).__index.SetScript -- Hacky, but gets the job done.
 
 function guiFunc:ReleaseButton()
    if self.button then
@@ -408,6 +417,7 @@ function guiFunc:New(owner)
       object.container:SetPoint("TOPLEFT", object, "BOTTOMLEFT")
       object.container:SetPoint("TOPRIGHT", object, "BOTTOMRIGHT")
       object.children = {}
+      object.scripts = {}
       setmetatable(object, mt)
    end
    tinsert(self.children, object)
