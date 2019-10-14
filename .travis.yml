@@ -11,3 +11,4 @@ script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/re
 branches:
   only:
   - /^\d+\.\d+\.\d+(\w+)?$/
+  - /^\d+\.\d+\.\d+\-(\w+)?$/
