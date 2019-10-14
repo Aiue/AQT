@@ -459,6 +459,7 @@ local function getMouseEnabled(info)
    return st.cfg.mouseEnabled
 end
 
+--[[
 local function getResolution()
    local resolution = select(GetCurrentResolution(), GetScreenResolutions())
    local match = "^(%d+)x(%d+)$"
@@ -466,25 +467,16 @@ local function getResolution()
    return x,y
 end
 
-local function getResXMin()
-   local x,y = getResolution()
-   return -tonumber(x)
-end
-
-local function getResXMax()
+local function getResX()
    local x,y = getResolution()
    return tonumber(x)
 end
 
-local function getResYMin()
-   local x,y = getResolution()
-   return -tonumber(y)
-end
-
-local function getResYMax()
+local function getResY()
    local x,y = getResolution()
    return tonumber(y)
 end
+]]--
 
 local options = {
    type = "group",
@@ -798,16 +790,20 @@ local options = {
 	    posX = {
 	       name = L["X Offset"],
 	       type = "range",
-	       min = getResXMin(),
-	       max = getResXMax(),
+	       --min = -getResX(),
+	       --max = getResX(),
+	       min = -2000,
+	       max = 2000,
 	       step = 1,
 	       order = 2,
 	    },
 	    posY = {
 	       name = L["Y Offset"],
 	       type = "range",
-	       min = getResYMin(),
-	       max = getResYMax(),
+	       --min = -getResY(),
+	       --max = getResY(),
+	       min = 2000,
+	       max = 2000,
 	       step = 1,
 	       order = 3,
 	    },

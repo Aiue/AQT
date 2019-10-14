@@ -86,6 +86,7 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.title:Update()
    gui:ToggleLock()
 
+--[[
    -- If tracker is off screen, bring it to the middle.
    local resolution = select(GetCurrentResolution(), GetScreenResolutions())
    local match = "^(%d+)x(%d+)$"
@@ -100,6 +101,7 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
       st.cfg.posY = 0
       gui:Redraw()
    end
+]]--
 end
 
 function gui:RecurseResort()
