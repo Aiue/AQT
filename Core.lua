@@ -102,16 +102,11 @@ local Quest = baseObject:New(
 		     break
 		  end
 	       end
-
-	       QuestLog_SetSelection(GetQuestLogIndexByID(self.id))
-	       ToggleQuestLog()
-	    end,
-	 },
-	 PrintSquirrel = {
-	    desc = "",
-	    func = function(self)
-	       print("SQUIRREL!")
-	       print(self.title)
+	       if (QuestLogFrame:IsShown() and GetQuestLogIndexByID(self.id) == GetQuestLogSelection()) or not QuestLogFrame:IsShown() then ToggleQuestLog() end
+	       local index = GetQuestLogIndexByID(self.id)
+	       QuestLog_SetSelection(index)
+	       QuestLogListScrollFrameScrollBar:SetValue((index-1)*15) -- I'm sure this requires some tweaking.
+	       QuestLog_Update()
 	    end,
 	 },
       },
@@ -612,7 +607,6 @@ function Quest:UpdateObjectives()
 	 end
       end
    end
-   if sound then print(sound) end
    return sound
 end
 

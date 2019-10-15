@@ -130,7 +130,6 @@ local defaults = {
 	 enabled = true,
 	 LeftButton = {
 	    func = "ShowInQuestLog",
-	    Shift = "PrintSquirrel",
 	 },
       },
    },
