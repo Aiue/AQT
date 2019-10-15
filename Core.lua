@@ -174,8 +174,7 @@ local function factionInit()
       end
 
       factionCache[faction] = {
-	 raw = value,
-	 relative = value,
+	 reputation = value,
 	 standing = standing,
 	 objectives = {},
       }
@@ -369,7 +368,7 @@ function Objective:Update(qIndex, oIndex)
 	 countertext = have:sub(1,1) .. "/" .. need:sub(1,1)
 	 have,need = (complete and 1 or 0),1
       else
-	 have = factionCache[text].raw
+	 have = factionCache[text].reputation
 	 if need == FACTION_STANDING_LABEL1 then need = -42000 -- Hated. This would be strange, but uh, ok.
 	 elseif need == FACTION_STANDING_LABEL2 then need = -6000 -- Hostile
 	 elseif need == FACTION_STANDING_LABEL3 then need = -3000 -- Unfriendly
@@ -753,28 +752,7 @@ function AQT:Event_ChatMsgSystem(msg)
    if not factionCache[faction] then return end
 
    local fcf = factionCache[faction]
-   fcf.raw = fcf.raw + change
-   fcf.relative = fcf.relative + change
-
-   if fcf.relative < 0 then fcf.standing = fcf.standing - 1 end
-
-   local max = 0
-
-   if fcf.standing == 1 then max = 36000 -- Hated
-   elseif fcf.standing == 2 then max = 3000 -- Hostile
-   elseif fcf.standing == 3 then max = 3000 -- Unfriendly
-   elseif fcf.standing == 4 then max = 3000 -- Neutral
-   elseif fcf.standing == 5 then max = 6000 -- Friendly
-   elseif fcf.standing == 6 then max = 12000 -- Honored
-   elseif fcf.standing == 7 then max = 21000 -- Revered
-   else max = 0 end -- Exalted. Assume it's at 8 if none of the others.
-
-   if fcf.relative > max then
-      fcf.standing = max
-      fcf.relative = fcf.relative - max
-   end
-
-   if fcf.relative < 0 then fcf.relative = max + fcf.relative end -- Yes, we need to check if this is < 0 again, but it's better than the alternative of doing the longer chain again.
+   fcf.reputation = fcf.reputation + change
 
    if fcf.objectives then
       for k,v in ipairs(fcf.objectives) do v:Update() end
