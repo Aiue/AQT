@@ -109,6 +109,12 @@ local Quest = baseObject:New(
 	       QuestLog_Update()
 	    end,
 	 },
+	 ShareQuest = {
+	    desc = L["Share Quest"],
+	    func = function(self)
+	       QuestLogPushQuest(GetQuestLogIndexByID(self.id))
+	    end,
+	 },
       },
       name = "Quest",
       sortFields = {
@@ -152,7 +158,7 @@ local function factionInit()
    local i = 1
    local otherfound
    while i do
-      local faction,_,standing,_,_,value = GetFactionInfo(i)
+      local faction,_,standing,offset,_,value = GetFactionInfo(i)
       -- This looks really strange, but GetFactionInfo(i) will:
       -- * Return the "Other" entry at the proper place.
       -- * Eventually return the "Inactive"
@@ -166,19 +172,9 @@ local function factionInit()
 	    otherfound = true
 	 end
       end
-      local val
-
-      if standing == 8 then val = value + 84000 -- Exalted
-      elseif standing == 7 then val = value + 63000 -- Revered
-      elseif standing == 6 then val = value + 51000 -- Honored
-      elseif standing == 5 then val = value + 45000 -- Friendly
-      elseif standing == 4 then val = value + 42000 -- Neutral
-      elseif standing == 3 then val = value + 39000 -- Unfriendly
-      elseif standing == 2 then val = value + 36000 -- Hostile
-      else val = value end -- Hated, defaults to.  standing SHOULDN'T be other than 1 in this case, but never know..
 
       factionCache[faction] = {
-	 raw = val,
+	 raw = value,
 	 relative = value,
 	 standing = standing,
 	 objectives = {},
@@ -374,17 +370,17 @@ function Objective:Update(qIndex, oIndex)
 	 have,need = (complete and 1 or 0),1
       else
 	 have = factionCache[text].raw
-	 if need == FACTION_STANDING_LABEL1 then need = 0 -- Hated. This would be strange, but uh, ok.
-	 elseif need == FACTION_STANDING_LABEL2 then need = 36000 -- Hostile
-	 elseif need == FACTION_STANDING_LABEL3 then need = 39000 -- Unfriendly
-	 elseif need == FACTION_STANDING_LABEL4 then need = 42000 -- Neutral
-	 elseif need == FACTION_STANDING_LABEL5 then need = 45000 -- Friendly
-	 elseif need == FACTION_STANDING_LABEL6 then need = 51000 -- Honored
-	 elseif need == FACTION_STANDING_LABEL7 then need = 63000 -- Revered
-	 elseif need == FACTION_STANDING_LABEL8 then need = 84000 -- Exalted
+	 if need == FACTION_STANDING_LABEL1 then need = -42000 -- Hated. This would be strange, but uh, ok.
+	 elseif need == FACTION_STANDING_LABEL2 then need = -6000 -- Hostile
+	 elseif need == FACTION_STANDING_LABEL3 then need = -3000 -- Unfriendly
+	 elseif need == FACTION_STANDING_LABEL4 then need = 0 -- Neutral
+	 elseif need == FACTION_STANDING_LABEL5 then need = 3000 -- Friendly
+	 elseif need == FACTION_STANDING_LABEL6 then need = 9000 -- Honored
+	 elseif need == FACTION_STANDING_LABEL7 then need = 21000 -- Revered
+	 elseif need == FACTION_STANDING_LABEL8 then need = 42000 -- Exalted
 	 else need = have end -- Just default to something.
 	 local fmt = "%.1fk/%.1fk"
-	 countertext = fmt:format(need/1000,have/1000)
+	 countertext = fmt:format(have/1000,need/1000)
       end
 
    elseif oType == "event" then
