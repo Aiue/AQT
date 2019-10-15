@@ -100,7 +100,7 @@ local defaults = {
       g = .9,
       b = .9,
       a = 1,
-      wrap = true,
+      wrap = false,
    },
    hideCompletedObjectives = true,
    hideQuestTimerFrame = true,
@@ -124,7 +124,16 @@ local defaults = {
    maxHeight = 650,
    minWidth = 100,
    maxWidth = 250,
-   mouseEnabled = true,
+   mouse = {
+      enabled = true,
+      Quest = {
+	 enabled = true,
+	 LeftButton = {
+	    func = "ShowInQuestLog",
+	    Shift = "PrintSquirrel",
+	 },
+      },
+   },
    objectiveProgressSoundName = "Peon: Work Work",
    objectiveSoundName = "Peon: Ready to Work",
    padding = 10,
@@ -382,6 +391,15 @@ local CFGHandler = {
 	 st.gui:Redraw()
       end,
    },
+   mouse = {
+      get = function(info)
+	 return st.cfg.mouse[info[#info]]
+      end,
+      set = function(info, val)
+	 st.cfg.mouse[info[#info]] = val
+	 AQT:UpdateScripts()
+      end,
+   },
    sorting = {
       AddSortValuesOrNot = function(objType, returnastable)
 	 local values = {}
@@ -456,7 +474,7 @@ CFGHandler.sorting.newDisabled = function(info)
 end
 
 local function getMouseEnabled(info)
-   return st.cfg.mouseEnabled
+   return st.cfg.mouse.enabled
 end
 
 --[[
@@ -732,13 +750,13 @@ local options = {
 			   type = "toggle",
 			   name = L["Use Faction Sound"],
 			   order = 1,
-			   disabled = function(info) return not st.cfg.playObjectiveSound end,
+			   disabled = function(info) return not st.cfg.playObjectiveProgressSound end,
 			},
 			objectiveProgressSoundName = {
 			   type = "select",
 			   name = L.Sound,
 			   order = 2,
-			   disabled = function(info) return (not st.cfg.playObjectiveSound or not st.cfg.useFactionObjectiveSound) end,
+			   disabled = function(info) return (not st.cfg.playObjectiveProgressSound or not st.cfg.useFactionObjectiveProgressSound) end,
 			   values = AceGUIWidgetLSMlists.sound,
 			   dialogControl = "LSM30_Sound",
 			},
@@ -850,8 +868,10 @@ local options = {
 	 type = "group",
 	 order = 2,
 	 childGroups = "tab",
+	 get = CFGHandler.mouse.get,
+	 set = CFGHandler.mouse.set,
 	 args = {
-	    mouseEnabled = {
+	    enabled = {
 	       name = L["Enable Mouse"],
 	       type = "toggle",
 	       order = 0,
@@ -1605,4 +1625,3 @@ end
 function AQT:ToggleConfig()
    if ACD.OpenFrames["AQT"] then ACD:Close("AQT") else ACD:Open("AQT") end -- A bit silly, the library should already provide this without me having to dig through the code to find it.
 end
-

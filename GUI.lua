@@ -12,6 +12,7 @@ local recycler = {
    statusbars = {},
 }
 local active_timers = {}
+local active_objects = {}
 
 local function getAvailableName(name) -- JUST removed this, because a recursive function was really stupid for this purpose. Still. Fonts need names, and I need recursion, so to hell with it.
    if not _G[name] then return name else
@@ -85,6 +86,7 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui:Redraw(false)
    gui.title:Update()
    gui:ToggleLock()
+   gui:UpdateScripts()
 
 --[[
    -- If tracker is off screen, bring it to the middle.
@@ -323,7 +325,14 @@ function guiFunc:Release(recursed)
    self.text:SetText("")
    self.counter:SetText("")
 
-   for k,v in pairs(self.script) do self:SetScript(k) end
+   for k,v in pairs(self.scripts) do self:SetScript(k) end
+
+   for k,v in ipairs(active_objects) do
+      if self == v then
+	 tremove(active_objects, k)
+	 break
+      end
+   end
 
    self:ReleaseButton()
    self:ReleaseIcon()
@@ -340,7 +349,7 @@ end
 
 function guiFunc:SetScript(script, func)
    self:RawSetScript(script, func)
-   self.script[script] = func
+   self.scripts[script] = func
 end
 
 guiFunc.RawSetScript = getmetatable(UIParent).__index.SetScript -- Hacky, but gets the job done.
@@ -422,6 +431,9 @@ function guiFunc:New(owner)
    end
    tinsert(self.children, object)
    object.owner = owner
+   object.owner.uiObject = object
+   object:UpdateScripts()
+   tinsert(active_objects, object)
    if self ~= gui then self:Update() end
    return object
 end
@@ -765,4 +777,56 @@ end
 
 function gui:UpdateTimers()
    for k,v in ipairs(self.children) do v:UpdateTimers() end
+end
+
+function gui:IterateObjects(oType)
+   if not oType then return ipairs(active_objects)
+   else
+      local cache = {}
+      for k,v in ipairs(active_objects) do
+	 if v.owner.type == oType then
+	    tinsert(cache, v)
+	 end
+      end
+      return ipairs(cache)
+   end
+end
+
+function gui:UpdateScripts()
+   for k,v in gui:IterateObjects() do v:UpdateScripts() end
+end
+
+local function onClick(self, button, down)
+   local oType = self.owner.type.name
+   local c = st.cfg.mouse[self.owner.type.name]
+   local func
+
+   if button == "LeftButton" and c.LeftButton then
+      if IsAltKeyDown() and c.LeftButton.Alt then func = c.LeftButton.Alt
+      elseif IsControlKeyDown() and c.LeftButton.Control then func = c.LeftButton.Control
+      elseif IsShiftKeyDown() and c.LeftButton.Shift then func = c.LeftButton.Shift
+      else func = c.LeftButton.func end
+   elseif button == "RightButton" and c.RightButton then
+      if IsAltKeyDown() and c.RightButton.Alt then func = c.RightButton.Alt
+      elseif IsControlKeyDown() and c.RightButton.Control then func = c.RightButton.Control
+      elseif IsShiftKeyDown() and c.RightButton.Shift then func = c.RightButton.Shift
+      else func = c.RightButton.func end
+   end
+
+   if not func or not self.owner.clickScripts or not self.owner.clickScripts[func] then return end
+
+   func = self.owner.clickScripts[func].func
+
+   if type(func) == "function" then func(self.owner)
+   elseif type(func) == "string" and self.owner[func] then self.owner[func](self.owner) end
+end
+
+function guiFunc:UpdateScripts()
+   if st.cfg.mouse.enabled and st.cfg.mouse[self.owner.type.name] and st.cfg.mouse[self.owner.type.name].enabled then
+      self:EnableMouse(true)
+      self:SetScript("OnMouseDown", onClick)
+   else
+      self:EnableMouse(false)
+      self:SetScript("OnMouseDown")
+   end
 end

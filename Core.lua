@@ -90,6 +90,21 @@ local Objective = baseObject:New(
 
 local Quest = baseObject:New(
    {
+      clickScripts = {
+	 ShowInQuestLog = {
+	    desc = L["Show In Quest Log"],
+	    func = function(self)
+	       
+	    end,
+	 },
+	 PrintSquirrel = {
+	    desc = "",
+	    func = function(self)
+	       print("SQUIRREL!")
+	       print(self.title)
+	    end,
+	 },
+      },
       name = "Quest",
       sortFields = {
 	 complete = L.Completion,
@@ -123,6 +138,7 @@ local Title = baseObject:New(
 
 function AQT:OnInitialize()
    st.initConfig()
+   st.cfg.font.wrap = false -- set this here for now, until I can make it behave properly
 end
 
 local function factionInit()
@@ -554,6 +570,18 @@ function Quest:Update(timer)
    return sound
 end
 
+--[[
+function Quest:UpdateScripts()
+   if not self.uiObject then return end
+   local ui = self.uiObject
+   if st.cfg.mouse.enabled then 
+      ui:EnableMouse(true)
+   else
+      ui:EnableMouse(false)
+   end
+end
+]]--
+
 function Quest:UpdateObjectives()
    local index = GetQuestLogIndexByID(self.id)
    if not index then error("Quest:UpdateObjectives(): Unable to find quest '" .. self.title .. "' in log.") end
@@ -777,3 +805,9 @@ end
 function AQT:UpdateHeaders()
    for k,v in pairs(HeaderCache) do v:Update() end
 end
+
+--[[
+function AQT:UpdateScripts()
+   for k,v in pairs(QuestCache) do v:UpdateScripts() end
+end
+]]--
