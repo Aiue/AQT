@@ -94,7 +94,17 @@ local Quest = baseObject:New(
 	 ShowInQuestLog = {
 	    desc = L["Show In Quest Log"],
 	    func = function(self)
-	       
+	       -- First make sure the header is not collapsed.
+	       for i = 1, GetNumQuestLogEntries(), 1 do
+		  local name,_,_,isHeader,isCollapsed = GetQuestLogTitle(i)
+		  if name == self.header.name and isHeader then
+		     if isCollapsed then ExpandQuestHeader(i) end
+		     break
+		  end
+	       end
+
+	       QuestLog_SetSelection(GetQuestLogIndexByID(self.id))
+	       ToggleQuestLog()
 	    end,
 	 },
 	 PrintSquirrel = {
@@ -393,7 +403,9 @@ function Objective:Update(qIndex, oIndex)
    end
 
    if self.text ~= text or self.have ~= have or self.need ~= need or self.complete ~= complete then
-      if not self.new then sound = st.SOUND_OBJECTIVE_PROGRESS end
+      if not self.new then
+	 sound = st.SOUND_OBJECTIVE_PROGRESS
+      end
       update = true
       self.lastUpdate = time()
    end
@@ -586,17 +598,21 @@ function Quest:UpdateObjectives()
    local index = GetQuestLogIndexByID(self.id)
    if not index then error("Quest:UpdateObjectives(): Unable to find quest '" .. self.title .. "' in log.") end
 
-   local sound = 0
+   local sound
 
    for i = 1, GetNumQuestLeaderBoards(index) do
       if not self.objectives[i] then self.objectives[i] = Objective:New({quest = self.id, index = i, new = true}) end
       local check = self.objectives[i]:Update(index, i)
+
       if check then
-	 if check < sound then sound = check end
-      else
-	 sound = check
+	 if sound then
+	    if sound > check then sound = check end
+	 else
+	    sound = check
+	 end
       end
    end
+   if sound then print(sound) end
    return sound
 end
 
