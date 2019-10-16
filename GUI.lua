@@ -236,11 +236,41 @@ function gui:ToggleLock()
       end)
       self:SetScript("OnDragStop", function(self)
 			self:StopMovingOrSizing()
-			local af,_,at,x,y = self:GetPoint(1) -- We should only have one point set.
-			st.cfg.anchorFrom = af
-			st.cfg.anchorTo = at
-			st.cfg.posX = x
-			st.cfg.posY = y
+--			local _,_,_,x,y = self:GetPoint(1) -- We should only have one point set.
+			local resX,resY = UIParent:GetSize()
+			local offsetX,offsetY
+
+			if st.cfg.anchorFrom:match("LEFT$") then
+			   offsetX = self:GetLeft()
+			elseif st.cfg.anchorFrom:match("RIGHT$") then
+			   offsetX = self:GetRight()
+			else
+			   offsetX = (self:GetLeft()+self:GetRight())/2
+			end
+
+			if st.cfg.anchorFrom:match("^TOP") then
+			   offsetY = self:GetTop()
+			elseif st.cfg.anchorFrom:match("^BOTTOM") then
+			   offsetY = self:GetBottom()
+			else
+			   offsetY = (self:GetBottom()+self:GetTop())/2
+			end
+
+			if st.cfg.anchorTo:match("RIGHT$") then
+			   offsetX = offsetX - resX
+			elseif not st.cfg.anchorTo("LEFT$") then
+			   offsetX = offsetX - (resX/2)
+			end
+
+			if st.cfg.anchorTo:match("^TOP") then
+			   offsetY = offsetY - resY
+			elseif not st.cfg.anchorTo:match("^BOTTOM") then
+			   offsetY = offsetY - (resY/2)
+			end
+
+			st.cfg.posX = offsetX
+			st.cfg.posY = offsetY
+			self:SetPoint(st.cfg.anchorFrom, UIParent, st.cfg.anchorTo, st.cfg.posX, st.cfg.posY)
       end)
    else
       self:EnableMouse(false)
