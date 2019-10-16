@@ -171,6 +171,8 @@ local aceDBdefaults = {
    global = defaults
 }
 
+-- This is a rather messy way of doing things. I may want to consider breaking these out of the table and just having them as local functions instead.
+-- Regardless, it requires a rather big overhaul.
 local CFGHandler = {
    artwork = {
       get = function(info)
@@ -392,11 +394,36 @@ local CFGHandler = {
    },
    mouse = {
       get = function(info)
-	 return st.cfg.mouse[info[#info]]
+	 if #info == 2 then
+	    return st.cfg.mouse[info[#info]]
+	 else
+	    if not st.cfg.mouse[info[2]] or not st.cfg.mouse[info[2]][info[3]] then return "__unset__"
+	    elseif info[#info] == "enabled" then
+	       return st.cfg.mouse[info[2]].enabled
+	    else
+	       return (st.cfg.mouse[info[2]][info[3]][info[#info]] and st.cfg.mouse[info[2]][info[3]][info[#info]] or "__unset__")
+	    end
+	 end
+      end,
+      getFuncList = function(info)
+	 local funcList = {__unset__ = "|cffff0000" .. L.Unset .. "|r",__menu__ = L["Show Menu"].." (NYI)"}
+	 for k,v in pairs(st.types[info[#info-2]].clickScripts) do funcList[k] = v.desc end
+	 return funcList
       end,
       set = function(info, val)
-	 st.cfg.mouse[info[#info]] = val
-	 AQT:UpdateScripts()
+	 if val == "__unset__" then val = nil end
+	 if #info == 2 then
+	    st.cfg.mouse[info[#info]] = val
+	 else
+	    if not st.cfg.mouse[info[2]] then st.cfg.mouse[info[2]] = {} end
+	    if not st.cfg.mouse[info[2]][info[3]] then st.cfg.mouse[info[2]][info[3]] = {} end
+	    if info[#info] == "enabled" then
+	       st.cfg.mouse[info[2]].enabled = val
+	    else
+	       st.cfg.mouse[info[2]][info[3]][info[#info]] = val
+	    end
+	 end
+	 st.gui:UpdateScripts()
       end,
    },
    sorting = {
@@ -470,10 +497,6 @@ CFGHandler.sorting.newDisabled = function(info)
    local objType
    if info[#info-1] == "_specialAddNew" then objType = info[#info-2] else objType = info[#info-1] end
    return CFGHandler.sorting.AddSortValuesOrNot(objType, false)
-end
-
-local function getMouseEnabled(info)
-   return st.cfg.mouse.enabled
 end
 
 --[[
@@ -1545,39 +1568,78 @@ local function buildSortOptions()
    end
 end
 
---[[
-local function buildSortOptions()
-   local typeList = {} -- To get it sortable.
-   for k,v in pairs(st.types) do tinsert(typeList, k) end
-   tsort(typeList, function(a,b) return tostring(a)<tostring(b) end)
+local function getMouseDisabled(info)
+   if #info == 2 or #info == 3 then return not st.cfg.mouse.enabled
+   else return not st.cfg.mouse[info[2]].enabled end
+end
 
-   for i,v in ipairs(typeList) do
-      if st.types[v].sortConfigurable then
-	 options.args.sorting.args[v] = {
-	    name = L[v],
+buttonOptions = {
+   func = {
+      type = "select",
+      name = L["Unmodified Click"],
+      values = CFGHandler.mouse.getFuncList,
+      order = 0,
+   },
+   Alt = {
+      type = "select",
+      name = L["Alt Click"],
+      values = CFGHandler.mouse.getFuncList,
+      order = 1,
+   },
+   Control = {
+      type = "select",
+      name = L["Control Click"],
+      values = CFGHandler.mouse.getFuncList,
+      order = 2,
+   },
+   Shift = {
+      type = "select",
+      name = L["Shift Click"],
+      values = CFGHandler.mouse.getFuncList,
+      order = 3,
+   },
+}
+
+local mouseOptions = {
+   enabled = {
+      type = "toggle",
+      name = L.Enabled,
+      order = 0,
+   },
+   LeftButton = {
+      type = "group",
+      name = L["Left Button"],
+      order = 1,
+      inline = true,
+      disabled = getMouseDisabled,
+      args = buttonOptions,
+   },
+   RightButton = {
+      type = "group",
+      name = L["Right Button"],
+      order = 2,
+      inline = true,
+      disabled = getMouseDisabled,
+      args = buttonOptions,
+   },
+}
+
+-- options.args.mouse.args
+local function buildMouseOptions()
+   local i = 0
+   for k,v in pairs(st.types) do
+      if v.clickScripts then
+	 i = i + 1
+	 options.args.mouse.args[v.name] = {
 	    type = "group",
+	    name = L[v.name],
 	    order = i,
-	    args = {},
+	    disabled = getMouseDisabled,
+	    args = mouseOptions,
 	 }
-
-	 options.args.sorting.args[v].args.tmp = {
-	    name = "While waiting on proper implementation of sorting configuration, I give the option of at least showing the current configuration settings.",
-	    type = "description",
-	    order = 0,
-	 }
-
-	 for k,f in ipairs(st.cfg.sortFields[v]) do
-	    if not st.types[v].sortFields[f.field] then print(v .. " does not have " .. f.field .. " as a sortable field!") end
-	    options.args.sorting.args[v].args["moo"..tostring(k)] = {
-	       name = "Prio #" .. tostring(k) .. ": " .. tostring(st.types[v].sortFields[f.field]) .. " " .. (f.descending and "(descending)" or "(ascending)"),
-	       type = "description",
-	       order = k,
-	    }
-	 end
       end
    end
 end
-]]--
 
 function st.initConfig()
    if not AQTCFG or type(AQTCFG) ~= "table" then AQTCFG = {} end
@@ -1618,6 +1680,7 @@ function st.initConfig()
 	 end
       end
    end
+   buildMouseOptions()
    buildSortOptions()
 end
 
