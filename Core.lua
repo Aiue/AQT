@@ -90,6 +90,7 @@ local Objective = baseObject:New(
 
 local Quest = baseObject:New(
    {
+      name = "Quest",
       clickScripts = {
 	 ShowInQuestLog = {
 	    desc = L["Show In Quest Log"],
@@ -116,7 +117,6 @@ local Quest = baseObject:New(
 	    end,
 	 },
       },
-      name = "Quest",
       sortFields = {
 	 complete = L.Completion,
 	 HasTimer = L["Has Timer"],
@@ -344,7 +344,7 @@ function Objective:TitleText()
    return text
 end
 
-function Objective:Update(qIndex, oIndex)
+function Objective:Update(qIndex, oIndex, noPour)
    local oText,oType,complete = GetQuestLogLeaderBoard(oIndex, qIndex)
    local text,have,need
    local countertext
@@ -412,7 +412,7 @@ function Objective:Update(qIndex, oIndex)
 	 _,r,g,b = Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, have/need)
       end
 
-      if pour then AQT:PrePour(text .. ": " .. tostring(have) .. "/" .. tostring(need), r, g, b) end
+      if pour and not noPour then AQT:PrePour(text .. ": " .. tostring(have) .. "/" .. tostring(need), r, g, b) end
    end
 
    self.new = nil
@@ -544,9 +544,11 @@ function Quest:Update(timer)
    end
 
    if qComplete then
-      for k,v in ipairs(self.objectives) do
-	 if v.uiObject then
-	    v.uiObject:Release()
+      if st.cfg.hideQuestCompletedObjectives then
+	 for k,v in ipairs(self.objectives) do
+	    if v.uiObject then
+	       v.uiObject:Release()
+	    end
 	 end
       end
       if not self.complete and qComplete > 0 then
@@ -563,7 +565,7 @@ function Quest:Update(timer)
    if not qComplete then
       sound = self:UpdateObjectives()
       if sound then self.lastUpdate = time() end
-   end
+   elseif not st.cfg.hideQuestCompletedObjectives then self:UpdateObjectives(true) end
    if self.uiObject then
       if update then self.uiObject:Update() end
       if self.timer then self.uiObject:UpdateTimer() end
@@ -584,7 +586,7 @@ function Quest:UpdateScripts()
 end
 ]]--
 
-function Quest:UpdateObjectives()
+function Quest:UpdateObjectives(noPour)
    local index = GetQuestLogIndexByID(self.id)
    if not index then error("Quest:UpdateObjectives(): Unable to find quest '" .. self.title .. "' in log.") end
 
@@ -592,7 +594,7 @@ function Quest:UpdateObjectives()
 
    for i = 1, GetNumQuestLeaderBoards(index) do
       if not self.objectives[i] then self.objectives[i] = Objective:New({quest = self.id, index = i, new = true}) end
-      local check = self.objectives[i]:Update(index, i)
+      local check = self.objectives[i]:Update(index, i, noPour)
 
       if check then
 	 if sound then

@@ -103,6 +103,7 @@ local defaults = {
       wrap = false,
    },
    hideCompletedObjectives = true,
+   hideQuestCompletedObjectives = true,
    hideQuestTimerFrame = true,
    hideQuestWatch = true,
    highlightCurrentZoneBackground = false,
@@ -356,7 +357,7 @@ local CFGHandler = {
 	    st.gui:UpdateTimers()
 	 elseif info[#info] == "LDBIcon" then AQT:UpdateLDBIcon()
 	 elseif info[#info] == "automaticCollapseExpand" then AQT:ZoneChangedNewArea() -- Tiny bit hacky, but does the job.
-	 elseif info[#info] == "hideCompletedObjectives" then AQT:QuestLogUpdate()
+	 elseif info[#info] == "hideCompletedObjectives" or info[#info] == "hideQuestCompletedObjectives" then AQT:QuestLogUpdate()
 	 elseif info[#info] == "hideConfigButton" then st.gui:UpdateConfigButton()
 	 elseif info[#info] == "alpha" then st.gui:Redraw()
 	 elseif info[#info] == "unlocked" then st.gui:ToggleLock() end
@@ -690,6 +691,11 @@ local options = {
 		     type = "toggle",
 		     name = L["Hide Completed Objectives"],
 		     order = 2,
+		  },
+		  hideQuestCompletedObjectives = {
+		     type = "toggle",
+		     name = L["Hide Objectives for Completed Quests"],
+		     order = 3,
 		  },
 		  apology = {
 		     type = "description",
