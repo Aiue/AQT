@@ -92,6 +92,20 @@ local Quest = baseObject:New(
    {
       name = "Quest",
       clickScripts = {
+	 AbandonQuest = {
+	    desc = L["Abandon Quest"],
+	    func = function(self)
+	       SetAbandonQuest()
+	       local items = GetAbandonQuestItems()
+	       if ( items ) then
+		  StaticPopup_Hide("ABANDON_QUEST")
+		  StaticPopup_Show("ABANDON_QUEST_WITH_ITEMS", GetAbandonQuestName(), items)
+	       else
+		  StaticPopup_Hide("ABANDON_QUEST_WITH_ITEMS")
+		  StaticPopup_Show("ABANDON_QUEST", GetAbandonQuestName())
+	       end
+	    end,
+	 },
 	 ShowInQuestLog = {
 	    desc = L["Show In Quest Log"],
 	    func = function(self)
