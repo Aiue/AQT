@@ -120,10 +120,16 @@ local Quest = baseObject:New(
 	       end
 	       local frame = ClassicQuestLog or QuestLogExFrame or QuestLogFrame
 	       if (frame:IsShown() and GetQuestLogIndexByID(self.id) == GetQuestLogSelection()) or not frame:IsShown() then ToggleQuestLog() end
-	       local index = GetQuestLogIndexByID(self.id)
-	       QuestLog_SetSelection(index)
-	       QuestLogListScrollFrameScrollBar:SetValue((index-1)*15) -- I'm sure this requires some tweaking.
-	       QuestLog_Update()
+	       if QuestLogFrame:IsShown() then
+		  local index = GetQuestLogIndexByID(self.id)
+		  QuestLog_SetSelection(index)
+		  local offset
+		  local entries = GetNumQuestLogEntries()
+		  if index - 4 < 0 then offset = 0 elseif index + 3 > entries then offset = entries-6 else offset = index - 4 end
+		  QuestLogListScrollFrameScrollBar:SetValue(offset*16)
+		  FauxScrollFrame_SetOffset(QuestLogListScrollFrame, offset)
+		  QuestLog_Update()
+	       end
 	    end,
 	 },
 	 ShareQuest = {
