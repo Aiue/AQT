@@ -194,6 +194,7 @@ function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an a
 
       if st.cfg.artwork.height then gui.artwork:SetHeight(st.cfg.artwork.height) end
       if st.cfg.artwork.width then gui.artwork:SetWidth(st.cfg.artwork.width) end
+      if st.cfg.artwork.scale then gui.artwork:SetScale(st.cfg.artwork.scale) end
 
       if st.cfg.artwork.zoom then
 	 local l,r,t,b

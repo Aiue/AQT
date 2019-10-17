@@ -28,6 +28,7 @@ local defaults = {
       offsetX = 0,
       offsetY = 0,
       right = 1,
+      scale = 1,
       stretching = 1,
       symmetric = 0,
       symmetricZoom = true,
@@ -1173,6 +1174,15 @@ local options = {
 			   hidden = function(info)
 			      if st.cfg.artwork.stretching == 3 or st.cfg.artwork.stretching == 4 then return true else return false end
 			   end,
+			},
+			scale = {
+			   name = L.Scale,
+			   type = "range",
+			   order = 10,
+			   min = 0.01,
+			   max = 1,
+			   step = .01,
+			   isPercent = true,
 			},
 		     },
 		  },
