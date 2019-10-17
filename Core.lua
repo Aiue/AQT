@@ -95,6 +95,7 @@ local Quest = baseObject:New(
 	 AbandonQuest = {
 	    desc = L["Abandon Quest"],
 	    func = function(self)
+	       QuestLog_SetSelection(GetQuestLogIndexByID(self.id)) -- Needed, because it seems we can't use an index argument for SetAbandonQuest().
 	       SetAbandonQuest()
 	       local items = GetAbandonQuestItems()
 	       if ( items ) then
