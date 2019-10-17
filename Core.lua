@@ -103,7 +103,7 @@ local Quest = baseObject:New(
 		     break
 		  end
 	       end
-	       local frame = QuestLogExFrame or QuestLogFrame
+	       local frame = ClassicQuestLog or QuestLogExFrame or QuestLogFrame
 	       if (frame:IsShown() and GetQuestLogIndexByID(self.id) == GetQuestLogSelection()) or not frame:IsShown() then ToggleQuestLog() end
 	       local index = GetQuestLogIndexByID(self.id)
 	       QuestLog_SetSelection(index)
