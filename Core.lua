@@ -112,6 +112,24 @@ local Quest = baseObject:New(
    {
       name = "Quest",
       clickScripts = {
+	 AnnounceProgress = {
+	    desc = L["Announce Progress"],
+	    func = function(self)
+	       local channel
+	       if IsInRaid() then channel = "RAID"
+	       else
+		  local instanceGroup = IsInGroup(LE_PARTY_CATEGORY_INSTANCE) -- Shouldn't be relevant for classic, but put it here regardless.
+		  if instanceGroup then channel = "INSTANCE_CHAT"
+		  elseif IsInGroup() then channel = "PARTY" end
+	       end
+	       if channel then
+		  SendChatMessage(self.title .. ":", channel)
+		  for k,v in ipairs(self.objectives) do
+		     SendChatMessage("- " .. v.text .. " (" .. tostring(v.have) .. "/" .. tostring(v.need) .. ")", channel)
+		  end
+	       else print("|cffffff00" .. ERR_NOT_IN_GROUP .. "|r") end
+	    end,
+	 },
 	 WowheadLink = {
 	    desc = L["Get Wowhead URL"],
 	    func = function(self)
