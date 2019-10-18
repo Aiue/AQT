@@ -871,7 +871,7 @@ local function onClick(self, button, down)
 		 func = function(self) L_CloseDropDownMenus() end,
 		 notCheckable = true,
       })
-      L_EasyMenu(menu, gui.menu, "cursor", 0, 0, "menu", 15)
+      L_EasyMenu(menu, gui.menu, "cursor", 0, 0, "menu", 10)
       return
    end
 
