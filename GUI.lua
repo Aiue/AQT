@@ -13,7 +13,7 @@ local recycler = {
 }
 local active_timers = {}
 local active_objects = {}
-local menus = {}
+local L = st.L
 
 local function getAvailableName(name) -- JUST removed this, because a recursive function was really stupid for this purpose. Still. Fonts need names, and I need recursion, so to hell with it.
    if not _G[name] then return name else
