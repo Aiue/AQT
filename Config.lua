@@ -411,7 +411,7 @@ local CFGHandler = {
 	 end
       end,
       getFuncList = function(info)
-	 local funcList = {__unset__ = "|cffff0000" .. L.Unset .. "|r",__menu__ = L["Show Menu"].." (NYI)"}
+	 local funcList = {__unset__ = "|cffff0000" .. L.Unset .. "|r",__menu__ = L["Show Menu"]}
 	 for k,v in pairs(st.types[info[#info-2]].clickScripts) do funcList[k] = v.desc end
 	 return funcList
       end,

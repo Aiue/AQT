@@ -13,6 +13,7 @@ local recycler = {
 }
 local active_timers = {}
 local active_objects = {}
+local menus = {}
 
 local function getAvailableName(name) -- JUST removed this, because a recursive function was really stupid for this purpose. Still. Fonts need names, and I need recursion, so to hell with it.
    if not _G[name] then return name else
@@ -36,6 +37,7 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.artwork:SetDrawLayer("artwork")
    gui.highlight = gui:CreateTexture(nil) -- Put this here instead of reusinc the recycler each time.
    gui.highlight:SetDrawLayer("artwork") -- May want another layer, but use this for now.
+   gui.menu = L_Create_UIDropDownMenu(getAvailableName("AQTMenu"), gui)
 
    gui.font = CreateFont(getAvailableName("AQTFont"))
    gui.font:SetJustifyV("TOP")
@@ -844,10 +846,33 @@ local function onClick(self, button, down)
       else func = c.RightButton.func end
    end
 
-   if not func or not self.owner.clickScripts or (not self.owner.clickScripts[func] and func ~= "__menu" then return end
+   if not func or not self.owner.clickScripts or (not self.owner.clickScripts[func] and func ~= "__menu__") then return end
 
    if func == "__menu__" then
-      
+      local menu = {}
+      for k,v in pairs(self.owner.clickScripts) do
+	 local entry = {
+	    arg1 = k,
+	    arg2 = self.owner,
+	    text = v.desc,
+	    func = function(self, func, questObject)
+	       func = questObject.clickScripts[func].func
+
+	       if type(func) == "function" then func(questObject)
+	       elseif type(func) == "string" and questObject[func] then questObject[func](questObject) end
+	    end,
+	    notCheckable = true,
+	 }
+	 tinsert(menu, entry)
+      end
+      tsort(menu, function(a,b) return a.text < b.text end)
+      tinsert(menu, {
+		 text = L.Close,
+		 func = function(self) L_CloseDropDownMenus() end,
+		 notCheckable = true,
+      })
+      L_EasyMenu(menu, gui.menu, "cursor", 0, 0, "menu", 15)
+      return
    end
 
    func = self.owner.clickScripts[func].func
