@@ -844,7 +844,11 @@ local function onClick(self, button, down)
       else func = c.RightButton.func end
    end
 
-   if not func or not self.owner.clickScripts or not self.owner.clickScripts[func] then return end
+   if not func or not self.owner.clickScripts or (not self.owner.clickScripts[func] and func ~= "__menu" then return end
+
+   if func == "__menu__" then
+      
+   end
 
    func = self.owner.clickScripts[func].func
 

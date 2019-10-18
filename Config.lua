@@ -133,6 +133,9 @@ local defaults = {
 	 LeftButton = {
 	    func = "ShowInQuestLog",
 	 },
+	 RightButton = {
+	    func = "__menu__",
+	 },
       },
    },
    objectiveProgressSoundName = "Peon: Work Work",

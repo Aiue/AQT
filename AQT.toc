@@ -4,7 +4,7 @@
 ## Author: Aiue
 ## Version: @project-version@
 ## SavedVariables: AQTCFG
-## OptionalDeps: Ace3, LibDataBroker-1.1, LibPrism-1.0, LibSharedMedia-3.0, LibSink-2.0
+## OptionalDeps: Ace3, LibPrism-1.0, LibSharedMedia-3.0, LibSink-2.0, !LibUIDropDownMenu
 ## X-Curse-Project-ID: 67669
 ## X-WoWI-ID: 25280
 
@@ -23,6 +23,7 @@ libs\LibSharedMedia-3.0\lib.xml
 libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
 libs\LibPrism-1.0\lib.xml
 libs\LibSink-2.0\lib.xml
+libs\LibUIDropDownMenu\LibUIDropDownMenu.xml
 
 Localization\enUS.lua
 Localization\deDE.lua
