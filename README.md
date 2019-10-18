@@ -9,7 +9,7 @@ What it will do is:
 * Sounds, if you're into that kind of thing. I am. Defaults to faction-based sounds, but can be reconfigured. Makes use of LibSharedMedia.
 * Direct quest updates via LibSink, and optionally suppress the standard errorframe update.
 
-Apart from improving on the current functionality, some of which I will admit is somewhat lackluster, future plans include:
+Apart from improving on the current functionality, plans include:
 
 * Ability to select quests for tracking via a custom-made questlog. (I try to avoid interacting with the standard interface as much as possible. If you even look at a part of it the wrong way: taint.)
 * Keep track of quest progress within your party. Would only work for party members running the addon. May make it library-based.
