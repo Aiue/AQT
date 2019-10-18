@@ -47,6 +47,26 @@ end
 local QuestCache = {}
 local HeaderCache = {}
 
+StaticPopupDialogs["AQTCopy"] = {
+   text = "",
+   hasEditBox = 1,
+   hasWideEditBox = 1,
+   button2 = L.Close,
+   preferredIndex = 3,
+   hideOnEscape = 1,
+   timeout = 0,
+   whileDead = 1,
+   OnShow = function(self, data)
+      self.editBox:SetWidth(250)
+   end,
+   EditBoxOnEnterPressed = function(self)
+      self:GetParent():Hide()
+   end,
+   EditBoxOnEscapePressed = function(self)
+      self:GetParent():Hide()
+   end,
+}
+
 st.types = {}
 
 local baseObject = {
@@ -92,6 +112,13 @@ local Quest = baseObject:New(
    {
       name = "Quest",
       clickScripts = {
+	 WowheadLink = {
+	    desc = L["Get Wowhead URL"],
+	    func = function(self)
+	       local popup = StaticPopup_Show("AQTCopy")
+	       popup.editBox:SetText("https://classic.wowhead.com/quest=" .. tostring(self.id))
+	    end,
+	 },
 	 AbandonQuest = {
 	    desc = L["Abandon Quest"],
 	    func = function(self)
