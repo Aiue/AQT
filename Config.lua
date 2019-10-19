@@ -95,7 +95,6 @@ local defaults = {
    font = {
       indent = 0,
       name = "Friz Quadrata TT",
-      objectiveLead = "",
       outline = "OUTLINE",
       spacing = 1,
       size = 12,
@@ -139,6 +138,7 @@ local defaults = {
 	 },
       },
    },
+   objectivePrefix = "·",
    objectiveProgressSoundName = "Peon: Work Work",
    objectiveSoundName = "Peon: Ready to Work",
    padding = 10,
@@ -322,7 +322,6 @@ local CFGHandler = {
 	       st.cfg.barFont[info[#info]] = v1
 	    end
 	    if info[#info] == "indent" then st.gui.title:RelinkChildren(true)
-	    elseif info[#info] == "objectiveLead" then st.gui.title:UpdateText(true)
 	    else st.gui:Redraw() end -- only needed for some settings, return to this
 	 end,
       },
@@ -367,7 +366,8 @@ local CFGHandler = {
 	 elseif info[#info] == "hideCompletedObjectives" or info[#info] == "hideQuestCompletedObjectives" then AQT:QuestLogUpdate()
 	 elseif info[#info] == "hideConfigButton" then st.gui:UpdateConfigButton()
 	 elseif info[#info] == "alpha" then st.gui:Redraw()
-	 elseif info[#info] == "unlocked" then st.gui:ToggleLock() end
+	 elseif info[#info] == "unlocked" then st.gui:ToggleLock()
+	 elseif info[#info] == "objectivePrefix" then st.gui.title:UpdateText(true) end
       end,
    },
    font = {
@@ -919,27 +919,40 @@ local options = {
 	 order = 4,
 	 childGroups = "tab",
 	 args = {
+	    general = {
+	       type = "group",
+	       name = L.General,
+	       order = 0,
+	       args = {
+		  alpha = {
+		     name = L.Alpha,
+		     type = "range",
+		     min = 0,
+		     max = 1,
+		     isPercent = true,
+		     order = 2,
+		  },
+		  objectivePrefix = {
+		     name = L["Objective Prefix"],
+		     type = "select",
+		     order = 1,
+		     values = {
+			[""] = L.None,
+			["-"] = "-",
+			["·"] = "·",
+			["*"] = "*",
+			["~"] = "~",
+			[">"] = ">",
+			["#"] = "#",
+		     },
+		  },
+	       },
+	    },
 	    background ={
 	       name = L.Background,
 	       type = "group",
-	       order = 0,
+	       order = 1,
 	       args = {
-		  general = {
-		     type = "group",
-		     name = L.General,
-		     order = 0,
-		     inline = true,
-		     args = {
-			alpha = {
-			   name = L.Alpha,
-			   type = "range",
-			   min = 0,
-			   max = 1,
-			   isPercent = true,
-			   order = 2,
-			},
-		     },
-		  },
 		  backdrop = {
 		     name = L.Backdrop,
 		     type = "group",
@@ -1188,7 +1201,7 @@ local options = {
 	    bars = {
 	       name = L.Bars,
 	       type = "group",
-	       order = 1,
+	       order = 2,
 	       args = {
 		  backdrop = {
 		     name = L.Backdrop,
@@ -1321,7 +1334,7 @@ local options = {
 	    coloring = {
 	       name = L.Coloring,
 	       type = "group",
-	       order = 2,
+	       order = 3,
 	       set = CFGHandler.coloring.set,
 	       args = {
 		  highlight = {
@@ -1410,7 +1423,7 @@ local options = {
 	    font = {
 	       name = L.Font,
 	       type = "group",
-	       order = 3,
+	       order = 4,
 	       get = CFGHandler.font.get,
 	       set = CFGHandler.font.set,
 	       args = {
@@ -1465,8 +1478,6 @@ local options = {
 		     order = 6,
 		     disabled = true,
 		  },
---		  objectiveLead = {
---		  },
 	       },
 	    },
 	 },
