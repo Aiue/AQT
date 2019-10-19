@@ -120,7 +120,6 @@ function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an a
    gui.font:SetSpacing(st.cfg.font.spacing)
 
    gui.barFont:SetFont(LSM:Fetch("font", st.cfg.barFont.name), st.cfg.barFont.size, st.cfg.barFont.outline)
-   gui.barFont:SetSpacing(st.cfg.barFont.spacing)
 
    gui.scrollFrame:SetPoint("TOPLEFT", gui, "TOPLEFT", st.cfg.padding, -st.cfg.padding)
    gui.scrollFrame:SetPoint("BOTTOMRIGHT", gui, "BOTTOMRIGHT", -st.cfg.padding, st.cfg.padding)
@@ -449,12 +448,10 @@ function guiFunc:New(owner)
       object.text:SetFontObject(gui.font)
       object.text:SetJustifyH("LEFT")
       object.text:SetPoint("TOPLEFT", object, "TOPLEFT", st.cfg.font.size, 0)
-      object.text:SetWordWrap(st.cfg.font.wrap)
       object.counter = object:CreateFontString(nil)
       object.counter:SetFontObject(gui.font)
       object.counter:SetJustifyH("RIGHT")
       object.counter:SetPoint("TOPRIGHT", object)
-      object.counter:SetWordWrap(st.cfg.font.wrap)
       object.text:SetPoint("TOPRIGHT", object.counter, "TOPLEFT", -10, 0)
       -- Create a container. May want to have these ones also be on-demand. It's a whole lot easier keeping it as is, though.
       object.container = CreateFrame("Frame", nil, object)
@@ -613,6 +610,7 @@ function guiFunc:Sort()
 end
 
 function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for some of these things. Particularly useful for fontstrings. Which can't set that script, so uh. Still. Get back to this. Could solve some of my other issues. And FontStrings I can handle in UpdateText().
+   -- Yes, definitely need to rewrite all of this. I mean, it MOSTLY works. But.. not as well as I'd like. I kind of need an onsizechanged scripts alongside a "manual" updater.
    local h,w = 0,0 -- Do I need width? ...possibly
    for k,v in ipairs(self.children) do
 --      local th,ch = v.text:GetHeight(),v.counter:GetHeight()
@@ -633,12 +631,18 @@ function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for s
    local th,ch = self.text:GetStringHeight(),self.counter:GetStringHeight()
    self:SetHeight(th > ch and th or ch)
 
-   if recurse then self:Parent():UpdateSize(true) end -- gui will have its own function, so no need for a base case
+   if recurse then self:Parent():UpdateSize(true) -- gui will have its own function, so no need for a base case
+   elseif recurse == false then
+      for k,v in ipairs(self.children) do v:UpdateSize(false) end
+   end
 end
 
 function guiFunc:UpdateText(recurse)
    local th,tw,ch,tw = self.text:GetStringHeight(),self.text:GetStringWidth(),self.counter:GetStringHeight(),self.counter:GetStringWidth()
    local titleText,counterText
+
+   self.text:SetWordWrap(st.cfg.font.wrap)
+   self.counter:SetWordWrap(st.cfg.font.wrap)
 
    if type(self.owner.TitleText) == "function" then
       titleText = self.owner:TitleText()

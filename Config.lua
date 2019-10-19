@@ -82,13 +82,11 @@ local defaults = {
    barFont = {
       name = "Friz Quadrata TT",
       outline = "OUTLINE",
-      spacing = 1,
       size = 12,
       r = 1,
       g = 1,
       b = 1,
       a = 1,
-      wrap = false,
    },
    barTexture = "Blizzard",
    completionSoundName = "Peon: Work Complete",
@@ -388,6 +386,7 @@ local CFGHandler = {
 	    st.cfg.font[info[#info]] = v1
 	 end
 	 st.gui:Redraw() -- only needed for some settings, return to this
+	 if info[#info] == "wrap" then st.gui.title:UpdateText(true) end
 --	 st.gui.title:UpdateText(true)
       end,
    },
@@ -1303,21 +1302,6 @@ local options = {
 			   max = 32,
 			   step = 1,
 			   order = 3,
-			},
-			spacing = {
-			   name = L.Spacing,
-			   type = "range",
-			   min = 0,
-			   max = 120,
-			   step = 1,
-			   order = 4,
-			   disabled = true,
-			},
-			wrap = {
-			   name = L["Wrap Long Lines"],
-			   type = "toggle",
-			   order = 5,
-			   disabled = true,
 			},
 		     },
 		  },

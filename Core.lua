@@ -225,7 +225,6 @@ local Title = baseObject:New(
 
 function AQT:OnInitialize()
    st.initConfig()
-   st.cfg.font.wrap = false -- set this here for now, until I can make it behave properly
 end
 
 local function factionInit()
