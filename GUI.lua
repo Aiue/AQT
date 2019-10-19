@@ -150,7 +150,7 @@ function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an a
 
    local c = st.cfg.highlightCurrentZoneBackgroundColor
    gui.highlight:SetColorTexture(c.r, c.g, c.b, c.a)
-   if not st.cfg.highlighCurrentZoneBackground then
+   if not st.cfg.highlightCurrentZoneBackground then
       gui.highlight:ClearAllPoints()
       gui.highlight:Hide()
    end

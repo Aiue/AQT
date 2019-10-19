@@ -366,14 +366,15 @@ function Header:TestCollapsedState()
 end
 
 function Header:TitleText()
-   if st.cfg.highlightCurrentZoneText and self:IsCurrentZone() then
+   if self:IsCurrentZone() then
       self.uiObject:SetHighlight()
-      local fmt = "|cff%02x%02x%02x%s|r"
-      local c = st.cfg.highlightCurrentZoneTextColor
-      return fmt:format(c.r*255, c.g*255, c.b*255, self.name)
-   else
-      return self.name
+      if st.cfg.highlightCurrentZoneText then
+	 local fmt = "|cff%02x%02x%02x%s|r"
+	 local c = st.cfg.highlightCurrentZoneTextColor
+	 return fmt:format(c.r*255, c.g*255, c.b*255, self.name)
+      end
    end
+   return self.name
 end
 
 function Header:Update()
