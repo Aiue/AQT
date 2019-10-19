@@ -850,22 +850,43 @@ local function onClick(self, button, down)
 
    if func == "__menu__" then
       local menu = {}
+
       for k,v in pairs(self.owner.clickScripts) do
 	 local entry = {
 	    arg1 = k,
 	    arg2 = self.owner,
 	    text = v.desc,
-	    func = function(self, func, questObject)
-	       func = questObject.clickScripts[func].func
-
-	       if type(func) == "function" then func(questObject)
-	       elseif type(func) == "string" and questObject[func] then questObject[func](questObject) end
-	    end,
 	    notCheckable = true,
 	 }
+	 if v.func then
+	    entry.func = function(self, func, questObject)
+	       func = v.func
+	       if type(func) == "function" then func(questObject)
+	       elseif type(func) == "string" and questObject[func] then questObject[func](questObject) end
+	    end
+	 else
+	    entry.disabled = true
+	 end
+	    
 	 tinsert(menu, entry)
       end
-      tsort(menu, function(a,b) return a.text < b.text end)
+      tsort(menu, function(a,b)
+	       local ao,bo = a.arg2.clickScripts[a.arg1],b.arg2.clickScripts[b.arg1]
+	       if ao.order then
+		  if bo.order then return ao.order < bo.order
+		  else return true end
+	       elseif bo.order then return false
+	       else return ao.desc < bo.desc end
+      end)
+
+      tinsert(menu, 1, {notCheckable = true, notClickable = true})
+
+      if type(self.owner.TitleText) == "function" then
+	 menu[1].text = self.owner:TitleText()
+      else
+	 menu[1].text = self.owner.TitleText
+      end
+
       tinsert(menu, {
 		 text = L.Close,
 		 func = function(self) L_CloseDropDownMenus() end,

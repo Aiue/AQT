@@ -112,8 +112,13 @@ local Quest = baseObject:New(
    {
       name = "Quest",
       clickScripts = {
+	 __blank1 = {
+	    desc = "",
+	    order = 4,
+	 },
 	 AnnounceProgress = {
 	    desc = L["Announce Progress"],
+	    order = 5,
 	    func = function(self)
 	       local channel
 	       if IsInRaid() then channel = "RAID"
@@ -132,6 +137,7 @@ local Quest = baseObject:New(
 	 },
 	 WowheadLink = {
 	    desc = L["Get Wowhead URL"],
+	    order = 6,
 	    func = function(self)
 	       local popup = StaticPopup_Show("AQTCopy")
 	       popup.editBox:SetText("https://classic.wowhead.com/quest=" .. tostring(self.id))
@@ -139,6 +145,7 @@ local Quest = baseObject:New(
 	 },
 	 AbandonQuest = {
 	    desc = L["Abandon Quest"],
+	    order = 3,
 	    func = function(self)
 	       QuestLog_SetSelection(GetQuestLogIndexByID(self.id)) -- Needed, because it seems we can't use an index argument for SetAbandonQuest().
 	       SetAbandonQuest()
@@ -154,6 +161,7 @@ local Quest = baseObject:New(
 	 },
 	 ShowInQuestLog = {
 	    desc = L["Show In Quest Log"],
+	    order = 1,
 	    func = function(self)
 	       -- First make sure the header is not collapsed.
 	       for i = 1, GetNumQuestLogEntries(), 1 do
@@ -179,6 +187,7 @@ local Quest = baseObject:New(
 	 },
 	 ShareQuest = {
 	    desc = L["Share Quest"],
+	    order = 2,
 	    func = function(self)
 	       QuestLogPushQuest(GetQuestLogIndexByID(self.id))
 	    end,
