@@ -887,6 +887,12 @@ local function onClick(self, button, down)
 	 menu[1].text = self.owner.TitleText
       end
 
+      -- Add another blank line and a close button.
+      tinsert(menu, {
+		 text = "",
+		 disabled = true,
+      })
+
       tinsert(menu, {
 		 text = L.Close,
 		 func = function(self) L_CloseDropDownMenus() end,
