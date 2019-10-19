@@ -1488,7 +1488,10 @@ options.args.general.args.general.args.uncategorized.args.LDBIcon.values[-1] = [
 options.args.general.args.general.args.uncategorized.args.LDBIcon.values[0] = "Random Book"
 for i = 1,15 do
    local fmt = [[|TInterface\ICONS\INV_MISC_Book_%02d:18|t]]
-   options.args.general.args.general.args.uncategorized.args.LDBIcon.values[i] = fmt:format(i)
+   -- Rewrite, because for some reason, keeping it in one line kept making my emacs explode.
+   local option = options.args.general.args.general.args
+   option = option.uncategorized.args.LDBIcon.values
+   option[i] = fmt:format(i)
 end
 
 local editSortOptions = {
