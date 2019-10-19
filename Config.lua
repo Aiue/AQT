@@ -93,7 +93,6 @@ local defaults = {
    barTexture = "Blizzard",
    completionSoundName = "Peon: Work Complete",
    font = {
-      indent = 0,
       name = "Friz Quadrata TT",
       outline = "OUTLINE",
       spacing = 1,
@@ -122,6 +121,7 @@ local defaults = {
       b = 0,
       a = 1,
    },
+   indent = 0,
    LDBIcon = -1,
    maxHeight = 650,
    minWidth = 100,
@@ -321,8 +321,7 @@ local CFGHandler = {
 	    else
 	       st.cfg.barFont[info[#info]] = v1
 	    end
-	    if info[#info] == "indent" then st.gui.title:RelinkChildren(true)
-	    else st.gui:Redraw() end -- only needed for some settings, return to this
+	    st.gui:Redraw() -- only needed for some settings, return to this
 	 end,
       },
    },
@@ -367,6 +366,7 @@ local CFGHandler = {
 	 elseif info[#info] == "hideConfigButton" then st.gui:UpdateConfigButton()
 	 elseif info[#info] == "alpha" then st.gui:Redraw()
 	 elseif info[#info] == "unlocked" then st.gui:ToggleLock()
+	 elseif info[#info] == "indent" then st.gui.title:RelinkChildren(true)
 	 elseif info[#info] == "objectivePrefix" then st.gui.title:UpdateText(true) end
       end,
    },
@@ -935,7 +935,15 @@ local options = {
 		  objectivePrefix = {
 		     name = L["Objective Prefix"],
 		     type = "input",
+		     order = 2,
+		  },
+		  indent = {
+		     type = "range",
+		     name = L.Indentation,
 		     order = 1,
+		     min = 0,
+		     softMax = 20,
+		     step = .1,
 		  },
 	       },
 	    },
@@ -1454,19 +1462,10 @@ local options = {
 		     order = 4,
 		     disabled = true,
 		  },
-		  indent = {
-		     type = "range",
-		     name = L.Indentation,
-		     order = 5,
-		     min = 0,
-		     max = 5,
-		     step = .1,
-		     disabled = true, -- lacks proper update handling at the moment
-		  },
 		  wrap = {
 		     name = L["Wrap Long Lines"],
 		     type = "toggle",
-		     order = 6,
+		     order = 5,
 		     disabled = true,
 		  },
 	       },

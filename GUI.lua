@@ -412,7 +412,7 @@ function guiFunc:UnlinkChildren()
    for k,v in ipairs(self.children) do v:ClearAllPoints() end
 end
 
-function guiFunc:RelinkChildren()
+function guiFunc:RelinkChildren(recurse)
    self:UnlinkChildren() -- While we shouldn't get any circular links, play it safe and unlink everything first
    if self.timer and self.timer.sb then
       self.timer:SetPoint("TOPLEFT", self.container, "TOPLEFT", st.cfg.indent+st.cfg.font.size, 0)
@@ -431,6 +431,8 @@ function guiFunc:RelinkChildren()
 	 v:SetPoint("TOPLEFT", self.children[k-1].container, "BOTTOMLEFT")
 	 v:SetPoint("TOPRIGHT", self.children[k-1].container, "BOTTOMRIGHT")
       end
+
+      if recurse then v:RelinkChildren(true) end
    end
 end
 

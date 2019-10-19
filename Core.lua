@@ -411,7 +411,7 @@ end
 
 function Objective:TitleText()
    local text
-   local prefix = (st.cfg.objectivePrefix == "" and "" or st.cfg.objectivePrefix)
+   local prefix = st.cfg.objectivePrefix
 
    if st.cfg.useProgressColor then
       text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, self.have/self.need) .. prefix .. self.text .. "|r"
