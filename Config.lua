@@ -93,7 +93,9 @@ local defaults = {
    barTexture = "Blizzard",
    completionSoundName = "Peon: Work Complete",
    font = {
+      indent = 0,
       name = "Friz Quadrata TT",
+      objectiveLead = "",
       outline = "OUTLINE",
       spacing = 1,
       size = 12,
@@ -121,7 +123,6 @@ local defaults = {
       b = 0,
       a = 1,
    },
-   indent = 0,
    LDBIcon = -1,
    maxHeight = 650,
    minWidth = 100,
@@ -320,7 +321,9 @@ local CFGHandler = {
 	    else
 	       st.cfg.barFont[info[#info]] = v1
 	    end
-	    st.gui:Redraw() -- only needed for some settings, return to this
+	    if info[#info] == "indent" then st.gui.title:RelinkChildren(true)
+	    elseif info[#info] == "objectiveLead" then st.gui.title:UpdateText(true)
+	    else st.gui:Redraw() end -- only needed for some settings, return to this
 	 end,
       },
    },
@@ -557,15 +560,6 @@ local options = {
 			   type = "toggle",
 			   name = L["Unlock Tracker"],
 			   order = 1,
-			},
-			indent = {
-			   type = "range",
-			   name = L.Indentation,
-			   order = 2,
-			   min = 0,
-			   max = 5,
-			   step = .1,
-			   disabled = true, -- lacks proper update handling at the moment
 			},
 			LDBIcon = {
 			   type = "select",
@@ -1464,11 +1458,22 @@ local options = {
 		     order = 4,
 		     disabled = true,
 		  },
+		  indent = {
+		     type = "range",
+		     name = L.Indentation,
+		     order = 5,
+		     min = 0,
+		     max = 5,
+		     step = .1,
+		     disabled = true, -- lacks proper update handling at the moment
+		  },
 		  wrap = {
 		     name = L["Wrap Long Lines"],
 		     type = "toggle",
-		     order = 5,
+		     order = 6,
 		     disabled = true,
+		  },
+		  objectiveLead = {
 		  },
 	       },
 	    },
