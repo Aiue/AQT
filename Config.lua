@@ -1357,59 +1357,51 @@ local options = {
 		  useDifficultyColor = {
 		     name = L["Quest Difficulty Coloring"],
 		     type = "toggle",
-		     order = 0,
+		     order = 1,
 		     width = double,
 		  },
 		  useProgressColor = {
 		     name = L["Progress-based Objective Coloring"],
 		     type = "toggle",
-		     order = 1,
+		     order = 2,
 		     width = double,
 		  },
-		  misc = {
-		     name = L.Miscellaneous,
+		  progressColor = {
+		     name = L["Progress Color"],
 		     type = "group",
-		     order = 1,
 		     inline = true,
+		     order = 3,
+		     disabled = function() return not st.cfg.useProgressColor end,
 		     args = {
-			progressColor = {
-			   name = L["Progress Color"],
-			   type = "group",
-			   inline = true,
+			progressColorMin = {
+			   name = L.Incomplete,
+			   type = "color",
+			   hasAlpha = false,
+			   order = 0,
+			},
+			progressColorMax = {
+			   name = L.Complete,
+			   type = "color",
+			   hasAlpha = false,
+			   order = 1,
+			},
+			useHSVGradient = {
+			   name = L["Use HSV Gradient"],
+			   type = "toggle",
 			   order = 2,
-			   disabled = function() return not st.cfg.useProgressColor end,
-			   args = {
-			      progressColorMin = {
-				 name = L.Incomplete,
-				 type = "color",
-				 hasAlpha = false,
-				 order = 0,
-			      },
-			      progressColorMax = {
-				 name = L.Complete,
-				 type = "color",
-				 hasAlpha = false,
-				 order = 1,
-			      },
-			      useHSVGradient = {
-				 name = L["Use HSV Gradient"],
-				 type = "toggle",
-				 order = 2,
-			      },
-			      progressionSample = {
-				 name = function()
-				    local output = L.Sample .. ": "
-				    if st.cfg.useProgressColor then
-				       for i = 0, 10 do
-					  output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
-				       end
-				    else output = output .. "0% -> 10% -> 20% -> 30% -> 40% -> 50% -> 60% -> 70% -> 80% -> 90% -> 100%"
-				    end
-				    return output
-				 end,
-				 type = "description",
-			      },
-			   },
+			},
+			progressionSample = {
+			   name = function()
+			      local output = L.Sample .. ": "
+			      if st.cfg.useProgressColor then
+				 for i = 0, 10 do
+				    output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
+				 end
+			      else output = output .. "0% -> 10% -> 20% -> 30% -> 40% -> 50% -> 60% -> 70% -> 80% -> 90% -> 100%"
+			      end
+			      return output
+			   end,
+			   type = "description",
 			},
 		     },
 		  },
@@ -1473,8 +1465,8 @@ local options = {
 		     order = 6,
 		     disabled = true,
 		  },
-		  objectiveLead = {
-		  },
+--		  objectiveLead = {
+--		  },
 	       },
 	    },
 	 },
@@ -1484,8 +1476,14 @@ local options = {
 
 options.args.general.args.output.args.sink.order = 1
 options.args.general.args.output.args.sink.inline = true
-options.args.general.args.general.args.uncategorized.args.LDBIcon.values[-1] = [[|TInterface\GossipFrame\AvailableQuestIcon:0|t]]
-options.args.general.args.general.args.uncategorized.args.LDBIcon.values[0] = "Random Book"
+
+do -- More unexploding emacs.
+   local option = options.args.general.args.general.args
+   option = option.uncategorized.args.LDBIcon.values
+   option[-1] = [[|TInterface\GossipFrame\AvailableQuestIcon:0|t]]
+   option[0] = L["Random Book"]
+end
+
 for i = 1,15 do
    local fmt = [[|TInterface\ICONS\INV_MISC_Book_%02d:18|t]]
    -- Rewrite, because for some reason, keeping it in one line kept making my emacs explode.
