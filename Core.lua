@@ -517,16 +517,12 @@ function Quest:TitleText()
    if st.cfg.showTags then
       local tag = self.tag and self.tag:sub(1,1) or ""
       text = "[" .. tostring(self.level) .. tag .. "] " .. self.title
-   else
-      text = self.title
    end
 
    if st.cfg.useDifficultyColor then
       local c = GetQuestDifficultyColor(self.level)
       text = "|cff%02x%02x%02x" .. text .. "|r"
       text = text:format(c.r*255,c.g*255,c.b*255)
-   else
-      text = self.title
    end
 
    return text
