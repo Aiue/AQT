@@ -445,6 +445,17 @@ function Objective:Update(qIndex, oIndex, noPour)
 	 countertext = have:sub(1,1) .. "/" .. need:sub(1,1)
 	 have,need = (complete and 1 or 0),1
       else
+	 if not factionCache[text].objectives then factionCache[text].objectives = {self}
+	 else
+	    local found
+	    for k,v in ipairs(factionCache[text].objectives) do
+	       if v == self then
+		  found = true
+		  break
+	       end
+	    end
+	    if not found then tinsert(factionCache[text].objectives, self) end
+	 end
 	 have = factionCache[text].reputation
 	 if need == FACTION_STANDING_LABEL1 then need = -42000 -- Hated. This would be strange, but uh, ok.
 	 elseif need == FACTION_STANDING_LABEL2 then need = -6000 -- Hostile
@@ -540,6 +551,19 @@ function Quest:Remove()
    if self.uiObject then self:Untrack() end
    for i,v in ipairs(self.header.quests) do
       if self == v then tremove(self.header.quests, i) end
+   end
+   for i,v in ipairs(self.objectives) do
+      for key,val in pairs(factionCache) do
+	 if val.objectives then
+	    for a,b in ipairs(val.objectives) do
+	       if v == b then
+		  tremove(val.objectives, a)
+		  break
+	       end
+	    end
+	 end
+      end
+      self.objectives[i] = nil
    end
    self.header = nil
    QuestCache[self.id] = nil
