@@ -227,38 +227,6 @@ function AQT:OnInitialize()
    st.initConfig()
 end
 
-local function factionInit()
-   if not GetFactionInfo(1) then return end
-
-   local i = 1
-   local otherfound
-   while i do
-      local faction,_,standing,offset,_,value = GetFactionInfo(i)
-      -- This looks really strange, but GetFactionInfo(i) will:
-      -- * Return the "Other" entry at the proper place.
-      -- * Eventually return the "Inactive"
-      -- * Then, after, I would assume, cycling through the inactives return "Other" again for each incremental value of i.
-      -- So yes, this looks really strange. But there's a reason for it. I give you: The Blizzard WoW API.
-      if not faction or faction == "Other" then
-	 if not faction or otherfound then
-	    i = nil
-	    break
-	 else
-	    otherfound = true
-	 end
-      end
-
-      factionCache[faction] = {
-	 reputation = value,
-	 standing = standing,
-	 objectives = {},
-      }
-      i = i + 1
-   end
-
-   factionInit = nil
-end
-
 function AQT:OnEnable()
    QuestTimerFrame:SetScript("OnShow", function(self)
 				if st.cfg.hideQuestTimerFrame then self:Hide() end
@@ -273,10 +241,8 @@ function AQT:OnEnable()
 
    st.gui:OnEnable()
 
-   factionInit()
-
    self:RegisterEvent("BAG_UPDATE_DELAYED", "QuestLogUpdate")
-   self:RegisterEvent("CHAT_MSG_SYSTEM", "Event_ChatMsgSystem")
+   self:RegisterEvent("UPDATE_FACTION", "Event_UpdateFaction")
    self:RegisterEvent("PLAYER_LEVEL_UP", "PlayerLevelUp")
    self:RegisterEvent("QUEST_LOG_UPDATE", "QuestLogUpdate")
    self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ZoneChangedNewArea")
@@ -445,17 +411,6 @@ function Objective:Update(qIndex, oIndex, noPour)
 	 countertext = have:sub(1,1) .. "/" .. need:sub(1,1)
 	 have,need = (complete and 1 or 0),1
       else
-	 if not factionCache[text].objectives then factionCache[text].objectives = {self}
-	 else
-	    local found
-	    for k,v in ipairs(factionCache[text].objectives) do
-	       if v == self then
-		  found = true
-		  break
-	       end
-	    end
-	    if not found then tinsert(factionCache[text].objectives, self) end
-	 end
 	 have = factionCache[text].reputation
 	 if need == FACTION_STANDING_LABEL1 then need = -42000 -- Hated. This would be strange, but uh, ok.
 	 elseif need == FACTION_STANDING_LABEL2 then need = -6000 -- Hostile
@@ -551,19 +506,6 @@ function Quest:Remove()
    if self.uiObject then self:Untrack() end
    for i,v in ipairs(self.header.quests) do
       if self == v then tremove(self.header.quests, i) end
-   end
-   for i,v in ipairs(self.objectives) do
-      for key,val in pairs(factionCache) do
-	 if val.objectives then
-	    for a,b in ipairs(val.objectives) do
-	       if v == b then
-		  tremove(val.objectives, a)
-		  break
-	       end
-	    end
-	 end
-      end
-      self.objectives[i] = nil
    end
    self.header = nil
    QuestCache[self.id] = nil
@@ -841,25 +783,40 @@ function AQT:PrePour(msg, r, g, b)
    end
 end
 
-function AQT:Event_ChatMsgSystem(msg)
-   local faction,change
-   -- Yes, I'll be repeating myself a bit below, but.. eh, I probably have to, anyway. If only because it's either increase or decrease. Uh. Yes, I'm slightly tired at the moment.
-   if msg:match("^" .. FACTION_STANDING_DECREASED .. "$") then
-      faction,change = msg:match("^" .. FACTION_STANDING_DECREASED .. "$")
-      change = -change
-   elseif msg:match("^" .. FACTION_STANDING_INCREASED .. "$") then faction,change = msg:match("^" .. FACTION_STANDING_INCREASED .. "$")
-   else return end
+function AQT:Event_UpdateFaction(arg1, arg2)
+   if not GetFactionInfo(1) then return end
 
-   if factionInit then factionInit() end
+   local i = 1
+   local otherfound
+   while i do
+      local faction,_,standing,offset,_,value = GetFactionInfo(i)
+      -- This looks really strange, but GetFactionInfo(i) will:
+      -- * Return the "Other" entry at the proper place.
+      -- * Eventually return the "Inactive"
+      -- * Then, after, I would assume, cycling through the inactives return "Other" again for each incremental value of i.
+      -- So yes, this looks really strange. But there's a reason for it. I give you: The Blizzard WoW API.
+      if not faction or faction == "Other" then
+	 if not faction or otherfound then
+	    i = nil
+	    break
+	 else
+	    otherfound = true
+	 end
+      end
 
-   if not factionCache[faction] then return end
-
-   local fcf = factionCache[faction]
-   fcf.reputation = fcf.reputation + change
-
-   if fcf.objectives then
-      for k,v in ipairs(fcf.objectives) do v:Update() end
+      if factionCache[faction] then
+	 factionCache[faction].reputation = value
+	 factionCache[faction].standing = standing
+      else
+	 factionCache[faction] = {
+	    reputation = value,
+	    standing = standing,
+	 }
+      end
+      i = i + 1
    end
+
+   self:QuestLogUpdate()
 end
 
 function AQT:ExpandHeaders() -- While it seems to make more sense to stick this with the gui functions, this is where we have the iterator cache. So.. well, possibly make it accessible from elsewhere, or just keep this here.

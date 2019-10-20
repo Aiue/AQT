@@ -452,7 +452,7 @@ function guiFunc:New(owner)
       object.counter:SetFontObject(gui.font)
       object.counter:SetJustifyH("RIGHT")
       object.counter:SetPoint("TOPRIGHT", object)
-      object.text:SetPoint("TOPRIGHT", object.counter, "TOPLEFT", -10, 0)
+      object.text:SetPoint("RIGHT", object.counter, "LEFT", -10, 0)
       -- Create a container. May want to have these ones also be on-demand. It's a whole lot easier keeping it as is, though.
       object.container = CreateFrame("Frame", nil, object)
       object.container:SetPoint("TOPLEFT", object, "BOTTOMLEFT")
