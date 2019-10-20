@@ -642,7 +642,9 @@ function guiFunc:UpdateText(recurse)
    local titleText,counterText
 
    self.text:SetWordWrap(st.cfg.font.wrap)
+   self.text:SetNonSpaceWrap(st.cfg.font.wrap)
    self.counter:SetWordWrap(st.cfg.font.wrap)
+   self.counter:SetNonSpaceWrap(st.cfg.font.wrap)
 
    if type(self.owner.TitleText) == "function" then
       titleText = self.owner:TitleText()

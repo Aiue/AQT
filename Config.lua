@@ -386,7 +386,12 @@ local CFGHandler = {
 	    st.cfg.font[info[#info]] = v1
 	 end
 	 st.gui:Redraw() -- only needed for some settings, return to this
-	 if info[#info] == "wrap" then st.gui.title:UpdateText(true) end
+	 if info[#info] == "wrap" then
+	    st.gui.title:UpdateText(true)
+	    C_Timer.After(.1, function()
+			     st.gui.title:UpdateText(true)
+	    end)
+	 end
 --	 st.gui.title:UpdateText(true)
       end,
    },
@@ -1450,7 +1455,6 @@ local options = {
 		     name = L["Wrap Long Lines"],
 		     type = "toggle",
 		     order = 5,
-		     disabled = true,
 		  },
 	       },
 	    },
