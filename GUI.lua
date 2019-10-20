@@ -64,6 +64,10 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.children = {}
 
    function gui:UpdateSize(doChildren)
+      local width = self.title:CheckWidth()
+      if width < st.cfg.minWidth then self:SetWidth(st.cfg.minWidth)
+      elseif width > st.cfg.maxWidth then self:SetWidth(st.cfg.maxWidth)
+      else self:SetWidth(width) end
       if doChildren then self.title:UpdateSize(false) end
 
       local h = gui.title:GetHeight() + (gui.title.container:IsShown() and gui.title.container:GetHeight() or 0)
@@ -142,9 +146,7 @@ function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an a
 
    gui:SetBackdrop(backdrop)
 
-   gui:SetWidth(st.cfg.maxWidth) --!!!RE!!!
-
-   gui:UpdateSize(false)
+   gui:UpdateSize(true)
 
    gui:RedrawColor(false)
    gui:SetAlpha(st.cfg.alpha)
@@ -287,7 +289,7 @@ end
 function guiFunc:CheckWidth(width)
    width = width or 0
    -- May want to use GetTextWidth()
-   local w = st.cfg.font.size + st.cfg.indent + st.cfg.padding*2 + v.text:GetWidth() + v.counter:GetWidth()
+   local w = st.cfg.font.size + st.cfg.indent + st.cfg.padding*2 + self.text:GetStringWidth() + self.counter:GetStringWidth()
    if w > width then width = w end
    for k,v in ipairs(self.children) do
       width = v:CheckWidth(width)
