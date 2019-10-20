@@ -63,7 +63,9 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    end)
    gui.children = {}
 
-   function gui:UpdateSize()
+   function gui:UpdateSize(doChildren)
+      if doChildren then self.title:UpdateSize(false) end
+
       local h = gui.title:GetHeight() + (gui.title.container:IsShown() and gui.title.container:GetHeight() or 0)
       gui.scrollChild:SetHeight(h)
 
@@ -142,7 +144,7 @@ function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an a
 
    gui:SetWidth(st.cfg.maxWidth) --!!!RE!!!
 
-   gui:UpdateSize()
+   gui:UpdateSize(false)
 
    gui:RedrawColor(false)
    gui:SetAlpha(st.cfg.alpha)
@@ -414,21 +416,21 @@ end
 function guiFunc:RelinkChildren(recurse)
    self:UnlinkChildren() -- While we shouldn't get any circular links, play it safe and unlink everything first
    if self.timer and self.timer.sb then
-      self.timer:SetPoint("TOPLEFT", self.container, "TOPLEFT", st.cfg.indent+st.cfg.font.size, 0)
+      self.timer:SetPoint("TOPLEFT", self.container, "TOPLEFT", st.cfg.indent+st.cfg.font.size, -st.cfg.font.spacing)
       self.timer:SetPoint("TOPRIGHT", self.container, "TOPRIGHT")
    end
    for k,v in ipairs(self.children) do
       if k == 1 then
 	 if self.timer and self.timer.sb then
-	    v:SetPoint("TOPLEFT", self.timer, "BOTTOMLEFT", -(st.cfg.indent+st.cfg.font.size), 0)
+	    v:SetPoint("TOPLEFT", self.timer, "BOTTOMLEFT", -(st.cfg.indent+st.cfg.font.size), -st.cfg.font.spacing)
 	    v:SetPoint("TOPRIGHT", self.timer, "BOTTOMRIGHT")
 	 else
-	    v:SetPoint("TOPLEFT", self.container, "TOPLEFT", st.cfg.indent, 0)
+	    v:SetPoint("TOPLEFT", self.container, "TOPLEFT", st.cfg.indent, -st.cfg.font.spacing)
 	    v:SetPoint("TOPRIGHT", self.container, "TOPRIGHT")
 	 end
       else
-	 v:SetPoint("TOPLEFT", self.children[k-1].container, "BOTTOMLEFT")
-	 v:SetPoint("TOPRIGHT", self.children[k-1].container, "BOTTOMRIGHT")
+	 v:SetPoint("TOPLEFT", self.children[k-1].container, "BOTTOMLEFT", 0, -st.cfg.font.spacing)
+	 v:SetPoint("TOPRIGHT", self.children[k-1].container, "BOTTOMRIGHT", 0, -st.cfg.font.spacing)
       end
 
       if recurse then v:RelinkChildren(true) end
@@ -611,12 +613,18 @@ end
 
 function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for some of these things. Particularly useful for fontstrings. Which can't set that script, so uh. Still. Get back to this. Could solve some of my other issues. And FontStrings I can handle in UpdateText().
    -- Yes, definitely need to rewrite all of this. I mean, it MOSTLY works. But.. not as well as I'd like. I kind of need an onsizechanged scripts alongside a "manual" updater.
+   if recurse == false then
+      for k,v in ipairs(self.children) do v:UpdateSize(false) end
+   end
+
    local h,w = 0,0 -- Do I need width? ...possibly
    for k,v in ipairs(self.children) do
 --      local th,ch = v.text:GetHeight(),v.counter:GetHeight()
 --      h = h + (th > ch and th or ch) + (v.container:IsShown() and v.container:GetHeight() or 0)
       h = h + v:GetHeight() + (v.container:IsShown() and v.container:GetHeight() or 0)
    end
+
+   h = h + st.cfg.font.spacing*(#self.children)
 
    if self.timer and self.timer.sb then
       self.timer:SetHeight(st.cfg.barFont.size*1.5) -- probably good?
@@ -631,10 +639,7 @@ function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for s
    local th,ch = self.text:GetStringHeight(),self.counter:GetStringHeight()
    self:SetHeight(th > ch and th or ch)
 
-   if recurse then self:Parent():UpdateSize(true) -- gui will have its own function, so no need for a base case
-   elseif recurse == false then
-      for k,v in ipairs(self.children) do v:UpdateSize(false) end
-   end
+   if recurse then self:Parent():UpdateSize(true) end -- gui will have its own function, so no need for a base case
 end
 
 function guiFunc:UpdateText(recurse)

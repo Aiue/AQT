@@ -385,13 +385,16 @@ local CFGHandler = {
 	 else
 	    st.cfg.font[info[#info]] = v1
 	 end
-	 st.gui:Redraw() -- only needed for some settings, return to this
 	 if info[#info] == "wrap" then
 	    st.gui.title:UpdateText(true)
 	    C_Timer.After(.1, function()
 			     st.gui.title:UpdateText(true)
 	    end)
+	 elseif info[#info] == "spacing" then
+	    st.gui.title:RelinkChildren(true)
+	    st.gui:UpdateSize(true)
 	 end
+	 st.gui:Redraw() -- only needed for some settings, return to this
 --	 st.gui.title:UpdateText(true)
       end,
    },
@@ -1446,10 +1449,9 @@ local options = {
 		     name = L.Spacing,
 		     type = "range",
 		     min = 0,
-		     max = 120,
+		     softMax = 30,
 		     step = 1,
 		     order = 4,
-		     disabled = true,
 		  },
 		  wrap = {
 		     name = L["Wrap Long Lines"],
