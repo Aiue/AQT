@@ -87,6 +87,14 @@ end
 
 local Header = baseObject:New(
    {
+      clickScripts = {
+	 Toggle = {
+	    desc = L.Toggle,
+	    func = function(self)
+	       self.uiObject:ToggleCollapsed(true)
+	    end,
+	 },
+      },
       name = "Header",
       sortFields = {
 	 name = L.Title,

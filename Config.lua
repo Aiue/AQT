@@ -126,6 +126,9 @@ local defaults = {
    maxWidth = 250,
    mouse = {
       enabled = true,
+      Header = {
+	 enabled = true,
+      },
       Quest = {
 	 enabled = true,
 	 LeftButton = {
