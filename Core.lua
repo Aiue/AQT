@@ -161,7 +161,7 @@ local Quest = baseObject:New(
 
 	       ChatEdit_InsertLink(title)
 	    end,
-	    disabled = function(info)
+	    disabled = function(self)
 	       return not ChatEdit_GetActiveWindow()
 	    end,
 	 },
@@ -220,6 +220,9 @@ local Quest = baseObject:New(
 	    order = 2,
 	    func = function(self)
 	       QuestLogPushQuest(GetQuestLogIndexByID(self.id))
+	    end,
+	    disabled = function(self)
+	       return not IsInGroup()
 	    end,
 	 },
       },
