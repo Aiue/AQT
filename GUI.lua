@@ -882,7 +882,7 @@ local function onClick(self, button, down)
 	 }
 
 	 if v.disabled then
-	    if type(v.disabled) == "function" then entry.disabled = v:disabled()
+	    if type(v.disabled) == "function" then entry.disabled = v:disabled(self.owner)
 	    elseif type(v.disabled) == "boolean" then entry.disabled = v.disabled
 	    else error("Unknown type for 'disabled': " .. type(v.disabled)) end
 	 end
@@ -931,7 +931,7 @@ local function onClick(self, button, down)
       return
    end
 
-   if self.owner.clickScripts[func].disabled() then return end
+   if self.owner.clickScripts[func].disabled and (type(self.owner.clickScripts[func].disabled) == "boolean" or (type(self.owner.clickScripts[func].disabled) == "function" and self.owner.clickScripts[func].disabled(self.owner))) then return end
 
    func = self.owner.clickScripts[func].func
 
