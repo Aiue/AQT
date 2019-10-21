@@ -356,6 +356,7 @@ function guiFunc:Release(recursed)
 
    if not found then print("Could not find what we're trying to release..");print(self:Parent().text:GetText() .. "/" .. self.text:GetText()) end
 
+   self.manual = nil
    self.owner.uiObject = nil
    self.owner = nil
    self.text:SetText("")
@@ -474,34 +475,40 @@ function guiFunc:New(owner)
    return object
 end
 
-function guiFunc:CollapseHeader()
+function guiFunc:CollapseHeader(manual)
    if not self.container then error("Missing container.")
-   elseif self:IsCollapsed() then return end
+   elseif self:IsCollapsed() then return
+   elseif self.manual and not manual then return end
+
+   if self.manual ~= nil then self.manual = manual end
 
    self.container:Hide()
    self:ButtonCheck()
    self:UpdateSize(true)
 end
 
-function guiFunc:ExpandHeader()
+function guiFunc:ExpandHeader(manual)
    if not self.container then error("Missing container.")
-   elseif not self:IsCollapsed() then return end
+   elseif not self:IsCollapsed() then return
+   elseif self.manual and not manual then return end
+
+   if manual ~= nil then self.manual = manual end
 
    self.container:Show()
    self:ButtonCheck()
    self:UpdateSize(true)
 end
 
-function guiFunc:ToggleCollapsed()
+function guiFunc:ToggleCollapsed(manual)
    if not self.container then error("Missing container.")
-   elseif self:IsCollapsed() then self:ExpandHeader()
-   else self:CollapseHeader() end
+   elseif self:IsCollapsed() then self:ExpandHeader(manual)
+   else self:CollapseHeader(manual) end
 end
 
 function guiFunc:IsCollapsed() return self.container and not self.container:IsShown() end -- Yes, I could just as well just check for this, but I want to create more abstraction. I'm breaking it enough as it is already.
 
 local function clickButton(self, button, down)
-   if button == "LeftButton" then self:GetParent():ToggleCollapsed() end -- Right now this is the only button registered for clicks, but in case we want to add more later.
+   if button == "LeftButton" then self:GetParent():ToggleCollapsed(true) end -- Right now this is the only button registered for clicks, but in case we want to add more later.
 end
 
 function guiFunc:NewButton()
