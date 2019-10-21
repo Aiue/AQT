@@ -126,19 +126,48 @@ local Quest = baseObject:New(
 	       else
 		  local instanceGroup = IsInGroup(LE_PARTY_CATEGORY_INSTANCE) -- Shouldn't be relevant for classic, but put it here regardless.
 		  if instanceGroup then channel = "INSTANCE_CHAT"
-		  elseif IsInGroup() then channel = "PARTY" end
+		  elseif IsInGroup() then channel = "PARTY" 
+		  else channel = "SAY" end
 	       end
 	       if channel then
-		  SendChatMessage(self.title .. ":", channel)
+		  local title
+
+		  if st.cfg.showTags then
+		     local tag = self.tag and self.tag:sub(1,1) or ""
+		     title = "[" .. tostring(self.level) .. tag .. "] " .. self.title
+		  else
+		     title = self.title
+		  end
+
+		  SendChatMessage(title .. ":", channel)
 		  for k,v in ipairs(self.objectives) do
 		     SendChatMessage("- " .. v.text .. " (" .. tostring(v.have) .. "/" .. tostring(v.need) .. ")", channel)
 		  end
-	       else print("|cffffff00" .. ERR_NOT_IN_GROUP .. "|r") end
+	       end
+	    end,
+	 },
+	 SendToChat = {
+	    desc = L["Send to Chat"],
+	    order = 6,
+	    func = function(self)
+	       local title
+
+	       if st.cfg.showTags then
+		  local tag = self.tag and self.tag:sub(1,1) or ""
+		  title = "[" .. tostring(self.level) .. tag .. "] " .. self.title
+	       else
+		  title = self.title
+	       end
+
+	       ChatEdit_InsertLink(title)
+	    end,
+	    disabled = function(info)
+	       return not ChatEdit_GetActiveWindow()
 	    end,
 	 },
 	 WowheadLink = {
 	    desc = L["Get Wowhead URL"],
-	    order = 6,
+	    order = 7,
 	    func = function(self)
 	       local popup = StaticPopup_Show("AQTCopy")
 	       popup.editBox:SetText("https://classic.wowhead.com/quest=" .. tostring(self.id))
@@ -518,6 +547,8 @@ function Quest:TitleText()
    if st.cfg.showTags then
       local tag = self.tag and self.tag:sub(1,1) or ""
       text = "[" .. tostring(self.level) .. tag .. "] " .. self.title
+   else
+      text = self.title
    end
 
    if st.cfg.useDifficultyColor then

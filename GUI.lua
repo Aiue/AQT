@@ -878,6 +878,7 @@ local function onClick(self, button, down)
 	    arg1 = k,
 	    arg2 = self.owner,
 	    text = v.desc,
+	    disabled = v.disabled and v:disabled() or false,
 	    notCheckable = true,
 	 }
 	 if v.func then
@@ -923,6 +924,8 @@ local function onClick(self, button, down)
       L_EasyMenu(menu, gui.menu, "cursor", 0, 0, "menu", 10)
       return
    end
+
+   if self.owner.clickScripts[func].disabled() then return end
 
    func = self.owner.clickScripts[func].func
 
