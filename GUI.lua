@@ -63,6 +63,10 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    end)
    gui.children = {}
 
+   local function updateScroll()
+      if gui.scrollFrame:GetVerticalScroll() > gui.scrollFrame:GetVerticalScrollRange() then gui.scrollFrame:SetVerticalScroll(gui.scrollFrame:GetVerticalScrollRange()) end
+   end
+
    function gui:UpdateSize(doChildren)
       local width = self.title:CheckWidth()
       if width < st.cfg.minWidth then self:SetWidth(st.cfg.minWidth)
@@ -75,7 +79,7 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
 
       gui:SetHeight((h + st.cfg.padding*2) > st.cfg.maxHeight and st.cfg.maxHeight or (h + st.cfg.padding*2))
 
-      if gui.scrollFrame:GetVerticalScroll() > gui.scrollFrame:GetVerticalScrollRange() then gui.scrollFrame:SetVerticalScroll(gui.scrollFrame:GetVerticalScrollRange()) end
+      C_Timer.After(.1, updateScroll)
    end
 
    gui.title = guiFunc.New(gui, st.types.Title)
