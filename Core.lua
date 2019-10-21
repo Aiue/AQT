@@ -855,15 +855,15 @@ function AQT:Event(event, ...)
    if not events[event] then
       local func
 
-      if event == "BAG_UPDATE_DELAYED" or event == "QUEST_LOG_UPDATE" then func = self.QuestLogUpdate
-      elseif event == "UPDATE_FACTION" then func = self.Event_UpdateFaction
-      elseif event ==  "PLAYER_LEVEL_UP" then func = self.PlayerLevelUp
-      elseif event == "ZONE_CHANGED_NEW_AREA" then func = self.ZoneChangedNewArea
+      if event == "BAG_UPDATE_DELAYED" or event == "QUEST_LOG_UPDATE" then func = "QuestLogUpdate"
+      elseif event == "UPDATE_FACTION" then func = "Event_UpdateFaction"
+      elseif event ==  "PLAYER_LEVEL_UP" then func = "PlayerLevelUp"
+      elseif event == "ZONE_CHANGED_NEW_AREA" then func = "ZoneChangedNewArea"
       else return end
 
       events[event] = true
       C_Timer.After(.1, function()
-		       func()
+		       AQT[func](AQT)
 		       events[event] = nil
       end)
    end
