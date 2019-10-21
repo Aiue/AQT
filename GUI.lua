@@ -549,9 +549,9 @@ function guiFunc:Update()
    self:UpdateText()
 end
 
-function guiFunc:ButtonCheck() -- May want to rewrite this later and simply use a texture for the unclickable ones. Unless I can figure out a way to disable mouse interaction completely for buttons.
+function guiFunc:ButtonCheck(recurse) -- May want to rewrite this later and simply use a texture for the unclickable ones. Unless I can figure out a way to disable mouse interaction completely for buttons.
    if self == gui.title or self.owner.type == st.types.Header then
-      if #self.children > 0 then
+      if #self.children > 0 and (st.cfg.showHeaderButton or self == gui.title) then
 	 if not self.button then self:NewButton() end
 	 if self.container:IsShown() then
 	    self.button:SetNormalTexture([[Interface\Buttons\UI-MinusButton-Up]])
@@ -577,6 +577,8 @@ function guiFunc:ButtonCheck() -- May want to rewrite this later and simply use 
 	 self:ReleaseIcon()
       end
    end
+
+   if recurse then for k,v in ipairs(self.children) do v:ButtonCheck(true) end end
 end
 
 function guiFunc:Parent()

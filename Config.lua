@@ -155,6 +155,7 @@ local defaults = {
       g = 1,
       b = 0,
    },
+   showHeaderButton = true,
    showHeaderCount = true,
    showHeaders = true,
    showTags = true,
@@ -365,7 +366,8 @@ local CFGHandler = {
 	 elseif info[#info] == "alpha" then st.gui:Redraw()
 	 elseif info[#info] == "unlocked" then st.gui:ToggleLock()
 	 elseif info[#info] == "indent" then st.gui.title:RelinkChildren(true)
-	 elseif info[#info] == "objectivePrefix" then st.gui.title:UpdateText(true) end
+	 elseif info[#info] == "objectivePrefix" then st.gui.title:UpdateText(true)
+	 elseif info[#info] == "showHeaderButton" then st.gui.title:ButtonCheck(true) end
       end,
    },
    font = {
@@ -593,21 +595,31 @@ local options = {
 			   order = 1,
 --			   disabled = true, -- Still broken, and I need to push a release that should fix some issues. Can't work on this while having that hanging over me.
 			},
+			showHeaderButton = {
+			   type = "toggle",
+			   name = L["Show Header Button"],
+			   order = 2,
+			   hidden = function() return not st.cfg.showHeaders end,
+			},
 			showHeaderCount = {
 			   type = "toggle",
 			   name = L["Show Header Count"],
-			   order = 2,
+			   order = 3,
+			   hidden = function() return not st.cfg.showHeaders end,
 			},
 			automaticCollapseExpand = {
 			   type = "toggle",
 			   name = L["Automated Collapse/Expand"],
 			   desc = L["Automatically collapse/expand headers to match your current zone."],
-			   order = 3,
+			   order = 4,
+			   hidden = function() return not st.cfg.showHeaders end,
 			},
 			expandHeaders = {
 			   type = "execute",
 			   name = L["Expand All Headers"], -- Except the main title one.
 			   func = AQT.ExpandHeaders,
+			   order = 5,
+			   hidden = function() return not st.cfg.showHeaders end,
 			},
 		     },
 		  },
