@@ -126,9 +126,6 @@ local defaults = {
    maxWidth = 250,
    mouse = {
       enabled = true,
-      Header = {
-	 enabled = true,
-      },
       Quest = {
 	 enabled = true,
 	 LeftButton = {
@@ -415,9 +412,9 @@ local CFGHandler = {
 	 if #info == 2 then
 	    return st.cfg.mouse[info[#info]]
 	 else
-	    if not st.cfg.mouse[info[2]] or not st.cfg.mouse[info[2]][info[3]] then return "__unset__"
-	    elseif info[#info] == "enabled" then
-	       return st.cfg.mouse[info[2]].enabled
+	    if info[#info] == "enabled" then
+	       return (st.cfg.mouse[info[2]] and st.cfg.mouse[info[2]].enabled or false)
+	    elseif not st.cfg.mouse[info[2]] or not st.cfg.mouse[info[2]][info[3]] then return "__unset__"
 	    else
 	       return (st.cfg.mouse[info[2]][info[3]][info[#info]] and st.cfg.mouse[info[2]][info[3]][info[#info]] or "__unset__")
 	    end
@@ -1588,7 +1585,8 @@ end
 
 local function getMouseDisabled(info)
    if #info == 2 or #info == 3 then return not st.cfg.mouse.enabled
-   else return not st.cfg.mouse[info[2]].enabled end
+   elseif st.cfg.mouse[info[2]] then return not st.cfg.mouse[info[2]].enabled
+   else return true end
 end
 
 buttonOptions = {
