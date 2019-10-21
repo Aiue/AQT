@@ -32,6 +32,7 @@ local QUEST_OBJECTS_FOUND = QUEST_OBJECTS_FOUND:gsub("%%%d($)", "%%"):gsub("%%(s
 
 local tinsert,tremove = table.insert,table.remove
 
+local events = {}
 local factionCache = {}
 
 function AQT:OnDisable()
@@ -241,11 +242,11 @@ function AQT:OnEnable()
 
    st.gui:OnEnable()
 
-   self:RegisterEvent("BAG_UPDATE_DELAYED", "QuestLogUpdate")
-   self:RegisterEvent("UPDATE_FACTION", "Event_UpdateFaction")
-   self:RegisterEvent("PLAYER_LEVEL_UP", "PlayerLevelUp")
-   self:RegisterEvent("QUEST_LOG_UPDATE", "QuestLogUpdate")
-   self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ZoneChangedNewArea")
+   self:RegisterEvent("BAG_UPDATE_DELAYED", "Event")
+   self:RegisterEvent("UPDATE_FACTION", "Event")
+   self:RegisterEvent("PLAYER_LEVEL_UP", "Event")
+   self:RegisterEvent("QUEST_LOG_UPDATE", "Event")
+   self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "Event")
    self:SuppressionCheck()
 
    local icon = [[Interface\GossipFrame\AvailableQuestIcon]]
@@ -729,10 +730,7 @@ function AQT:QuestLogUpdate(...)
 end
 
 function AQT:PlayerLevelUp()
-   local function Update()
-      for k,v in pairs(QuestCache) do if v.uiObject then v.uiObject:UpdateText() end end
-   end
-   C_Timer.After(1, Update)
+   for k,v in pairs(QuestCache) do if v.uiObject then v.uiObject:UpdateText() end end
 end
 
 function AQT:ZoneChangedNewArea()
@@ -851,3 +849,22 @@ function AQT:UpdateScripts()
    for k,v in pairs(QuestCache) do v:UpdateScripts() end
 end
 ]]--
+
+-- This current works because we don't need to consider any arguments for any of the events. Should this change, I'll have to change this.
+function AQT:Event(event, ...)
+   if not events[event] then
+      local func
+
+      if event == "BAG_UPDATE_DELAYED" or event == "QUEST_LOG_UPDATE" then func = self.QuestLogUpdate
+      elseif event == "UPDATE_FACTION" then func = self.Event_UpdateFaction
+      elseif event ==  "PLAYER_LEVEL_UP" then func = self.PlayerLevelUp
+      elseif event == "ZONE_CHANGED_NEW_AREA" then func = self.ZoneChangedNewArea
+      else return end
+
+      events[event] = true
+      C_Timer.After(.1, function()
+		       func()
+		       events[event] = nil
+      end)
+   end
+end
