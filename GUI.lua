@@ -878,9 +878,15 @@ local function onClick(self, button, down)
 	    arg1 = k,
 	    arg2 = self.owner,
 	    text = v.desc,
-	    disabled = v.disabled and v:disabled() or false,
 	    notCheckable = true,
 	 }
+
+	 if v.disabled then
+	    if type(v.disabled) == "function" then entry.disabled = v:disabled()
+	    elseif type(v.disabled) == "boolean" then entry.disabled = v.disabled
+	    else error("Unknown type for 'disabled': " .. type(v.disabled)) end
+	 end
+
 	 if v.func then
 	    entry.func = function(self, func, questObject)
 	       func = v.func
