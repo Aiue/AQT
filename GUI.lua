@@ -35,8 +35,10 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui:SetFrameStrata("BACKGROUND")
    gui.artwork = gui:CreateTexture(nil)
    gui.artwork:SetDrawLayer("artwork")
-   gui.highlight = gui:CreateTexture(nil) -- Put this here instead of reusinc the recycler each time.
-   gui.highlight:SetDrawLayer("artwork") -- May want another layer, but use this for now.
+   gui.highlight = gui:CreateTexture(nil)
+   gui.highlight:SetDrawLayer("artwork")
+   gui.zoneHighlight = gui:CreateTexture(nil) -- Put this here instead of reusinc the recycler each time.
+   gui.zoneHighlight:SetDrawLayer("artwork") -- May want another layer, but use this for now.
    gui.menu = L_Create_UIDropDownMenu(getAvailableName("AQTMenu"), gui)
 
    gui.font = CreateFont(getAvailableName("AQTFont"))
@@ -160,10 +162,10 @@ function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an a
    gui:SetAlpha(st.cfg.alpha)
 
    local c = st.cfg.highlightCurrentZoneBackgroundColor
-   gui.highlight:SetColorTexture(c.r, c.g, c.b, c.a)
-   if not st.cfg.highlightCurrentZoneBackground then
-      gui.highlight:ClearAllPoints()
-      gui.highlight:Hide()
+   gui.zoneHighlight:SetColorTexture(c.r, c.g, c.b, c.a)
+   if not st.cfg.zoneHighlightCurrentZoneBackground then
+      gui.zoneHighlight:ClearAllPoints()
+      gui.zoneHighlight:Hide()
    end
 
    if not st.cfg.artwork.texture and st.cfg.artwork.LSMTexture == "None" then
@@ -307,10 +309,10 @@ function guiFunc:CheckWidth(width)
    return width
 end
 
-function guiFunc:SetHighlight()
+function guiFunc:SetZoneHighlight()
    if st.cfg.highlightCurrentZoneBackground then
-      gui.highlight:SetAllPoints(self)
-      gui.highlight:Show()
+      gui.zoneHighlight:SetAllPoints(self)
+      gui.zoneHighlight:Show()
    end
 end
 
@@ -358,10 +360,10 @@ function guiFunc:Release(recursed)
       if self == v then tinsert(recycler, tremove(parent.children, k));found = true end
    end
 
-   local _,rel = gui.highlight:GetPoint(1)
+   local _,rel = gui.zoneHighlight:GetPoint(1)
    if rel == self then
-      gui.highlight:ClearAllPoints()
-      gui.highlight:Hide()
+      gui.zoneHighlight:ClearAllPoints()
+      gui.zoneHighlight:Hide()
    end
 
    if not found then print("Could not find what we're trying to release..");print(self:Parent().text:GetText() .. "/" .. self.text:GetText()) end
@@ -450,6 +452,17 @@ function guiFunc:RelinkChildren(recurse)
    end
 end
 
+function guiFunc:OnEnter(mouseMoved)
+   gui.highlight:SetAllPoints(self)
+   gui.highlight:SetColorTexture(st.cfg.highlightMouseColor.r, st.cfg.highlightMouseColor.g, st.cfg.highlightMouseColor.b, st.cfg.highlightMouseColor.a)
+   gui.highlight:Show()
+end
+
+function guiFunc:OnLeave(mouseMoved)
+   gui.highlight:ClearAllPoints()
+   gui.highlight:Hide()
+end
+
 function guiFunc:New(owner)
    local object
    if not self.container then error(self:GetName() .. " missing container") end
@@ -474,6 +487,10 @@ function guiFunc:New(owner)
       object.container:SetPoint("TOPRIGHT", object, "BOTTOMRIGHT")
       object.children = {}
       object.scripts = {}
+
+      object:SetScript("OnEnter", guiFunc.OnEnter)
+      object:SetScript("OnLeave", guiFunc.OnLeave)
+
       setmetatable(object, mt)
    end
    tinsert(self.children, object)

@@ -373,7 +373,7 @@ end
 
 function Header:TitleText()
    if self:IsCurrentZone() then
-      self.uiObject:SetHighlight()
+      self.uiObject:SetZoneHighlight()
       if st.cfg.highlightCurrentZoneText then
 	 local fmt = "|cff%02x%02x%02x%s|r"
 	 local c = st.cfg.highlightCurrentZoneTextColor
