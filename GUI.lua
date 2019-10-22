@@ -49,7 +49,7 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.scrollChild = CreateFrame("Frame", nil, gui.scrollFrame)
    gui.container = gui.scrollChild -- Hack to support new relational structure. Will make this the only reference after going through the code to make sure nothing else references it.
    gui.scrollFrame:SetScrollChild(gui.scrollChild)
-   gui.scrollFrame:SetScript("OnSizeChanged", function(self, width, height) -- I'm not entirely sure what I was thinking here.
+   gui.scrollFrame:SetScript("OnSizeChanged", function(self, width, height)
 				self:GetScrollChild():SetWidth(width)
    end)
    gui.scrollFrame:EnableMouseWheel(true)
@@ -63,9 +63,7 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    end)
    gui.children = {}
 
-   local function updateScroll()
-      if gui.scrollFrame:GetVerticalScroll() > gui.scrollFrame:GetVerticalScrollRange() then gui.scrollFrame:SetVerticalScroll(gui.scrollFrame:GetVerticalScrollRange()) end
-   end
+   local function updateScroll() if gui.scrollFrame:GetVerticalScroll() > gui.scrollFrame:GetVerticalScrollRange() then gui.scrollFrame:SetVerticalScroll(gui.scrollFrame:GetVerticalScrollRange()) end end
 
    function gui:UpdateSize(doChildren)
       local width = self.title:CheckWidth()
@@ -295,8 +293,10 @@ function guiFunc:CheckWidth(width)
    -- May want to use GetTextWidth()
    local w = st.cfg.font.size + st.cfg.indent + st.cfg.padding*2 + self.text:GetStringWidth() + self.counter:GetStringWidth()
    if w > width then width = w end
-   for k,v in ipairs(self.children) do
-      width = v:CheckWidth(width)
+   if self.container:IsShown() then
+      for k,v in ipairs(self.children) do
+	 width = v:CheckWidth(width)
+      end
    end
    return width
 end
