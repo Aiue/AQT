@@ -32,7 +32,7 @@ setmetatable(guiFunc, getmetatable(UIParent))
 local mt = {__index = function(t, k) return guiFunc[k] end}
 
 function gui:OnEnable() -- Might want to attach this one elsewhere.
-   gui:SetFrameStrata("BACKGROUND")
+   gui:SetFrameStrata("TOOLTIP")
    gui.artwork = gui:CreateTexture(nil)
    gui.artwork:SetDrawLayer("artwork")
    gui.highlight = gui:CreateTexture(nil) -- Put this here instead of reusinc the recycler each time.
@@ -79,6 +79,12 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
 
       C_Timer.After(.1, updateScroll)
    end
+
+   gui.fader = gui:CreateAnimationGroup()
+
+   gui.fader.alpha = gui.fader:CreateAnimation("Alpha")
+   gui.fader.alpha:SetOrder(1)
+   gui.fader.alpha:SetDuration(.5)
 
    gui.title = guiFunc.New(gui, st.types.Title)
    gui.title:SetPoint("TOPLEFT", gui.scrollChild, "TOPLEFT")
@@ -853,7 +859,42 @@ function gui:IterateObjects(oType)
    end
 end
 
+function gui:Fade(toAlpha)
+   if self.fader:IsPlaying() then
+      local alpha = self:GetAlpha()
+      self.fader:Stop()
+      self:SetAlpha(alpha)
+   end
+   self.fader.alpha:SetFromAlpha(self:GetAlpha())
+   self.fader.alpha:SetToAlpha(toAlpha)
+   self.fader:SetToFinalAlpha(toAlpha)
+
+   self.fader:Play()
+end
+
+function gui:OnEnter(mouseMoved)
+   print("enter")
+   print(GetMouseFocus():GetName())
+   self:Fade(st.cfg.alpha)
+end
+
+function gui:OnLeave(mouseMoved)
+   print("unenter")
+   print(GetMouseFocus():GetName())
+   self:Fade(st.cfg.alphaFaded)
+end
+
 function gui:UpdateScripts()
+--[[ This needs additional handling. Once we mouseover something clickable, it triggers the fadeout animation.
+   if st.cfg.fade then
+      self:SetScript("OnEnter", self.OnEnter)
+      self:SetScript("OnLeave", self.OnLeave)
+   else
+      self:SetScript("OnEnter", nil)
+      self:SetScript("OnLeave", nil)
+   end
+]]--
+
    for k,v in gui:IterateObjects() do v:UpdateScripts() end
 end
 

@@ -18,6 +18,7 @@ local defaultSortFields = { -- Because AceDB will kind of screw things up for us
 
 local defaults = {
    alpha = .9,
+   alphaFaded = .3,
    anchorFrom = "TOPRIGHT",
    anchorTo = "TOPRIGHT",
    artwork = {
@@ -90,6 +91,7 @@ local defaults = {
    },
    barTexture = "Blizzard",
    completionSoundName = "Peon: Work Complete",
+   fade = true,
    font = {
       name = "Friz Quadrata TT",
       outline = "OUTLINE",
