@@ -113,6 +113,7 @@ local Objective = baseObject:New(
 	 index = L.Index,
 	 lastUpdate = L["Last Update"],
 	 text = L.Description,
+	 Completion = L["% Complete"],
       },
    }
 )
@@ -394,6 +395,10 @@ function Header:Update()
    elseif self.uiObject then
       self.uiObject:Release()
    end
+end
+
+function Objective:Completion()
+   return self.have/self.need
 end
 
 function Objective:CounterText()
