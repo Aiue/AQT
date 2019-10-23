@@ -241,6 +241,7 @@ local Quest = baseObject:New(
 	 tag = L.Tag,
 	 title = L.Title,
 	 lastUpdate = L["Last Update"],
+	 AverageCompletion = L["Average Completion"],
       },
    }
 )
@@ -522,6 +523,18 @@ function Objective:Update(qIndex, oIndex, noPour)
    return sound
 end
 
+function Quest:AverageCompletion()
+   if #self.objectives == 0 then return 1 end
+
+   local have,need = 0,0
+   for k,v in ipairs(self.objectives) do
+      have = have + v.have
+      need = need + v.need
+   end
+
+   return have/need
+end
+
 function Quest:HasTimer()
    if v.timer then return true else return false end
 end
@@ -653,6 +666,7 @@ function Quest:Update(timer)
       if self.timer then self.uiObject:UpdateTimer() end
    end
    self.header:Update()
+   self.CounterText = tostring(self:AverageCompletion())
    return sound
 end
 
