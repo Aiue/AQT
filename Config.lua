@@ -568,11 +568,6 @@ local options = {
 		     order = 0,
 		     inline = true,
 		     args = {
-			descr = {
-			   type = "description",
-			   name = "Sorry about the mess. Some of these are currently disabled as they are awaiting proper implementation. Further, most of these configuration options ended up here because I couldn't quite figure out where to place them. Meaning, I may well move them elsewhere eventually.",
-			   order = 0,
-			},
 			unlocked = {
 			   type = "toggle",
 			   name = L["Unlock Tracker"],
@@ -720,11 +715,6 @@ local options = {
 		     type = "toggle",
 		     name = L["Hide Objectives for Completed Quests"],
 		     order = 3,
-		  },
-		  apology = {
-		     type = "description",
-		     name = "Yeah, I know, this section is rather empty right now. So why move stuff here?\nWell. I'm planning to fill it with more stuff soon. :)",
-		     order = 50,
 		  },
 	       },
 	    },
