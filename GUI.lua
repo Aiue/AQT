@@ -6,6 +6,10 @@ local Prism = LibStub("LibPrism-1.0")
 
 local tinsert,tremove,tsort = table.insert,table.remove,table.sort
 
+local animations = {
+   faders = {},
+}
+
 local recycler = {
    buttons = {},
    icons = {},
@@ -347,11 +351,53 @@ function guiFunc:RecurseResort()
    end
 end
 
-function guiFunc:Release(recursed)
+function guiFunc:Fade(fromAlpha, toAlpha, delay, target, onFinish)
+   local fader
+   for k,v in ipairs(animations.faders) do
+      if not v:IsPlaying() then
+	 fader = v
+	 break
+      end
+   end
+
+   if not fader then
+      fader = gui:CreateAnimationGroup()
+      fader.alpha = fader:CreateAnimation("Alpha")
+      fader.alpha:SetOrder(1)
+      fader.alpha:SetDuration(.5)
+      tinsert(animations.faders, fader)
+   end
+
+   if fromAlpha > toAlpha then fader.alpha:SetSmoothing("OUT") else fader.alpha:SetSmoothing("IN") end
+
+   fader.alpha:SetFromAlpha(fromAlpha)
+   fader.alpha:SetToAlpha(toAlpha)
+   fader:SetToFinalAlpha(toAlpha)
+   fader.alpha:SetStartDelay(delay)
+   fader.alpha:SetTarget(target or self)
+   fader:SetScript("OnFinished", onFinish)
+   fader:Play()
+end
+
+function guiFunc:Release()
+   if self.releasing then return end
+   self.releasing = true
+
+   local release = function(fader, requested)
+      self:DelayedRelease()
+   end
+
+   self:Fade(1, 0, 0, self, release)
+end
+
+function guiFunc:DelayedRelease(recursed)
    local parent = self:Parent()
+
+   self.releasing = nil
+
    while #self.children > 0 do
       self.children[1]:ClearAllPoints()
-      self.children[1]:Release(true)
+      self.children[1]:DelayedRelease(true)
    end
 
    local found
@@ -499,6 +545,7 @@ function guiFunc:New(owner)
    object:UpdateScripts()
    tinsert(active_objects, object)
    if self ~= gui then self:Update() end
+   object:Fade(0, 1, 0, object)
    return object
 end
 
@@ -509,9 +556,14 @@ function guiFunc:CollapseHeader(manual)
 
    if self.manual ~= nil then self.manual = manual end
 
-   self.container:Hide()
-   self:ButtonCheck()
-   self:UpdateSize(true)
+   self:Fade(1, 0, 0, self.container, function(fader, requested)
+		local target = fader.alpha:GetTarget()
+
+		target:Hide()
+		target = target:GetParent()
+		target:ButtonCheck()
+		target:UpdateSize(true)
+   end)
 end
 
 function guiFunc:ExpandHeader(manual)
@@ -524,6 +576,7 @@ function guiFunc:ExpandHeader(manual)
    self.container:Show()
    self:ButtonCheck()
    self:UpdateSize(true)
+   self:Fade(0, 1, 0, self.container, nil)
 end
 
 function guiFunc:ToggleCollapsed(manual)

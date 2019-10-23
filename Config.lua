@@ -121,6 +121,12 @@ local defaults = {
       b = 0,
       a = 1,
    },
+   highlightMouseColor = {
+      r = .25,
+      g = .25,
+      b = .25,
+      a = .75,
+   },
    indent = 0,
    LDBIcon = -1,
    maxHeight = 650,
