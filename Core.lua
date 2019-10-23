@@ -742,27 +742,21 @@ function AQT:QuestLogUpdate(...)
       if k ~= "Unknown" and not localHeaderCache[k] then v:Remove() end
    end
 
-   if playSound == st.SOUND_COMPLETE then
-      if st.cfg.playCompletionSound then
-	 if st.cfg.useFactionCompletionSound then
-	    if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: Job's Done"
-	    else sound = "Peon: Work Complete" end -- Should only get here if the player is Horde. Otherwise, the horde is more awesome anyway.
-	 else sound = st.cfg.completionSoundName end
-      end
-   elseif playSound == st.SOUND_OBJECTIVE_COMPLETE then -- objective complete
-      if st.cfg.playObjectiveSound then
-	 if st.cfg.useFactionObjectiveSound then
-	    if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: Ready to Work"
-	    else sound = "Peon: Ready to Work" end -- default to horde, as it should be!
-	 else sound = st.cfg.objectiveSoundName end
-      end
-   elseif playSound == st.SOUND_OBJECTIVE_PROGRESS then
-      if st.cfg.playObjectiveProgressSound then
-	 if st.cfg.useFactionObjectiveProgressSound then
-	    if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: More Work?"
-	    else sound = "Peon: Work Work" end
-	 else sound = st.cfg.objectiveProgressSoundName end
-      end
+   if playSound == st.SOUND_COMPLETE and st.cfg.playCompletionSound then
+      if st.cfg.useFactionCompletionSound then
+	 if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: Job's Done"
+	 else sound = "Peon: Work Complete" end -- Should only get here if the player is Horde. Otherwise, the horde is more awesome anyway.
+      else sound = st.cfg.completionSoundName end
+   elseif playSound and playSound <= st.SOUND_OBJECTIVE_COMPLETE and st.cfg.playObjectiveSound then -- objective complete
+      if st.cfg.useFactionObjectiveSound then
+	 if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: Ready to Work"
+	 else sound = "Peon: Ready to Work" end -- default to horde, as it should be!
+      else sound = st.cfg.objectiveSoundName end
+   elseif playSound and playSound <= st.SOUND_OBJECTIVE_PROGRESS and st.cfg.playObjectiveProgressSound then
+      if st.cfg.useFactionObjectiveProgressSound then
+	 if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: More Work?"
+	 else sound = "Peon: Work Work" end
+      else sound = st.cfg.objectiveProgressSoundName end
    end
 
    if sound then PlaySoundFile(LSM:Fetch("sound", sound)) end
