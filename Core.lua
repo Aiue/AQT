@@ -898,7 +898,7 @@ function AQT:Event(event, ...)
       else return end
 
       events[event] = true
-      C_Timer.After(.1, function()
+      C_Timer.After(.05, function()
 		       AQT[func](AQT)
 		       events[event] = nil
       end)

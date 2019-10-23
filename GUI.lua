@@ -79,7 +79,7 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
 
       gui:SetHeight((h + st.cfg.padding*2) > st.cfg.maxHeight and st.cfg.maxHeight or (h + st.cfg.padding*2))
 
-      C_Timer.After(.1, updateScroll)
+      C_Timer.After(.05, updateScroll)
    end
 
    gui.fader = gui:CreateAnimationGroup()
