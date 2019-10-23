@@ -268,6 +268,15 @@ local Title = baseObject:New(
    }
 )
 
+local function QuestLogClick(self, button)
+   local _,_,_,_,_,_,_,id = GetQuestLogTitle(self:GetID() + FauxScrollFrame_GetOffset(QuestLogListScrollFrame))
+   if IsShiftKeyDown() then
+      if not QuestCache[id] then error("Unknown quest with id '" .. tostring(id) .. "'") end
+      if not QuestCache[id].uiObject then QuestCache[id]:Track(true)
+      else QuestCache[id]:Untrack(true) end
+   end
+end
+
 function AQT:OnInitialize()
    st.initConfig()
 end
@@ -296,6 +305,7 @@ function AQT:OnEnable()
    local icon = [[Interface\GossipFrame\AvailableQuestIcon]]
    AQT.LDBObject = LDB:NewDataObject("AQT", {type = "launcher",icon = icon,OnClick = function(self, button) if button == "LeftButton" then AQT:ToggleConfig() end end,tocname = "AQT"})
    self:UpdateLDBIcon()
+   hooksecurefunc("QuestLogTitleButton_OnClick", QuestLogClick)
 end
 
 function AQT:UpdateLDBIcon()
@@ -604,8 +614,12 @@ function Quest:TitleText()
    return text
 end
 
-function Quest:Track()
+function Quest:Track(override)
+   if self.override and not override then return end
+
    if self.uiObject then error("Attempting to track already tracked quest, '" .. self.title .. "'.") end
+
+   self.override = override
 
    local parent
    if st.cfg.showHeaders then
@@ -620,8 +634,12 @@ function Quest:Track()
    self.uiObject:Update()
 end
 
-function Quest:Untrack()
+function Quest:Untrack(override)
+   if self.override and not override then return end
+
    if not self.uiObject then error("Attempting to untrack untracked quest, '" .. self.title .. "'.") end
+
+   self.override = override
 
    for i,v in ipairs(self.header.trackedQuests) do
       if self == v then tremove(self.header.trackedQuests, i) end
@@ -936,4 +954,9 @@ function AQT:Event(event, ...)
 		       events[event] = nil
       end)
    end
+end
+
+function AQT:TrackingUpdate()
+   if st.cfg.trackAll then for k,v in pairs(QuestCache) do v:Track() end
+   else for k,v in pairs(QuestCache) do v:Untrack() end end
 end

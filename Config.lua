@@ -375,7 +375,8 @@ local CFGHandler = {
 	 elseif info[#info] == "unlocked" then st.gui:ToggleLock()
 	 elseif info[#info] == "indent" then st.gui.title:RelinkChildren(true)
 	 elseif info[#info] == "objectivePrefix" then st.gui.title:UpdateText(true)
-	 elseif info[#info] == "showHeaderButton" then st.gui.title:ButtonCheck(true) end
+	 elseif info[#info] == "showHeaderButton" then st.gui.title:ButtonCheck(true)
+	 elseif info[#info] == "trackAll" then AQT:TrackingUpdate() end
       end,
    },
    font = {
@@ -694,10 +695,9 @@ local options = {
 		     args = {
 			trackAll = {
 			   type = "toggle",
-			   name = L["Track All Quests"] .. " (recommended for now, no way of manually tracking things yet)",
+			   name = L["Track All Quests"],
 			   width = "full",
 			   order = 3,
-			   disabled = true, --disabled until I've create my own questlog .. or at least hooked into the default one as an intermediary measure
 			},
 		     },
 		  },
