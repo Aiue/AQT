@@ -102,6 +102,8 @@ local Header = baseObject:New(
 	 IsClass = L["Matches Class Name"],
 	 IsCurrentZone = L["Matches Current Zone"],
 	 lastUpdate = L["Last Update"],
+	 NumberCompleted = L["# of Completed Quests"],
+	 NumberQuests = L["# of Quests"],
       },
    }
 )
@@ -359,6 +361,19 @@ function Header:New(o)
    HeaderCache[o.name] = o
    o.lastUpdate = time()
    return o
+end
+
+function Header:NumberCompleted()
+   local completed = 0
+   for k,v in ipairs(self.quests) do
+      if v.complete and v.complete > 0 then completed = completed + 1 end
+   end
+
+   return completed
+end
+
+function Header:NumberQuests()
+   return #self.quests
 end
 
 function Header:Remove()
@@ -671,7 +686,6 @@ function Quest:Update(timer)
       if self.timer then self.uiObject:UpdateTimer() end
    end
    self.header:Update()
-   self.CounterText = tostring(self:AverageCompletion())
    return sound
 end
 
