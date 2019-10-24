@@ -981,3 +981,9 @@ function AQT:TrackingUpdate()
    if st.cfg.trackAll then for k,v in pairs(QuestCache) do v:Track() end
    else for k,v in pairs(QuestCache) do v:Untrack() end end
 end
+
+-- The functions below are to be considered experimental, as they could well risk causing taint.
+function IsQuestWatched(index)
+   local _,_,_,_,_,_,_,id = GetQuestLogTitle(index)
+   return (QuestCache[id] and QuestCache[id].uiObject and not QuestCache[id].uiObject.releasing)
+end
