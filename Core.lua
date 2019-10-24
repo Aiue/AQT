@@ -30,6 +30,7 @@ local QUEST_ITEMS_NEEDED = QUEST_ITEMS_NEEDED:gsub("%%%d($)", "%%"):gsub("%%(s)"
 local QUEST_MONSTERS_KILLED = QUEST_MONSTERS_KILLED:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)"):gsub("%%(d)", "(%%d+)")
 local QUEST_OBJECTS_FOUND = QUEST_OBJECTS_FOUND:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)"):gsub("%%(d)", "(%%d+)")
 
+local date,difftime,time = date,difftime,time
 local tinsert,tremove = table.insert,table.remove
 
 local events = {}
@@ -322,6 +323,22 @@ function AQT:OnEnable()
    AQT.LDBObject = LDB:NewDataObject("AQT", {type = "launcher",icon = icon,OnClick = function(self, button) if button == "LeftButton" then AQT:ToggleConfig() end end,tocname = "AQT"})
    self:UpdateLDBIcon()
    hooksecurefunc("QuestLogTitleButton_OnClick", QuestLogClick)
+
+   self:QuestLogUpdate(true)
+   if st.db.char.tracked_quests then
+      for k,v in pairs(st.db.char.tracked_quests) do
+	 if not QuestCache[k] then st.db.char.tracked_quests[k] = nil
+	 elseif v == true then
+	    if not QuestCache[k]:IsTracked() then QuestCache[k]:Track(true) end
+	 elseif v == false then
+	    if QuestCache[k]:IsTracked() then QuestCache[k]:Untrack(true) end
+	 elseif type(v) == "number" and not QuestCache[k]:IsTracked() then
+	    local factor = (st.cfg.autoTrackTimeUnits == "minutes" and 60 or 1)
+	    if st.cfg.autoTrackTimer > 0 and difftime(time(), v) > st.cfg.autoTrackTimer*factor then st.db.char.tracked_quests[k] = nil
+	    else QuestCache[k]:Track(v) end
+	 end
+      end
+   end
 end
 
 function AQT:UpdateLDBIcon()
@@ -589,7 +606,7 @@ function Quest:IsTracked()
    return (self.uiObject and not self.uiObject.releasing) and true or false
 end
 
-function Quest:New(o)
+function Quest:New(o, noAuto)
    if not o.id then error("Quest:New() requires id to be set.") end
    setmetatable(o, self)
    if not o.objectives then o.objectives = {} end
@@ -602,7 +619,8 @@ function Quest:New(o)
    QuestCache[o.id] = o
    -- if o.timer, then add handling here .. then in Quest:Track(), and make the proper ui changes. But first: sleep.
    o:Update()
-   if st.cfg.trackAll then o:Track() end
+   if st.cfg.trackAll then o:Track()
+   elseif st.cfg.autoTrackNew and not noAuto then o:Track(time()) end
    return o
 end
 
@@ -649,7 +667,20 @@ function Quest:Track(override)
 
    if override then
       if not st.db.char.tracked_quests then st.db.char.tracked_quests = {} end
-      st.db.char.tracked_quests[self.id] = true
+      st.db.char.tracked_quests[self.id] = override
+
+      if type(override) == "number" and st.cfg.autoTrackTimer > 0 then
+	 local factor = (st.cfg.autoTrackTimeUnits == "minutes" and 60 or 1)
+	 local diff = difftime(time(), override)
+	 local delay = (st.cfg.autoTrackTimer * factor) - diff
+
+	 self.untrackTimer = C_Timer.NewTimer(delay, function()
+						 self.untrackTimer = nil
+						 if self:IsTracked() then
+						    self:Untrack(time())
+						 end 
+	 end)
+      end
    end
 
    local fader = self.uiObject and self.uiObject:GetFader()
@@ -680,11 +711,20 @@ function Quest:Untrack(override)
 
    if not self:IsTracked() then return end
 
+   if self.untrackTimer then
+      self.untrackTimer:Cancel()
+      self.untrackTimer = nil
+   end
+
    self.override = override
 
    if override then
       if not st.db.char.tracked_quests then st.db.char.tracked_quests = {} end
-      st.db.char.tracked_quests[self.id] = false
+      if type(override) == "number" then
+	 st.db.char.tracked_quests[self.id] = nil
+      else
+	 st.db.char.tracked_quests[self.id] = false
+      end
    end
 
    for i,v in ipairs(self.header.trackedQuests) do
@@ -786,21 +826,7 @@ function Quest:UpdateObjectives(noPour)
    return sound
 end
 
-function AQT:TailQLUOnce()
-   if st.db.char.tracked_quests then
-      for k,v in pairs(st.char.tracked_quests) do
-	 if not QuestCache[k] then st.db.char.tracked_quests[k] = nil
-	 elseif v == true then
-	    if not QuestCache[k]:IsTracked() then QuestCache[k]:Track(true) end
-	 elseif v == false then
-	    if QuestCache[k]:IsTracked() then QuestCache[k]:Untrack(true) end
-	 elseif v == "auto" and not QuestCache[k]:IsTracked() then QuestCache[k]:Track() end
-      end
-   end
-   self.TailQLUOnce = nil
-end
-
-function AQT:QuestLogUpdate(...)
+function AQT:QuestLogUpdate(noAuto)
    -- Find any updated quests or new quests/headers.
    local entries,questentries = GetNumQuestLogEntries()
    local localQuestCache = {}
@@ -833,7 +859,7 @@ function AQT:QuestLogUpdate(...)
 	 end
 	 localQuestCache[qID] = true
 	 if not QuestCache[qID] then
-	    Quest:New({title = qTitle, level = qLevel, tag = qTag, complete = qComplete, id = qID, header = currentHeader, timer = timer})
+	    Quest:New({title = qTitle, level = qLevel, tag = qTag, complete = qComplete, id = qID, header = currentHeader, timer = timer}, noAuto)
 	 else 
 	    local q = QuestCache[qID]
 	    local sound = q:Update(timer)
@@ -874,8 +900,6 @@ function AQT:QuestLogUpdate(...)
 
    Title.quests = questentries
    st.gui.title:UpdateText()
-
-   if self.tailQLUOnce then self:TailQLUOnce() end
 end
 
 function AQT:PlayerLevelUp()

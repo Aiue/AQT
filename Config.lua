@@ -726,6 +726,7 @@ local options = {
 			   min = 0,
 			   softMax = 60,
 			   order = 3,
+			   step = 1,
 			},
 			autoTrackTimeUnits = {
 			   type = "select",
@@ -736,6 +737,11 @@ local options = {
 			   disabled = function(info)
 			      return st.cfg.autoTrackTimer == 0
 			   end,
+			},
+			description = {
+			   type = "description",
+			   order = 5,
+			   name = L["Automatic untracking does not apply to zone-based auto-tracking."],
 			},
 		     },
 		  },
