@@ -795,7 +795,6 @@ function AQT:TailQLUOnce()
 	 elseif v == false then
 	    if QuestCache[k]:IsTracked() then QuestCache[k]:Untrack(true) end
 	 elseif v == "auto" and not QuestCache[k]:IsTracked() then QuestCache[k]:Track() end
-	 end
       end
    end
    self.TailQLUOnce = nil
