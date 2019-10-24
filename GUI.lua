@@ -379,12 +379,20 @@ function guiFunc:Fade(fromAlpha, toAlpha, delay, target, onFinish)
    fader:Play()
 end
 
+function guiFunc:GetFader()
+   if not self.releasing then return end
+
+   for k,v in ipairs(animations.faders) do
+      if v.alpha:GetTarget() == self then return v end
+   end
+end
+
 function guiFunc:Release()
    if self.releasing then return end
    self.releasing = true
 
    local release = function(fader, requested)
-      self:DelayedRelease()
+      if not requested then self:DelayedRelease() end
    end
 
    self:Fade(1, 0, 0, self, release)

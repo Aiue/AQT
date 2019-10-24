@@ -585,6 +585,10 @@ function Quest:HasTimer()
    if v.timer then return true else return false end
 end
 
+function Quest:IsTracked()
+   return (self.uiObject and not self.uiObject.releasing) and true or false
+end
+
 function Quest:New(o)
    if not o.id then error("Quest:New() requires id to be set.") end
    setmetatable(o, self)
@@ -631,16 +635,26 @@ function Quest:TitleText()
 end
 
 function Quest:Toggle()
-   if not self.uiObject then self:Track(true)
+   if not self:IsTracked() then self:Track(true)
    else self:Untrack(true) end
 end
 
 function Quest:Track(override)
    if self.override and not override then return end
 
-   if self.uiObject then error("Attempting to track already tracked quest, '" .. self.title .. "'.") end
+   if self:IsTracked() then print("tracked");return end
 
    self.override = override
+
+   local fader = self.uiObject and self.uiObject:GetFader()
+   
+   if fader then
+      local alpha = self.uiObject:GetAlpha()
+      fader:Stop()
+      self.uiObject:Fade(0, 1, 0, self.uiObject)
+      self.uiObject.releasing = nil
+      return
+   end
 
    local parent
    if st.cfg.showHeaders then
@@ -658,7 +672,7 @@ end
 function Quest:Untrack(override)
    if self.override and not override then return end
 
-   if not self.uiObject then error("Attempting to untrack untracked quest, '" .. self.title .. "'.") end
+   if not self:IsTracked() then return end
 
    self.override = override
 
@@ -985,5 +999,5 @@ end
 -- The functions below are to be considered experimental, as they could well risk causing taint.
 function IsQuestWatched(index)
    local _,_,_,_,_,_,_,id = GetQuestLogTitle(index)
-   return (QuestCache[id] and QuestCache[id].uiObject and not QuestCache[id].uiObject.releasing)
+   return QuestCache[id] and QuestCache[id]:IsTracked()
 end
