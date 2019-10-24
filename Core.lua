@@ -278,9 +278,8 @@ local function QuestLogClick(self, button)
 
    local _,_,_,_,_,_,_,id = GetQuestLogTitle(index)
    if IsShiftKeyDown() then
-      if not QuestCache[id] then error("Unknown quest with id '" .. tostring(id) .. "'") end
-      if not QuestCache[id].uiObject then QuestCache[id]:Track(true)
-      else QuestCache[id]:Untrack(true) end
+      if not QuestCache[id] then error("Unknown quest with id '" .. tostring(id) .. "'.") end
+      QuestCache[id]:Toggle()
       -- Ugly hack. Need to find a better way to handle this. But I also want to do it while minimizing my interaction with the default UI (HELLO TAINT), but bypassing the quest watch limit.
       if IsQuestWatched(index) then RemoveQuestWatch(index) end
    end
@@ -310,6 +309,14 @@ function AQT:OnEnable()
    self:RegisterEvent("QUEST_LOG_UPDATE", "Event")
    self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "Event")
    self:SuppressionCheck()
+
+   if ClassicQuestLog then
+      ClassicQuestLog.ToggleWatch = function(self, index)
+	 local _,_,_,_,_,_,_,id = GetQuestLogTitle(index)
+	 if not QuestCache[id] then error("Unknown quest with id '" .. tostring(id) .. "'.") end
+	 QuestCache[id]:Toggle()
+      end
+   end
 
    local icon = [[Interface\GossipFrame\AvailableQuestIcon]]
    AQT.LDBObject = LDB:NewDataObject("AQT", {type = "launcher",icon = icon,OnClick = function(self, button) if button == "LeftButton" then AQT:ToggleConfig() end end,tocname = "AQT"})
@@ -621,6 +628,11 @@ function Quest:TitleText()
    end
 
    return text
+end
+
+function Quest:Toggle()
+   if not self.uiObject then self:Track(true)
+   else self:Untrack(true) end
 end
 
 function Quest:Track(override)
