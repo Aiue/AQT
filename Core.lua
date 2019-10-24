@@ -126,11 +126,11 @@ local Quest = baseObject:New(
       clickScripts = {
 	 __blank1 = {
 	    desc = "",
-	    order = 4,
+	    order = 5,
 	 },
 	 AnnounceProgress = {
 	    desc = L["Announce Progress"],
-	    order = 5,
+	    order = 6,
 	    func = function(self)
 	       local channel
 	       if IsInRaid() then channel = "RAID"
@@ -159,7 +159,7 @@ local Quest = baseObject:New(
 	 },
 	 SendToChat = {
 	    desc = L["Send to Chat"],
-	    order = 6,
+	    order = 7,
 	    func = function(self)
 	       local title
 
@@ -178,7 +178,7 @@ local Quest = baseObject:New(
 	 },
 	 WowheadLink = {
 	    desc = L["Get Wowhead URL"],
-	    order = 7,
+	    order = 8,
 	    func = function(self)
 	       local popup = StaticPopup_Show("AQTCopy")
 	       popup.editBox:SetText("https://classic.wowhead.com/quest=" .. tostring(self.id))
@@ -186,7 +186,7 @@ local Quest = baseObject:New(
 	 },
 	 AbandonQuest = {
 	    desc = L["Abandon Quest"],
-	    order = 3,
+	    order = 4,
 	    func = function(self)
 	       QuestLog_SetSelection(GetQuestLogIndexByID(self.id)) -- Needed, because it seems we can't use an index argument for SetAbandonQuest().
 	       SetAbandonQuest()
@@ -236,6 +236,11 @@ local Quest = baseObject:New(
 	       return not IsInGroup()
 	    end,
 	 },
+	 Untrack = {
+	    desc = L.Untrack,
+	    order = 3,
+	    func = "Untrack",
+	 },
       },
       sortFields = {
 	 complete = L.Completion,
@@ -269,11 +274,15 @@ local Title = baseObject:New(
 )
 
 local function QuestLogClick(self, button)
-   local _,_,_,_,_,_,_,id = GetQuestLogTitle(self:GetID() + FauxScrollFrame_GetOffset(QuestLogListScrollFrame))
+   local index = self:GetID() + FauxScrollFrame_GetOffset(QuestLogListScrollFrame)
+
+   local _,_,_,_,_,_,_,id = GetQuestLogTitle(index)
    if IsShiftKeyDown() then
       if not QuestCache[id] then error("Unknown quest with id '" .. tostring(id) .. "'") end
       if not QuestCache[id].uiObject then QuestCache[id]:Track(true)
       else QuestCache[id]:Untrack(true) end
+      -- Ugly hack. Need to find a better way to handle this. But I also want to do it while minimizing my interaction with the default UI (HELLO TAINT), but bypassing the quest watch limit.
+      if IsQuestWatched(index) then RemoveQuestWatch(index) end
    end
 end
 
