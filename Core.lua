@@ -612,6 +612,7 @@ function Quest:Remove()
       if self == v then tremove(self.header.quests, i) end
    end
    self.header = nil
+   if st.db.char.tracked_quests then st.db.char.tracked_quests[self.id] = nil end
    QuestCache[self.id] = nil
 end
 
@@ -642,9 +643,14 @@ end
 function Quest:Track(override)
    if self.override and not override then return end
 
-   if self:IsTracked() then print("tracked");return end
+   if self:IsTracked() then return end
 
    self.override = override
+
+   if override then
+      if not st.db.char.tracked_quests then st.db.char.tracked_quests = {} end
+      st.db.char.tracked_quests[self.id] = true
+   end
 
    local fader = self.uiObject and self.uiObject:GetFader()
    
@@ -675,6 +681,11 @@ function Quest:Untrack(override)
    if not self:IsTracked() then return end
 
    self.override = override
+
+   if override then
+      if not st.db.char.tracked_quests then st.db.char.tracked_quests = {} end
+      st.db.char.tracked_quests[self.id] = false
+   end
 
    for i,v in ipairs(self.header.trackedQuests) do
       if self == v then tremove(self.header.trackedQuests, i) end
@@ -775,6 +786,21 @@ function Quest:UpdateObjectives(noPour)
    return sound
 end
 
+function AQT:TailQLUOnce()
+   if st.db.char.tracked_quests then
+      for k,v in pairs(st.char.tracked_quests) do
+	 if not QuestCache[k] then st.db.char.tracked_quests[k] = nil
+	 elseif v == true then
+	    if not QuestCache[k]:IsTracked() then QuestCache[k]:Track(true) end
+	 elseif v == false then
+	    if QuestCache[k]:IsTracked() then QuestCache[k]:Untrack(true) end
+	 elseif v == "auto" and not QuestCache[k]:IsTracked() then QuestCache[k]:Track() end
+	 end
+      end
+   end
+   self.TailQLUOnce = nil
+end
+
 function AQT:QuestLogUpdate(...)
    -- Find any updated quests or new quests/headers.
    local entries,questentries = GetNumQuestLogEntries()
@@ -849,6 +875,8 @@ function AQT:QuestLogUpdate(...)
 
    Title.quests = questentries
    st.gui.title:UpdateText()
+
+   if self.tailQLUOnce then self:TailQLUOnce() end
 end
 
 function AQT:PlayerLevelUp()
