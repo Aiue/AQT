@@ -40,6 +40,11 @@ local defaults = {
       zoom = false,
    },
    automaticCollapseExpand = false,
+   autoTrackNew = false,
+   autoTrackTimer = 0,
+   autoTrackTimeUnits = "minutes",
+   autoTrackUpdated = false,
+   autoTrackZone = false,
    backdrop = {
       background = {
 	 name = "Blizzard Tooltip",
@@ -687,34 +692,67 @@ local options = {
 	       name = L.Quests,
 	       order = 2,
 	       args = {
-		  tracking = {
+		  trackAll = {
+		     type = "toggle",
+		     name = L["Track All Quests"],
+		     width = "full",
+		     order = 0,
+		  },
+		  automation = {
 		     type = "group",
 		     inline = true,
-		     name = L.Tracking,
-		     order = 0,
+		     name = L["Automated Tracking"],
+		     order = 1,
+		     hidden = function(info) return st.cfg.trackAll end,
 		     args = {
-			trackAll = {
+			autoTrackNew = {
+			   name = L["New Quests"],
 			   type = "toggle",
-			   name = L["Track All Quests"],
-			   width = "full",
+			   order = 0,
+			},
+			autoTrackUpdated = {
+			   name = L["On Update"],
+			   type = "toggle",
+			   order = 1,
+			},
+			autoTrackZone = {
+			   name = L["Zone-Based"],
+			   type = "toggle",
+			   order = 2,
+			},
+			autoTrackTimer = {
+			   type = "range",
+			   name = L["Untrack After"] .. " (0 =" .. L.Disabled .. ")",
+			   min = 0,
+			   softMax = 60,
 			   order = 3,
+			},
+			autoTrackTimeUnits = {
+			   type = "select",
+			   name = L.Units,
+			   order = 4,
+			   style = "radio",
+			   values = {seconds = L.Seconds,minutes=L.Minutes},
+			   disabled = function(info)
+			      return st.cfg.autoTrackTimer == 0
+			   end,
 			},
 		     },
 		  },
 		  showTags = {
 		     type = "toggle",
 		     name = L["Show Quest Tags"],
-		     order = 1,
+		     order = 2,
 		  },
 		  hideCompletedObjectives = {
 		     type = "toggle",
 		     name = L["Hide Completed Objectives"],
-		     order = 2,
+		     order = 3,
 		  },
 		  hideQuestCompletedObjectives = {
 		     type = "toggle",
 		     name = L["Hide Objectives for Completed Quests"],
-		     order = 3,
+		     order = 4,
 		  },
 	       },
 	    },
