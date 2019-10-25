@@ -334,7 +334,7 @@ function AQT:OnEnable()
 	    if QuestCache[k]:IsTracked() then QuestCache[k]:Untrack(true) end
 	 elseif type(v) == "number" and not QuestCache[k]:IsTracked() then
 	    local factor = (st.cfg.autoTrackTimeUnits == "minutes" and 60 or 1)
-	    if st.cfg.autoTrackTimer > 0 and difftime(time(), v) > st.cfg.autoTrackTimer*factor then st.db.char.tracked_quests[k] = nil
+	    if st.cfg.autoTrackTimer > 0 and difftime(time(), v) > (st.cfg.autoTrackTimer*factor) then st.db.char.tracked_quests[k] = nil
 	    else QuestCache[k]:Track(v) end
 	 end
       end
@@ -625,13 +625,28 @@ function Quest:New(o, noAuto)
 end
 
 function Quest:Remove()
-   if self.uiObject then self:Untrack() end
+   if self.uiObject then self:Untrack(true) end
    for i,v in ipairs(self.header.quests) do
       if self == v then tremove(self.header.quests, i) end
    end
    self.header = nil
    if st.db.char.tracked_quests then st.db.char.tracked_quests[self.id] = nil end
    QuestCache[self.id] = nil
+end
+
+function Quest:SetUntrackTimer(timer)
+   local factor = (st.cfg.autoTrackTimeUnits == "minutes" and 60 or 1)
+   local diff = difftime(time(), timer)
+   local delay = (st.cfg.autoTrackTimer * factor) - diff
+
+   if self.untrackTimer then self.untrackTimer:Cancel() end
+
+   self.untrackTimer = C_Timer.NewTimer(delay, function()
+					   self.untrackTimer = nil
+					   if self:IsTracked() then
+					      self:Untrack(time())
+					   end 
+   end)
 end
 
 function Quest:TitleText()
@@ -670,16 +685,7 @@ function Quest:Track(override)
       st.db.char.tracked_quests[self.id] = override
 
       if type(override) == "number" and st.cfg.autoTrackTimer > 0 then
-	 local factor = (st.cfg.autoTrackTimeUnits == "minutes" and 60 or 1)
-	 local diff = difftime(time(), override)
-	 local delay = (st.cfg.autoTrackTimer * factor) - diff
-
-	 self.untrackTimer = C_Timer.NewTimer(delay, function()
-						 self.untrackTimer = nil
-						 if self:IsTracked() then
-						    self:Untrack(time())
-						 end 
-	 end)
+	 self:SetUntrackTimer(override)
       end
    end
 
@@ -714,16 +720,17 @@ function Quest:Untrack(override)
    if self.untrackTimer then
       self.untrackTimer:Cancel()
       self.untrackTimer = nil
+      self.override = nil
    end
-
-   self.override = override
 
    if override then
       if not st.db.char.tracked_quests then st.db.char.tracked_quests = {} end
       if type(override) == "number" then
 	 st.db.char.tracked_quests[self.id] = nil
+	 self.override = nil
       else
 	 st.db.char.tracked_quests[self.id] = false
+	 self.override = override
       end
    end
 
@@ -756,10 +763,8 @@ function Quest:Update(timer)
       end
    end
 
-   if self.title ~= qTitle or self.level ~= qLevel or self.tag  ~= qTag or self.complete ~= qComplete then
+   if self.title ~= qTitle or self.level ~= qLevel or self.tag  ~= qTag or (self.complete ~= qComplete and GetNumQuestLeaderBoards(index) > 0) then
       update = true
-      lastUpdate = time()
-      self.header.lastUpdate = time()
    end
 
    if qComplete then
@@ -783,11 +788,20 @@ function Quest:Update(timer)
 
    if not qComplete then
       sound = self:UpdateObjectives()
-      if sound then self.lastUpdate = time() end
+      if sound then
+	 update = true
+	 self.lastUpdate = time()
+      end
    elseif not st.cfg.hideQuestCompletedObjectives then self:UpdateObjectives(true) end
-   if self.uiObject then
-      if update then self.uiObject:Update() end
-      if self.timer then self.uiObject:UpdateTimer() end
+   if update then
+      self.lastUpdate = time()
+      if self.uiObject then
+	 self.uiObject:Update()
+	 if self.timer then self.uiObject:UpdateTimer() end
+	 if st.cfg.autoTrackUpdated and self.untrackTimer then self:SetUntrackTimer(time()) end
+      elseif st.cfg.autoTrackUpdated then
+	 self:Track(time())
+      end
    end
    self.header:Update()
    return sound
