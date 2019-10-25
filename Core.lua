@@ -182,7 +182,22 @@ local Quest = baseObject:New(
 	    order = 8,
 	    func = function(self)
 	       local popup = StaticPopup_Show("AQTCopy")
-	       popup.editBox:SetText("https://classic.wowhead.com/quest=" .. tostring(self.id))
+	       local url
+	       local locale = GetLocale()
+	       if locale == "koKR" then
+		  url = "http://wow.inven.co.kr/dataninfo/wdb/edb_quest/detail.php?id="
+	       else
+		  local prefix = ""
+		  if locale == "deDE" then prefix = "de."
+		  elseif locale == "esES" or locale == "esMX" then prefix = "es."
+		  elseif locale == "frFR" then prefix = "fr."
+		  elseif locale == "itIT" then prefix = "it."
+		  elseif locale == "ptBR" then prefix = "pt."
+		  elseif locale == "ruRU" then prefix = "ru."
+		  elseif lcoale == "zhCN" or locale == "zhTW" then prefix = "cn." end
+		  url = "https://" .. prefix .. "classic.wowhead.com/quest="
+	       end
+	       popup.editBox:SetText(url .. tostring(self.id))
 	    end,
 	 },
 	 AbandonQuest = {
