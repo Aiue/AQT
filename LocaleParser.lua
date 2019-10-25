@@ -18,10 +18,15 @@ for k,v in ipairs(file_list) do
    if not file then error(err) end
 
    for line in file:lines() do
-      for key in line:gmatch("L%.([%ad_-]+)") do
+      for key in line:gmatch("L%.([%a%d_]+)") do
 	 L[key] = true
       end
-      for key in line:gmatch("L%[\"([^\"%]]+)\"%]") do
+      for key in line:gmatch("L%[%b\"\"%]") do
+	 key = key:match("^L%[\"(.+)\"%]$")
+	 L[key] = true
+      end
+      for key in line:gmatch("L%[%b''%]") do
+	 key = key:match("^L%['(.+)'%]$")
 	 L[key] = true
       end
    end
@@ -33,4 +38,6 @@ for k,v in pairs(L) do table.insert(sorted, k) end
 
 table.sort(sorted, function(a, b) return a < b end)
 
-for k,v in ipairs(sorted) do print("L[\"" .. v .. "\"] = true") end
+for k,v in ipairs(sorted) do
+   v = string.format('%q', v)
+   print("L[\"" .. v .. "\"] = true") end
