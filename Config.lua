@@ -1756,3 +1756,4 @@ end
 function AQT:ToggleConfig()
    if ACD.OpenFrames["AQT"] then ACD:Close("AQT") else ACD:Open("AQT") end -- A bit silly, the library should already provide this without me having to dig through the code to find it.
 end
+

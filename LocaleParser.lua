@@ -21,12 +21,8 @@ for k,v in ipairs(file_list) do
       for key in line:gmatch("L%.([%a%d_]+)") do
 	 L[key] = true
       end
-      for key in line:gmatch("L%[%b\"\"%]") do
-	 key = key:match("^L%[\"(.+)\"%]$")
-	 L[key] = true
-      end
-      for key in line:gmatch("L%[%b''%]") do
-	 key = key:match("^L%['(.+)'%]$")
+      for key in line:gmatch("L%[%b%[%]%]") do
+--	 key = key:match("^L%[\"(.+)\"%]$")
 	 L[key] = true
       end
    end

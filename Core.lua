@@ -354,6 +354,8 @@ function AQT:OnEnable()
 	 end
       end
    end
+
+   self:ZoneChangedNewArea()
 end
 
 function AQT:UpdateLDBIcon()
@@ -937,16 +939,7 @@ function AQT:PlayerLevelUp()
 end
 
 function AQT:ZoneChangedNewArea()
-   for k,v in pairs(QuestCache) do
-      if not v.override or (type(v.override) == "number" and v.override == 0) then
-	 if st.cfg.autoTrackZone then
-	    if v.header:IsCurrentZone() and not v:IsTracked() then v:Track(0)
-	    elseif not v.header:IsCurrentZone() and v:IsTracked() then v:Untrack(0) end
-	 else
-	    v:Untrack(0)
-	 end
-      end
-   end
+   self:TrackingUpdate()
 
    st.gui.title:Sort()
    st.gui.highlight:Hide()
@@ -1085,7 +1078,16 @@ end
 
 function AQT:TrackingUpdate()
    if st.cfg.trackAll then for k,v in pairs(QuestCache) do v:Track() end
-   else for k,v in pairs(QuestCache) do v:Untrack() end end
+   else
+      for k,v in pairs(QuestCache) do
+	 if st.cfg.autoTrackZone then
+	    if not v.override or (type(v.override) == "number" and v.override == 0) then
+	       if v.header:IsCurrentZone() and not v:IsTracked() then v:Track(0)
+	       elseif not v.header:IsCurrentZone() and v:IsTracked() then v:Untrack(0) end
+	    end
+	 elseif v.override == 0 then v:Untrack(0) end
+      end
+   end
 end
 
 -- The functions below are to be considered experimental, as they could well risk causing taint.
