@@ -373,7 +373,7 @@ local CFGHandler = {
 	 elseif info[#info] == "showTimers" or info[#info] == "timerType" or info[#info] == "barTexture" then
 	    st.gui:UpdateTimers()
 	 elseif info[#info] == "LDBIcon" then AQT:UpdateLDBIcon()
-	 elseif info[#info] == "automaticCollapseExpand" then AQT:ZoneChangedNewArea() -- Tiny bit hacky, but does the job.
+	 elseif info[#info] == "automaticCollapseExpand" or info[#info] == "autoTrackZone" then AQT:ZoneChangedNewArea() -- Tiny bit hacky, but does the job.
 	 elseif info[#info] == "hideCompletedObjectives" or info[#info] == "hideQuestCompletedObjectives" then AQT:QuestLogUpdate()
 	 elseif info[#info] == "hideConfigButton" then st.gui:UpdateConfigButton()
 	 elseif info[#info] == "alpha" then st.gui:Redraw()

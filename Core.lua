@@ -620,6 +620,7 @@ function Quest:New(o, noAuto)
    -- if o.timer, then add handling here .. then in Quest:Track(), and make the proper ui changes. But first: sleep.
    o:Update()
    if st.cfg.trackAll then o:Track()
+   elseif st.cfg.autoTrackZone and o.header:IsCurrentZone() then o:Track(0)
    elseif st.cfg.autoTrackNew and not noAuto then o:Track(time()) end
    return o
 end
@@ -684,7 +685,7 @@ function Quest:Track(override)
       if not st.db.char.tracked_quests then st.db.char.tracked_quests = {} end
       st.db.char.tracked_quests[self.id] = override
 
-      if type(override) == "number" and st.cfg.autoTrackTimer > 0 then
+      if type(override) == "number" and override > 0 and st.cfg.autoTrackTimer > 0 then
 	 self:SetUntrackTimer(override)
       end
    end
@@ -921,6 +922,17 @@ function AQT:PlayerLevelUp()
 end
 
 function AQT:ZoneChangedNewArea()
+   for k,v in pairs(QuestCache) do
+      if not v.override or (type(v.override) == "number" and v.override == 0) then
+	 if st.cfg.autoTrackZone then
+	    if v.header:IsCurrentZone() and not v:IsTracked() then v:Track(0)
+	    elseif not v.header:IsCurrentZone() and v:IsTracked() then v:Untrack(0) end
+	 else
+	    v:Untrack(0)
+	 end
+      end
+   end
+
    st.gui.title:Sort()
    st.gui.highlight:Hide()
    self:UpdateHeaders()
