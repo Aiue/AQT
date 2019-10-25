@@ -1,7 +1,8 @@
 for k,v in ipairs({...}) do
    if v:match("^--include=") then
       if not file_list then file_list = {} end
-      table.insert(file_list, v)
+      local file = v:gsub("--include=", "")
+      table.insert(file_list, file)
    else
       error("Unknown command: '" .. v .. "'.")
    end
