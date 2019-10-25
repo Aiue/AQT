@@ -38,6 +38,4 @@ for k,v in pairs(L) do table.insert(sorted, k) end
 
 table.sort(sorted, function(a, b) return a < b end)
 
-for k,v in ipairs(sorted) do
-   v = string.format('%q', v)
-   print("L[\"" .. v .. "\"] = true") end
+for k,v in ipairs(sorted) do print("L[\"" .. v .. "\"] = true") end
