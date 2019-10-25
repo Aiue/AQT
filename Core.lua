@@ -31,6 +31,7 @@ local QUEST_MONSTERS_KILLED = QUEST_MONSTERS_KILLED:gsub("%%%d($)", "%%"):gsub("
 local QUEST_OBJECTS_FOUND = QUEST_OBJECTS_FOUND:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)"):gsub("%%(d)", "(%%d+)")
 
 local date,difftime,time = date,difftime,time
+local floor = math.floor
 local tinsert,tremove = table.insert,table.remove
 
 local events = {}
@@ -235,7 +236,11 @@ local Quest = baseObject:New(
 		  QuestLog_SetSelection(index)
 		  local offset
 		  local entries = GetNumQuestLogEntries()
-		  if index - 4 < 0 then offset = 0 elseif index + 3 > entries then offset = entries-6 else offset = index - 4 end
+
+		  if index - floor(QUESTS_DISPLAYED/2) < 0 then offset = 0
+		  elseif index + floor(QUESTS_DISPLAYED/2) > entries then offset = entries-QUESTS_DISPLAYED
+		  else offset = index - floor(QUESTS_DISPLAYED/2) end
+
 		  QuestLogListScrollFrameScrollBar:SetValue(offset*16)
 		  FauxScrollFrame_SetOffset(QuestLogListScrollFrame, offset)
 		  QuestLog_Update()
