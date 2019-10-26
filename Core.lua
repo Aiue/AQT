@@ -222,6 +222,7 @@ local Quest = baseObject:New(
 	    order = 1,
 	    func = function(self)
 	       -- First make sure the header is not collapsed.
+	       local index = GetQuestLogIndexByID(self.id)
 	       for i = 1, GetNumQuestLogEntries(), 1 do
 		  local name,_,_,isHeader,isCollapsed = GetQuestLogTitle(i)
 		  if name == self.header.name and isHeader then
@@ -231,8 +232,10 @@ local Quest = baseObject:New(
 	       end
 	       local frame = ClassicQuestLog or QuestLogExFrame or QuestLogFrame
 	       if (frame:IsShown() and GetQuestLogIndexByID(self.id) == GetQuestLogSelection()) or not frame:IsShown() then ToggleQuestLog() end
-	       if QuestLogFrame:IsShown() then
-		  local index = GetQuestLogIndexByID(self.id)
+	       if ClassicQuestLog then
+		  frame:SelectQuestIndex(index)
+		  frame:UpdateLogList()
+	       elseif QuestLogFrame:IsShown() then
 		  QuestLog_SetSelection(index)
 		  local offset
 		  local entries = GetNumQuestLogEntries()

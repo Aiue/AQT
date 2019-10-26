@@ -304,7 +304,7 @@ function guiFunc:CheckWidth(width, level)
    width = width or 0
    if not level then level = 1 end
    -- May want to use GetTextWidth()
-   local w = 10 + st.cfg.font.size + (st.cfg.indent*level) + (st.cfg.padding*2) + self.text:GetStringWidth() + self.counter:GetStringWidth()
+   local w = 20 + st.cfg.font.size + (st.cfg.indent*level) + (st.cfg.padding*2) + self.text:GetStringWidth() + self.counter:GetStringWidth()
    if w > width then width = w end
    if self.container:IsShown() then
       for k,v in ipairs(self.children) do
