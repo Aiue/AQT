@@ -536,6 +536,7 @@ function Objective:Update(qIndex, oIndex, noPour)
    local sound
 
    if not oText then
+      print("nil objective text")
       C_Timer.After(5, function() self.Update(self, qIndex, oIndex, noPour) end)
       return
    end
@@ -969,8 +970,11 @@ function AQT:QuestLogUpdate(noAuto)
    st.gui.title:UpdateText()
 end
 
-function AQT:PlayerLevelUp()
-   for k,v in pairs(QuestCache) do if v.uiObject then v.uiObject:UpdateText() end end
+function AQT:PlayerLevelUp(new_level)
+   if new_level > UnitLevel("player") then C_Timer.After(1, function()
+							    self:PlayerLevelUp(new_level)
+							end)
+   else for k,v in pairs(QuestCache) do if v.uiObject then v.uiObject:UpdateText() end end end
 end
 
 function AQT:ZoneChangedNewArea()
@@ -1093,19 +1097,26 @@ end
 ]]--
 
 -- This current works because we don't need to consider any arguments for any of the events. Should this change, I'll have to change this.
+-- Should rewrite slightly. For instance, this still queues up a call to QuestLogUpdate() twice on login.
 function AQT:Event(event, ...)
    if not events[event] then
+      local args = {unpack({...})}
       local func
+      local delay = .05
 
-      if event == "BAG_UPDATE_DELAYED" or event == "QUEST_LOG_UPDATE" then func = "QuestLogUpdate"
+      if event == "BAG_UPDATE_DELAYED" or event == "QUEST_LOG_UPDATE" then
+	 tinsert(args, 1, nil)
+	 func = "QuestLogUpdate"
       elseif event == "UPDATE_FACTION" then func = "Event_UpdateFaction"
-      elseif event ==  "PLAYER_LEVEL_UP" then func = "PlayerLevelUp"
+      elseif event ==  "PLAYER_LEVEL_UP" then
+	 func = "PlayerLevelUp"
+	 delay = 1
       elseif event == "ZONE_CHANGED_NEW_AREA" then func = "ZoneChangedNewArea"
       else return end
 
       events[event] = true
-      C_Timer.After(.05, function()
-		       AQT[func](AQT)
+      C_Timer.After(delay, function()
+		       AQT[func](AQT, unpack(args))
 		       events[event] = nil
       end)
    end
