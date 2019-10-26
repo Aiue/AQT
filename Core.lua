@@ -511,7 +511,16 @@ function Objective:TitleText()
    local prefix = st.cfg.objectivePrefix
 
    if st.cfg.useProgressColor then
-      text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, self.have/self.need) .. prefix .. self.text .. "|r"
+      local have,need = self.have,self.need
+      if not have then
+	 print("nil 'have' for objective '" .. tostring(self.text) .. "', quest '" .. tostring(self.quest.title) .. "'.")
+	 have = 0
+      end
+      if not need then
+	 print("nil 'need' for objective '" .. tostring(self.text) .. "', quest '" .. tostring(self.quest.title) .. "'.")
+	 need = 0
+      end
+      text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, have/need) .. prefix .. self.text .. "|r"
    else
       text = prefix .. self.text
    end
