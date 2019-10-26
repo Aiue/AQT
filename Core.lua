@@ -336,9 +336,11 @@ function AQT:OnEnable()
 
    if ClassicQuestLog then
       ClassicQuestLog.ToggleWatch = function(self, index)
+	 if not index then index = GetQuestLogSelection() end
 	 local _,_,_,_,_,_,_,id = GetQuestLogTitle(index)
 	 if not QuestCache[id] then error("Unknown quest with id '" .. tostring(id) .. "'.") end
 	 QuestCache[id]:Toggle()
+	 ClassicQuestLog:UpdateLogList()
       end
    end
 
