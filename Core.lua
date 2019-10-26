@@ -541,7 +541,7 @@ function Objective:Update(qIndex, oIndex, noPour)
 	 countertext = have:sub(1,1) .. "/" .. need:sub(1,1)
 	 have,need = (complete and 1 or 0),1
       else
-	 have = factionCache[text].reputation
+	 have = factionCache[text].reputation or 0
 	 if need == FACTION_STANDING_LABEL1 then need = -42000 -- Hated. This would be strange, but uh, ok.
 	 elseif need == FACTION_STANDING_LABEL2 then need = -6000 -- Hostile
 	 elseif need == FACTION_STANDING_LABEL3 then need = -3000 -- Unfriendly
