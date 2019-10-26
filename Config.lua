@@ -1388,7 +1388,7 @@ local options = {
 		     args = {
 			highlightCurrentZoneText = {
 			   type = "toggle",
-			   name = "Highlight Current Zone Text",
+			   name = L["Highlight Current Zone Text"],
 			   width = "double",
 			   order = 0,
 			},
@@ -1399,7 +1399,7 @@ local options = {
 			},
 			highlightCurrentZoneBackground = {
 			   type = "toggle",
-			   name = "Highlight Current Zone Background",
+			   name = L["Highlight Current Zone Background"],
 			   width = "double",
 			   order = 2,
 			},
@@ -1414,13 +1414,13 @@ local options = {
 		     name = L["Quest Difficulty Coloring"],
 		     type = "toggle",
 		     order = 1,
-		     width = double,
+		     width = "double",
 		  },
 		  useProgressColor = {
 		     name = L["Progress-based Objective Coloring"],
 		     type = "toggle",
 		     order = 2,
-		     width = double,
+		     width = "double",
 		  },
 		  progressColor = {
 		     name = L["Progress Color"],
@@ -1616,7 +1616,7 @@ local function buildSortOptions()
    for k,v in pairs(st.types) do
       if v.sortFields then
 	 options.args.sorting.args[v.name] = {
-	    name = v.name,
+	    name = L[v.name],
 	    type = "group",
 	    childGroups = "tree",
 	    func = CFGHandler.sorting.edit,
@@ -1701,7 +1701,7 @@ local function buildMouseOptions()
 	 i = i + 1
 	 options.args.mouse.args[v.name] = {
 	    type = "group",
-	    name = L[v.name],
+	    name = L[tostring(v.name)],
 	    order = i,
 	    disabled = getMouseDisabled,
 	    args = mouseOptions,

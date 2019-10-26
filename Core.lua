@@ -97,7 +97,7 @@ local Header = baseObject:New(
 	    end,
 	 },
       },
-      name = "Header",
+      name = "Header", -- L.Header
       sortFields = {
 	 name = L.Title,
 	 HasTimer = L["Has Timed Quest"],
@@ -112,7 +112,7 @@ local Header = baseObject:New(
 
 local Objective = baseObject:New(
    {
-      name = "Objective",
+      name = "Objective", -- L.Objective
       sortFields = {
 	 index = L.Index,
 	 lastUpdate = L["Last Update"],
@@ -124,7 +124,7 @@ local Objective = baseObject:New(
 
 local Quest = baseObject:New(
    {
-      name = "Quest",
+      name = "Quest", -- L.Quest
       clickScripts = {
 	 __blank1 = {
 	    desc = "",
