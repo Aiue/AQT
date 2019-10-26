@@ -20,7 +20,7 @@ st.SOUND_OBJECTIVE_COMPLETE = 2
 st.SOUND_OBJECTIVE_PROGRESS = 3
 
 -- Some strings that are of interest to us.
-local ERR_QUEST_OBJECTIVE_COMPLETE_S = ERR_QUEST_OBJECTIVE_COMPLETE_S:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+")
+local ERR_QUEST_OBJECTIVE_COMPLETE_S = ERR_QUEST_OBJECTIVE_COMPLETE_S:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)")
 local ERR_QUEST_UNKNOWN_COMPLETE = ERR_QUEST_UNKNOWN_COMPLETE
 local FACTION_STANDING_DECREASED = FACTION_STANDING_DECREASED:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)"):gsub("%%(d)", "(%%d+)")
 local FACTION_STANDING_INCREASED = FACTION_STANDING_INCREASED:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)"):gsub("%%(d)", "(%%d+)")
@@ -535,6 +535,11 @@ function Objective:Update(qIndex, oIndex, noPour)
    local update
    local sound
 
+   if not oText then
+      C_Timer.After(5, function() self.Update(self, qIndex, oIndex, noPour) end)
+      return
+   end
+
    if oType == "monster" then
       text,have,need = string.match(oText, "^" .. QUEST_MONSTERS_KILLED .. "$")
       if not have then -- Some of these objectives apparently do not follow this string pattern.
@@ -574,6 +579,17 @@ function Objective:Update(qIndex, oIndex, noPour)
       print("AQT:CheckObjectives(): Unknown objective type '" .. oType .. "'. Falling back to default parsing with this debug info.")
       have,need = (complete and 1 or 0),1
       text = "(" .. oType .. ")" .. cstring .. oText .. "|r"
+   end
+
+   if not text or not have or not need then
+      print("Failed to parse data for objective in quest '" .. self.quest.title .. "'. Please notify Aiue, along with the following information:")
+      print("Locale: " .. GetLocale())
+      print("Objective type: " .. tostring(oType))
+      print("QUEST_MONSTERS_KILLED: " .. tostring(_G["QUEST_MONSTERS_KILLED"]))
+      print("QUEST_ITEMS_NEEDED: " .. tostring(_G["QUEST_ITEMS_NEEDED"]))
+      print("QUEST_OBJECTS_FOUND: " .. tostring(_G["QUEST_OBJECTS_FOUND"]))
+      print("QUEST_FACTION_NEEDED: " .. tostring(_G["QUEST_FACTION_NEEDED"]))
+      return
    end
 
    if self.text ~= text or self.have ~= have or self.need ~= need or self.complete ~= complete then
