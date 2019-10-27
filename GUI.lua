@@ -443,6 +443,7 @@ function guiFunc:DelayedRelease(recursed)
    self.container:Show()
    self:SetParent(nil)
    self:SetAlpha(1)
+   self:Hide()
 
    if not recursed then
       parent:RelinkChildren()
@@ -551,6 +552,7 @@ function guiFunc:New(owner, noFade)
    object.owner = owner
    object.owner.uiObject = object
    object:UpdateScripts()
+   object:Show()
    tinsert(active_objects, object)
       print(owner.title)
       print(object:GetAlpha())
