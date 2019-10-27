@@ -300,8 +300,8 @@ local Title = baseObject:New(
 local function QuestLogClick(self, button)
    local index = self:GetID() + FauxScrollFrame_GetOffset(QuestLogListScrollFrame)
 
-   local _,_,_,_,_,_,_,id = GetQuestLogTitle(index)
-   if IsShiftKeyDown() then
+   local _,_,_,isHeader,_,_,_,id = GetQuestLogTitle(index)
+   if IsShiftKeyDown() and not isHeader then
       if not QuestCache[id] then error("Unknown quest with id '" .. tostring(id) .. "'.") end
       QuestCache[id]:Toggle()
       -- Ugly hack. Need to find a better way to handle this. But I also want to do it while minimizing my interaction with the default UI (HELLO TAINT), but bypassing the quest watch limit.
