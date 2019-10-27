@@ -388,8 +388,12 @@ function guiFunc:GetFader()
    end
 end
 
-function guiFunc:Release()
-   if self.releasing then return end
+function guiFunc:Release(noFade)
+   if self.releasing then return
+   elseif noFade or st.cfg.disableAnimations then
+      self:DelayedRelease()
+      return
+   end
    self.releasing = true
 
    local release = function(fader, requested)
@@ -518,7 +522,7 @@ function guiFunc:OnLeave(mouseMoved)
    gui.highlight:Hide()
 end
 
-function guiFunc:New(owner)
+function guiFunc:New(owner, noFade)
    local object
    if not self.container then error(self:GetName() .. " missing container") end
    if #recycler > 0 then
@@ -554,7 +558,9 @@ function guiFunc:New(owner)
    object:UpdateScripts()
    tinsert(active_objects, object)
    if self ~= gui then self:Update() end
-   object:Fade(0, 1, 0, object)
+   if not(noFade or st.cfg.disableAnimations) then
+      object:Fade(0, 1, 0, object)
+   end
    return object
 end
 

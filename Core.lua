@@ -673,8 +673,9 @@ function Quest:New(o, noAuto)
    QuestCache[o.id] = o
    -- if o.timer, then add handling here .. then in Quest:Track(), and make the proper ui changes. But first: sleep.
    o:Update()
-   if st.cfg.trackAll then o:Track()
-   elseif st.cfg.autoTrackZone and o.header:IsCurrentZone() then o:Track(0)
+   -- noAuto means we'll also not want fading
+   if st.cfg.trackAll then o:Track(nil, noAuto)
+   elseif st.cfg.autoTrackZone and o.header:IsCurrentZone() then o:Track(0, noAuto)
    elseif st.cfg.autoTrackNew and not noAuto then o:Track(time()) end
    return o
 end
@@ -728,7 +729,7 @@ function Quest:Toggle()
    else self:Untrack(true) end
 end
 
-function Quest:Track(override)
+function Quest:Track(override, noFade)
    if self.override and not override then return end
 
    if self:IsTracked() then return end
@@ -761,13 +762,13 @@ function Quest:Track(override)
    else parent = st.gui.title end
 
    tinsert(self.header.trackedQuests, self)
-   self.uiObject = parent:New(self)
+   self.uiObject = parent:New(self, noFade)
    self:Update() -- Temporary fix
    self.header:Update()
    self.uiObject:Update()
 end
 
-function Quest:Untrack(override)
+function Quest:Untrack(override, noFade)
    if self.override and not override then return end
 
    if not self:IsTracked() then return end
@@ -793,7 +794,7 @@ function Quest:Untrack(override)
       if self == v then tremove(self.header.trackedQuests, i) end
    end
 
-   self.uiObject:Release()
+   self.uiObject:Release(noFade)
    self.header:Update()
 end
 
@@ -1124,15 +1125,15 @@ function AQT:Event(event, ...)
 end
 
 function AQT:TrackingUpdate()
-   if st.cfg.trackAll then for k,v in pairs(QuestCache) do v:Track() end
+   if st.cfg.trackAll then for k,v in pairs(QuestCache) do v:Track(nil, true) end
    else
       for k,v in pairs(QuestCache) do
 	 if st.cfg.autoTrackZone then
 	    if not v.override or (type(v.override) == "number" and v.override == 0) then
-	       if v.header:IsCurrentZone() and not v:IsTracked() then v:Track(0)
-	       elseif not v.header:IsCurrentZone() and v:IsTracked() then v:Untrack(0) end
+	       if v.header:IsCurrentZone() and not v:IsTracked() then v:Track(0, true)
+	       elseif not v.header:IsCurrentZone() and v:IsTracked() then v:Untrack(0, true) end
 	    end
-	 elseif v.override == 0 then v:Untrack(0) end
+	 elseif v.override == 0 then v:Untrack(0, true) end
       end
    end
 end

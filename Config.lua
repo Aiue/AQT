@@ -96,6 +96,7 @@ local defaults = {
    },
    barTexture = "Blizzard",
    completionSoundName = "Peon: Work Complete",
+   disableAnimations = false,
    fade = true,
    font = {
       name = "Friz Quadrata TT",
