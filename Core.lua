@@ -528,16 +528,17 @@ function Objective:TitleText()
    return text
 end
 
-function Objective:Update(qIndex, oIndex, noPour)
+function Objective:Update(qIndex, oIndex, noPour, retry)
    local oText,oType,complete = GetQuestLogLeaderBoard(oIndex, qIndex)
    local text,have,need
    local countertext
    local update
    local sound
 
-   if not oText then
+   if not oText and not retry or retry and retry < 10 then -- Don't keep retrying forever.
       print("nil objective text")
-      C_Timer.After(5, function() self.Update(self, qIndex, oIndex, noPour) end)
+      if not retry then retry = 0 end
+      C_Timer.After(5, function() self.Update(self, qIndex, oIndex, noPour, retry + 1) end)
       return
    end
 
