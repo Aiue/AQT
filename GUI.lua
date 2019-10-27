@@ -86,12 +86,6 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
       C_Timer.After(.05, updateScroll)
    end
 
-   gui.fader = gui:CreateAnimationGroup()
-
-   gui.fader.alpha = gui.fader:CreateAnimation("Alpha")
-   gui.fader.alpha:SetOrder(1)
-   gui.fader.alpha:SetDuration(.5)
-
    gui.title = guiFunc.New(gui, st.types.Title)
    gui.title:SetPoint("TOPLEFT", gui.scrollChild, "TOPLEFT")
    gui.title:SetPoint("TOPRIGHT", gui.scrollChild, "TOPRIGHT")
@@ -381,7 +375,7 @@ function guiFunc:Fade(fromAlpha, toAlpha, delay, target, onFinish)
 end
 
 function guiFunc:GetFader()
-   if not self.releasing then return end
+--   if not self.releasing then return end
 
    for k,v in ipairs(animations.faders) do
       if v.alpha:GetTarget() == self then return v end
@@ -560,6 +554,8 @@ function guiFunc:New(owner, noFade)
    if self ~= gui then self:Update() end
    if not(noFade or st.cfg.disableAnimations) then
       object:Fade(0, 1, 0, object)
+   else
+      object:SetAlpha(1)
    end
    return object
 end
@@ -965,31 +961,6 @@ function gui:IterateObjects(oType)
       end
       return ipairs(cache)
    end
-end
-
-function gui:Fade(toAlpha)
-   if self.fader:IsPlaying() then
-      local alpha = self:GetAlpha()
-      self.fader:Stop()
-      self:SetAlpha(alpha)
-   end
-   self.fader.alpha:SetFromAlpha(self:GetAlpha())
-   self.fader.alpha:SetToAlpha(toAlpha)
-   self.fader:SetToFinalAlpha(toAlpha)
-
-   self.fader:Play()
-end
-
-function gui:OnEnter(mouseMoved)
-   print("enter")
-   print(GetMouseFocus():GetName())
-   self:Fade(st.cfg.alpha)
-end
-
-function gui:OnLeave(mouseMoved)
-   print("unenter")
-   print(GetMouseFocus():GetName())
-   self:Fade(st.cfg.alphaFaded)
 end
 
 function gui:UpdateScripts()
