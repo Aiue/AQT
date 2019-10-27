@@ -1005,6 +1005,11 @@ local options = {
 		     softMax = 20,
 		     step = .1,
 		  },
+		  disableAnimations = {
+		     type = "toggle",
+		     name = L["Disable Animations"],
+		     order = 3,
+		  },
 	       },
 	    },
 	    background ={
