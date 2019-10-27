@@ -1098,28 +1098,26 @@ function AQT:UpdateScripts()
 end
 ]]--
 
--- This current works because we don't need to consider any arguments for any of the events. Should this change, I'll have to change this.
--- Should rewrite slightly. For instance, this still queues up a call to QuestLogUpdate() twice on login.
 function AQT:Event(event, ...)
-   if not events[event] then
-      local args = {unpack({...})}
-      local func
-      local delay = .05
+   local args = {unpack({...})}
+   local func
+   local delay = .05
 
-      if event == "BAG_UPDATE_DELAYED" or event == "QUEST_LOG_UPDATE" then
-	 tinsert(args, 1, nil)
-	 func = "QuestLogUpdate"
-      elseif event == "UPDATE_FACTION" then func = "Event_UpdateFaction"
-      elseif event ==  "PLAYER_LEVEL_UP" then
-	 func = "PlayerLevelUp"
-	 delay = 1
-      elseif event == "ZONE_CHANGED_NEW_AREA" then func = "ZoneChangedNewArea"
-      else return end
+   if event == "BAG_UPDATE_DELAYED" or event == "QUEST_LOG_UPDATE" then
+      tinsert(args, 1, nil)
+      func = "QuestLogUpdate"
+   elseif event == "UPDATE_FACTION" then func = "Event_UpdateFaction"
+   elseif event ==  "PLAYER_LEVEL_UP" then
+      func = "PlayerLevelUp"
+      delay = 1
+   elseif event == "ZONE_CHANGED_NEW_AREA" then func = "ZoneChangedNewArea"
+   else return end
 
-      events[event] = true
+   if not events[func] then
+      events[func] = true
       C_Timer.After(delay, function()
 		       AQT[func](AQT, unpack(args))
-		       events[event] = nil
+		       events[func] = nil
       end)
    end
 end
