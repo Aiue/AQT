@@ -18,11 +18,7 @@ for k,v in ipairs(file_list) do
    if not file then error(err) end
 
    for line in file:lines() do
-      for key in line:gmatch("L%.([%a%d_]+)") do
-	 L[key] = true
-      end
-      for key in line:gmatch("L%[%b%[%]%]") do
---	 key = key:match("^L%[\"(.+)\"%]$")
+      for key in line:gmatch("L%[\"([^\"%]]+)\"%]") do
 	 L[key] = true
       end
    end
