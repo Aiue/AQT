@@ -442,6 +442,7 @@ function guiFunc:DelayedRelease(recursed)
 
    self.container:Show()
    self:SetParent(nil)
+   self:SetAlpha(1)
 
    if not recursed then
       parent:RelinkChildren()
@@ -551,10 +552,13 @@ function guiFunc:New(owner, noFade)
    object.owner.uiObject = object
    object:UpdateScripts()
    tinsert(active_objects, object)
+      print(owner.title)
+      print(object:GetAlpha())
    if self ~= gui then self:Update() end
    if not(noFade or st.cfg.disableAnimations) then
       object:Fade(0, 1, 0, object)
    else
+      if object:GetFader() then object:GetFader():Stop() end
       object:SetAlpha(1)
    end
    return object

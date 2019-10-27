@@ -632,7 +632,7 @@ function Objective:Update(qIndex, oIndex, noPour, retry)
 	 update = false -- just in case
       end
    elseif not self.uiObject and QuestCache[self.quest].uiObject then
-      self.uiObject = QuestCache[self.quest].uiObject:New(self)
+      self.uiObject = QuestCache[self.quest].uiObject:New(self, true)
       update = true
    end
 
