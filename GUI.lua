@@ -571,14 +571,26 @@ function guiFunc:CollapseHeader(manual)
 
    if self.manual ~= nil then self.manual = manual end
 
-   self:Fade(1, 0, 0, self.container, function(fader, requested)
-		local target = fader.alpha:GetTarget()
+   if st.cfg.disableAnimations then
+      self.container:Hide()
+      self:UpdateSize(true)
+   else
+      for k,v in ipairs(animations.faders) do
+	 if v.alpha:GetTarget() == self.container then
+	    v:Stop()
+	    break
+	 end
+      end
+      self.hiding = true
+      self:Fade(1, 0, 0, self.container, function(fader, requested)
+		   local target = fader.alpha:GetTarget()
 
-		target:Hide()
-		target = target:GetParent()
-		target:ButtonCheck()
-		target:UpdateSize(true)
-   end)
+		   target:Hide()
+		   target = target:GetParent()
+		   target.hiding = nil
+		   target:UpdateSize(true)
+      end)
+   end
 end
 
 function guiFunc:ExpandHeader(manual)
@@ -588,19 +600,30 @@ function guiFunc:ExpandHeader(manual)
 
    if manual ~= nil then self.manual = manual end
 
+   self.hiding = nil
+
+   if self.container:IsShown() then
+      for k,v in ipairs(animations.faders) do
+	 if v.alpha:GetTarget() == self.container then
+	    v:Stop()
+	    break
+	 end
+      end
+   end
    self.container:Show()
-   self:ButtonCheck()
    self:UpdateSize(true)
-   self:Fade(0, 1, 0, self.container, nil)
+   if not st.cfg.disableAnimations then self:Fade(0, 1, 0, self.container, nil)
+   else self.container:SetAlpha(1) end
 end
 
 function guiFunc:ToggleCollapsed(manual)
    if not self.container then error("Missing container.")
    elseif self:IsCollapsed() then self:ExpandHeader(manual)
    else self:CollapseHeader(manual) end
+   self:ButtonCheck()
 end
 
-function guiFunc:IsCollapsed() return self.container and not self.container:IsShown() end -- Yes, I could just as well just check for this, but I want to create more abstraction. I'm breaking it enough as it is already.
+function guiFunc:IsCollapsed() return self.container and not self.container:IsShown() or self.hiding end -- Yes, I could just as well just check for this, but I want to create more abstraction. I'm breaking it enough as it is already.
 
 local function clickButton(self, button, down)
    if button == "LeftButton" then self:GetParent():ToggleCollapsed(true) end -- Right now this is the only button registered for clicks, but in case we want to add more later.
@@ -648,7 +671,7 @@ function guiFunc:ButtonCheck(recurse) -- May want to rewrite this later and simp
    if self == gui.title or self.owner.type == st.types.Header then
       if #self.children > 0 and (st.cfg.showHeaderButton or self == gui.title) then
 	 if not self.button then self:NewButton() end
-	 if self.container:IsShown() then
+	 if self.container:IsShown() and not self.hiding then
 	    self.button:SetNormalTexture([[Interface\Buttons\UI-MinusButton-Up]])
 	    self.button:SetHighlightTexture([[Interface\Buttons\UI-PlusButton-Hilight]])
 	    self.button:SetPushedTexture([[Interface\Buttons\UI-MinusButton-Down]])
