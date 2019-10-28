@@ -12,8 +12,8 @@ install: luarocks install --local luacheck
 script: curl -s https://raw.githubusercontent.com/Aiue/AQT/master/localization_import.sh | bash
 
 jobs:
-  exclude:
-    if: tag IS blank
+  include:
+    if: tag IS present
     after_script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
  
 branches:
