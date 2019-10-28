@@ -9,12 +9,13 @@ addons:
 
 install: luarocks install --local luacheck
 
-script: curl -s https://raw.githubusercontent.com/Aiue/AQT/master/localization_import.sh | bash
-
 jobs:
   include:
-    if: tag IS present
-    after_script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
+    - if: tag IS blank
+      script: curl -s https://raw.githubusercontent.com/Aiue/AQT/master/localization_import.sh | bash
+    - if: tag IS present
+      script: curl -s https://raw.githubusercontent.com/Aiue/AQT/master/localization_import.sh | bash
+      after_script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
  
 branches:
   only:
