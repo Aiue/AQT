@@ -745,14 +745,9 @@ function Quest:Track(override, noFade)
       end
    end
 
-   local fader = self.uiObject and self.uiObject:GetFader()
-   
-   if fader then
-      local alpha = self.uiObject:GetAlpha()
-      fader:Stop()
-      self.uiObject:Fade(0, 1, 0, self.uiObject)
-      self.uiObject.releasing = nil
-      return
+   if self.releasing then
+      self:StopAnimating()
+      self.releasing = nil
    end
 
    local parent

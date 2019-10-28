@@ -369,7 +369,6 @@ function guiFunc:Fade(fromAlpha, toAlpha, delay, target, onFinish)
 
    fader.alpha:SetFromAlpha(fromAlpha)
    fader.alpha:SetToAlpha(toAlpha)
-   fader:SetToFinalAlpha(toAlpha)
    fader.alpha:SetStartDelay(delay)
    fader.alpha:SetTarget(target or self)
    fader:SetScript("OnFinished", onFinish)
@@ -551,6 +550,7 @@ function guiFunc:New(owner, noFade)
    tinsert(active_objects, object)
    if self ~= gui then self:Update() end
    if not(noFade or st.cfg.disableAnimations) then object:Fade(0, 1, 0, object) end
+   --object:Fade(0, 1, 0)
    return object
 end
 
