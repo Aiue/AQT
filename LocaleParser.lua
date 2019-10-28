@@ -10,7 +10,11 @@ end
 
 if not file_list then file_list = {"Core.lua", "Config.lua", "GUI.lua"} end
 
-L = {}
+Cache = {}
+
+new = 0
+
+dofile("LocaleCache")
 
 for k,v in ipairs(file_list) do
    local file,err = io.open(v)
@@ -19,21 +23,23 @@ for k,v in ipairs(file_list) do
 
    for line in file:lines() do
       for key in line:gmatch("L%.([%a%d_]+)") do
-	 L[key] = true
+	 if not L[key] then new = new + 1 end
+	 Cache[key] = true
       end
       for key in line:gmatch("L%[\"(.-)\"%]") do
-	 L[key] = true
+	 if not L[key] then new = new + 1 end
+	 Cache[key] = true
       end
    end
 end
 
 sorted = {}
 
-for k,v in pairs(L) do table.insert(sorted, k) end
+for k,v in pairs(Cache) do table.insert(sorted, k) end
 
 table.sort(sorted, function(a, b) return a < b end)
 
 local output,err = io.open("L.lua", "w")
 
-print("Found " .. tostring(#sorted) .. " localization keys.")
 for k,v in ipairs(sorted) do output:write("L[\"" .. v .. "\"] = true\n") end
+print(new)
