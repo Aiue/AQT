@@ -18,7 +18,10 @@ for k,v in ipairs(file_list) do
    if not file then error(err) end
 
    for line in file:lines() do
-      for key in line:gmatch("L%[\"([^\"%]]+)\"%]") do
+      for key in line:gmatch("L%.([%a%d_]+)") do
+	 L[key] = true
+      end
+      for key in line:gmatch("L%[\"(.-)\"%]") do
 	 L[key] = true
       end
    end
@@ -30,4 +33,7 @@ for k,v in pairs(L) do table.insert(sorted, k) end
 
 table.sort(sorted, function(a, b) return a < b end)
 
-for k,v in ipairs(sorted) do print("L[\"" .. v .. "\"] = true") end
+local output,err = io.open("L.lua", "w")
+
+print("Found " .. tostring(#sorted) .. " localization keys.")
+for k,v in ipairs(sorted) do output:write("L[\"" .. v .. "\"] = true\n") end
