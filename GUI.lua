@@ -347,6 +347,8 @@ function guiFunc:RecurseResort()
 end
 
 function guiFunc:Fade(fromAlpha, toAlpha, delay, target, onFinish)
+   target = target or self
+   target:StopAnimating()
    local fader
    for k,v in ipairs(animations.faders) do
       if not v:IsPlaying() then
@@ -372,14 +374,6 @@ function guiFunc:Fade(fromAlpha, toAlpha, delay, target, onFinish)
    fader.alpha:SetTarget(target or self)
    fader:SetScript("OnFinished", onFinish)
    fader:Play()
-end
-
-function guiFunc:GetFader()
---   if not self.releasing then return end
-
-   for k,v in ipairs(animations.faders) do
-      if v.alpha:GetTarget() == self and v:IsPlaying() then return v end
-   end
 end
 
 function guiFunc:Release(noFade)
@@ -442,6 +436,7 @@ function guiFunc:DelayedRelease(recursed)
 
    self.container:Show()
    self:SetParent(nil)
+   self:StopAnimating()
    self:SetAlpha(1)
    self:Hide()
 
@@ -555,13 +550,7 @@ function guiFunc:New(owner, noFade)
    object:Show()
    tinsert(active_objects, object)
    if self ~= gui then self:Update() end
-   -- For some reason the commented out code below causes frames to sometimes have alpha set to 0.
---   if not(noFade or st.cfg.disableAnimations) then
-      object:Fade(0, 1, 0, object)
---   else
---      if object:GetFader() then object:GetFader():Stop() end
- --     object:SetAlpha(1)
- --  end
+   if not(noFade or st.cfg.disableAnimations) then object:Fade(0, 1, 0, object) end
    return object
 end
 
@@ -576,12 +565,6 @@ function guiFunc:CollapseHeader(manual)
       self.container:Hide()
       self:UpdateSize(true)
    else
-      for k,v in ipairs(animations.faders) do
-	 if v.alpha:GetTarget() == self.container then
-	    v:Stop()
-	    break
-	 end
-      end
       self.hiding = true
       self:Fade(1, 0, 0, self.container, function(fader, requested)
 		   local target = fader.alpha:GetTarget()
@@ -603,14 +586,6 @@ function guiFunc:ExpandHeader(manual)
 
    self.hiding = nil
 
-   if self.container:IsShown() then
-      for k,v in ipairs(animations.faders) do
-	 if v.alpha:GetTarget() == self.container then
-	    v:Stop()
-	    break
-	 end
-      end
-   end
    self.container:Show()
    self:UpdateSize(true)
    if not st.cfg.disableAnimations then self:Fade(0, 1, 0, self.container, nil)
