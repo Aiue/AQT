@@ -403,9 +403,9 @@ function Header:CounterText()
    end
 end
 
-function Header:CreateUIObject()
+function Header:CreateUIObject(noFade)
    if self.uiObject then error("Header:CreateUIObject(): '" .. self.name .. "' already has an uiObject.") end
-   self.uiObject = st.gui.title:New(self)
+   self.uiObject = st.gui.title:New(self, noFade)
 end
 
 function Header:HasTimer()
@@ -470,15 +470,15 @@ function Header:TitleText()
    return self.name
 end
 
-function Header:Update()
+function Header:Update(noFade)
    if st.cfg.showHeaders and #self.trackedQuests > 0 then
       if not self.uiObject then
-	 self:CreateUIObject()
+	 self:CreateUIObject(noFade)
       end
       self:TestCollapsedState() -- Should probably put this here too, in case we pick up something new that should be under a collapsed header.
       self.uiObject:Update()
    elseif self.uiObject then
-      self.uiObject:Release()
+      self.uiObject:Release(noFade)
    end
 end
 
@@ -759,7 +759,7 @@ function Quest:Track(override, noFade)
    tinsert(self.header.trackedQuests, self)
    self.uiObject = parent:New(self, noFade)
    self:Update() -- Temporary fix
-   self.header:Update()
+   self.header:Update(noFade)
    self.uiObject:Update()
 end
 
@@ -790,7 +790,7 @@ function Quest:Untrack(override, noFade)
    end
 
    self.uiObject:Release(noFade)
-   self.header:Update()
+   self.header:Update(noFade)
 end
 
 function Quest:Update(timer)
