@@ -56,3 +56,4 @@ license-output: LICENSE.md
 
 ignore:
     - LocaleParser.lua
+    - localization_import.sh
