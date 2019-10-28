@@ -1,4 +1,4 @@
-local _,st = ...
+﻿local _,st = ...
 
 local AQT = LibStub("AceAddon-3.0"):NewAddon("AQT", "AceEvent-3.0", "LibSink-2.0")
 local LDB = LibStub("LibDataBroker-1.1")
@@ -849,11 +849,11 @@ function Quest:Update(timer)
 	 self.lastUpdate = time()
       end
    elseif not st.cfg.hideQuestCompletedObjectives then self:UpdateObjectives(true) end
+   if self.timer and self.uiObject then self.uiObject:UpdateTimer() end
    if update then
       self.lastUpdate = time()
       if self.uiObject then
 	 self.uiObject:Update()
-	 if self.timer then self.uiObject:UpdateTimer() end
 	 if st.cfg.autoTrackUpdated and self.untrackTimer then self:SetUntrackTimer(time()) end
       elseif st.cfg.autoTrackUpdated then
 	 self:Track(time())
