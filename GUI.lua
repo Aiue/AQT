@@ -1,4 +1,4 @@
-local _,st = ...
+﻿local _,st = ...
 
 local AQT = LibStub("AceAddon-3.0"):GetAddon("AQT")
 local LSM = LibStub("LibSharedMedia-3.0")
@@ -378,7 +378,7 @@ function guiFunc:GetFader()
 --   if not self.releasing then return end
 
    for k,v in ipairs(animations.faders) do
-      if v.alpha:GetTarget() == self then return v end
+      if v.alpha:GetTarget() == self and v:IsPlaying() then return v end
    end
 end
 
@@ -554,15 +554,14 @@ function guiFunc:New(owner, noFade)
    object:UpdateScripts()
    object:Show()
    tinsert(active_objects, object)
-      print(owner.title)
-      print(object:GetAlpha())
    if self ~= gui then self:Update() end
-   if not(noFade or st.cfg.disableAnimations) then
+   -- For some reason the commented out code below causes frames to sometimes have alpha set to 0.
+--   if not(noFade or st.cfg.disableAnimations) then
       object:Fade(0, 1, 0, object)
-   else
-      if object:GetFader() then object:GetFader():Stop() end
-      object:SetAlpha(1)
-   end
+--   else
+--      if object:GetFader() then object:GetFader():Stop() end
+ --     object:SetAlpha(1)
+ --  end
    return object
 end
 
