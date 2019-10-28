@@ -11,11 +11,6 @@ lua LocaleParser.lua || exit 1
 
 result=$( curl -sS -0 -X POST -w "%{http_code}" -o "$tempfile" -H "X-Api-Token: $CF_API_KEY" -F "metadata={ language: \"enUS\", \"missing-phrase-handling\": \"DeletePhrase\" }" -F "localizations=<L.lua" "https://wow.curseforge.com/api/projects/67669/localization/import") || exit 1
 
-    -F "metadata={ language: \"enUS\", namespace: \"$namespace\", \"missing-phrase-handling\": \"DeletePhrase\" }" \
-    -F "localizations=<$file" \
-    "https://www.wowace.com/api/projects/65387/localization/import"
-  ) || exit 1
-
 case $result in
     200) echo "Localization updated." ;;
     *)
