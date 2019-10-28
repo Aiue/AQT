@@ -4,12 +4,21 @@ language: c
 addons:
   apt:
     packages:
+    - luarocks
     - pandoc
- 
-script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
+
+install: luarocks install --local luacheck
+
+script: curl -s https://raw.githubusercontent.com/Aiue/AQT/master/localization_import.sh | bash
+
+jobs:
+  include:
+    if: tag IS present
+    after_script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
  
 branches:
   only:
+  - master
   - /^\d+\.\d+\.\d+(\w+)?$/
   - /^\d+\.\d+\.\d+\-(\w+)?$/
 
