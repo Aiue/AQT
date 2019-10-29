@@ -41,6 +41,7 @@ local defaults = {
    },
    automaticCollapseExpand = false,
    autoTrackNew = false,
+   autoTrackTimed = true,
    autoTrackTimer = 0,
    autoTrackTimeUnits = "minutes",
    autoTrackUpdated = false,
@@ -382,7 +383,7 @@ local CFGHandler = {
 	 elseif info[#info] == "indent" then st.gui.title:RelinkChildren(true)
 	 elseif info[#info] == "objectivePrefix" then st.gui.title:UpdateText(true)
 	 elseif info[#info] == "showHeaderButton" then st.gui.title:ButtonCheck(true)
-	 elseif info[#info] == "trackAll" then AQT:TrackingUpdate() end
+	 elseif info[#info] == "trackAll" or info[#info] == "autoTrackTimed" then AQT:TrackingUpdate() end
       end,
    },
    font = {
@@ -721,18 +722,23 @@ local options = {
 			   type = "toggle",
 			   order = 2,
 			},
+			autoTrackTimed = {
+			   name = L["Always Show Timed"],
+			   type = "toggle",
+			   order = 3,
+			},
 			autoTrackTimer = {
 			   type = "range",
 			   name = L["Untrack After"] .. " (0 =" .. L.Disabled .. ")",
 			   min = 0,
 			   softMax = 60,
-			   order = 3,
+			   order = 4,
 			   step = 1,
 			},
 			autoTrackTimeUnits = {
 			   type = "select",
 			   name = L.Units,
-			   order = 4,
+			   order = 5,
 			   style = "radio",
 			   values = {seconds = L.Seconds,minutes=L.Minutes},
 			   disabled = function(info)

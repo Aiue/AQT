@@ -355,6 +355,8 @@ function AQT:OnEnable()
 	 if not QuestCache[k] then st.db.char.tracked_quests[k] = nil
 	 elseif v == true then
 	    if not QuestCache[k]:IsTracked() then QuestCache[k]:Track(true) end
+	 elseif v.timer and st.cfg.autoTrackTimed then
+	    if not QuestCache[k]:IsTracked() then QuestCache[k]:Track() end
 	 elseif v == false then
 	    if QuestCache[k]:IsTracked() then QuestCache[k]:Untrack(true) end
 	 elseif type(v) == "number" and not QuestCache[k]:IsTracked() then
@@ -675,6 +677,7 @@ function Quest:New(o, noAuto)
    o:Update()
    -- noAuto means we'll also not want fading
    if st.cfg.trackAll then o:Track(nil, noAuto)
+   elseif st.cfg.autoTrackTimed and o.timer then o:Track(nil, noAuto)
    elseif st.cfg.autoTrackZone and o.header:IsCurrentZone() then o:Track(0, noAuto)
    elseif st.cfg.autoTrackNew and not noAuto then o:Track(time()) end
    return o
@@ -730,7 +733,7 @@ function Quest:Toggle()
 end
 
 function Quest:Track(override, noFade)
-   if self.override and not override then return end
+   if self.override and not override and not(st.cfg.autoTrackTimed and self.timer) then return end
 
    if self:IsTracked() then return end
 
@@ -767,6 +770,11 @@ function Quest:Untrack(override, noFade)
    if self.override and not override then return end
 
    if not self:IsTracked() then return end
+
+   if self.timer and st.cfg.autoTrackTimed then
+      if override then print(L["Attempting to untrack timed quest while \"Always Show Timed\" is enabled."]) end
+      return
+   end
 
    if self.untrackTimer then
       self.untrackTimer:Cancel()
