@@ -10,11 +10,22 @@ end
 
 if not file_list then file_list = {"Core.lua", "Config.lua", "GUI.lua"} end
 
+L = {}
 Cache = {}
 
 new = 0
 
-dofile("LocaleCache")
+local infile,err = io.open("LocaleCache")
+
+if not infile then error(err) end
+
+for line in infile:lines() do
+   for key in line:gmatch("L%[\"(.-)\"%]") do
+      Cache[key] = true
+   end
+end
+
+io.close(infile)
 
 for k,v in ipairs(file_list) do
    local file,err = io.open(v)
@@ -23,19 +34,19 @@ for k,v in ipairs(file_list) do
 
    for line in file:lines() do
       for key in line:gmatch("L%.([%a%d_]+)") do
-	 if not L[key] then new = new + 1 end
-	 Cache[key] = true
+	 if not Cache[key] then new = new + 1 end
+	 L[key] = true
       end
       for key in line:gmatch("L%[\"(.-)\"%]") do
-	 if not L[key] then new = new + 1 end
-	 Cache[key] = true
+	 if not Cache[key] then new = new + 1;	 print(key) end
+	 L[key] = true
       end
    end
 end
 
 sorted = {}
 
-for k,v in pairs(Cache) do table.insert(sorted, k) end
+for k,v in pairs(L) do table.insert(sorted, k) end
 
 table.sort(sorted, function(a, b) return a < b end)
 
