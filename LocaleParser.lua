@@ -38,7 +38,7 @@ for k,v in ipairs(file_list) do
 	 L[key] = true
       end
       for key in line:gmatch("L%[\"(.-)\"%]") do
-	 if not Cache[key] then new = new + 1;	 print(key) end
+	 if not Cache[key] then new = new + 1;end
 	 L[key] = true
       end
    end
