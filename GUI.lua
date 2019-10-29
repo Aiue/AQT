@@ -439,6 +439,8 @@ function guiFunc:DelayedRelease(recursed)
    self:SetAlpha(1)
    self:Hide()
 
+   if parent == st.gui.title and #parent.children == 0 then AQTParent:Hide() end
+
    if not recursed then
       parent:RelinkChildren()
       parent:UpdateSize(true)
@@ -547,6 +549,7 @@ function guiFunc:New(owner, noFade)
    object.owner.uiObject = object
    object:UpdateScripts()
    object:Show()
+   if self == st.gui.title then AQTParent:Show() end
    tinsert(active_objects, object)
    if self ~= gui then self:Update() end
    if not(noFade or st.cfg.disableAnimations) then object:Fade(0, 1, 0, object) end
