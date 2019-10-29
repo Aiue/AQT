@@ -688,6 +688,28 @@ end
 
 function guiFunc:Sort()
    tsort(self.children, function(a,b)
+	    if not a then
+	       local text
+	       if type(self.owner.TitleText) == "function" then
+		  text = self.owner:TitleText()
+	       else
+		  text = self.owner.TitleText
+	       end
+
+	       print(text .. ": " .. L["nil entry when trying to sort, please report to Aiue."])
+	       return false
+	    end
+	    if not b then
+	       local text
+	       if type(self.owner.TitleText) == "function" then
+		  text = self.owner:TitleText()
+	       else
+		  text = self.owner.TitleText
+	       end
+
+	       print(text .. ": " .. L["nil entry when trying to sort, please report to Aiue."])
+	       return true
+	    end
 	    if not a.owner or not b.owner then return false
 	    elseif a.owner.type ~= b.owner.type then return tostring(a.owner.type) > tostring(b.owner.type)
 	    elseif not st.cfg.sortFields[tostring(a.owner.type)] then -- b sortFields should be the same in this case
