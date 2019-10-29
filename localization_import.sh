@@ -14,7 +14,7 @@ NEW_KEYS=$( lua LocaleParser.lua || exit 1 )
 
 echo "Found ${NEW_KEYS} new localization key(s)."
 
-if [ "$NEW_KEYS"!="0" ]; then
+if [ "$NEW_KEYS" != "0" ]; then
     result=$( curl -sS -0 -X POST -w "%{http_code}" -o "$tempfile" -H "X-Api-Token: $CF_API_KEY" \
 	-F "metadata={ \"language\": \"enUS\", \"missing-phrase-handling\": \"DeletePhrase\", }" \
 	-F "localizations=<L.lua" "https://wow.curseforge.com/api/projects/67669/localization/import") || exit 1
@@ -29,6 +29,6 @@ if [ "$NEW_KEYS"!="0" ]; then
     esac
 
     if [ -n "$WEBHOOK" ]; then
-	curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"Localization-Updates\", \"content\": \"${NEW_KEYS} new localization keys added to CurseForge localization system.\"}" $[WEBHOOK}
+	curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"Localization-Updates\", \"content\": \"${NEW_KEYS} new localization keys added to CurseForge localization system.\"}" $WEBHOOK
     fi
 fi
