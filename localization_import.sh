@@ -29,6 +29,6 @@ if [ "$NEW_KEYS" != "0" ]; then
     esac
 
     if [ -n "$WEBHOOK" ]; then
-	curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"Localization-Updates\", \"content\": \"${NEW_KEYS} new localization keys added to CurseForge localization system.\"}" $WEBHOOK
+	curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"Localization-Updates\", \"content\": \"AQT: ${NEW_KEYS} new localization keys added to CurseForge localization system.\"}" $WEBHOOK
     fi
 fi
