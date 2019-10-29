@@ -5,7 +5,7 @@ if [ -f ".env" ]; then
 fi
 
 # Import current localization data.
-curl -s -H "X-API-Token: $CF_API_KEY" https://wow.curseforge.com/api/projects/67669/localization/export?true-if-values-equals-key=true&escape-non-ascii-characters=true > LocaleCache
+curl -s -H "X-API-Token: $CF_API_KEY" https://wow.curseforge.com/api/projects/67669/localization/export?true-if-values-equals-key=true\&escape-non-ascii-characters=true > LocaleCache
 
 tempfile=$( mktemp )
 trap 'rm -f $tempfile' EXIT
