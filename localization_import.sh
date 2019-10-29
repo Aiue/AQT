@@ -1,4 +1,4 @@
-67669/#!/bin/bash
+#!/bin/bash
 
 if [ -f ".env" ]; then
     . ".env"
