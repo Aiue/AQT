@@ -37,15 +37,23 @@ local tinsert,tremove = table.insert,table.remove
 local events = {}
 local factionCache = {}
 
-function AQT:OnDisable()
+-- We can't fix Blizzard's code (the hack I tried resulted in infinite iterations/recursions).
+-- Instead, we can take steps to ensure not taking the blame.
+local QLU = QuestLog_Update
+local function QuestLog_Update(self)
+   for i = 1, GetNumQuestLogEntries() do
+      local qTitle,qLevel,qTag,qHeader,qCollapsed,qComplete,qFreq,qID = GetQuestLogTitle(i)
+      if not qTitle then
+	 print(L["Aborting call to QuestLog_Update() to avoid blame for a Blizzard error."])
+	 return
+      end
+   end
+
+   QLU(self)
 end
 
--- Not sure why I left this here.
---local hooks = {
---   "AbandonQuest",
---   "GetQuestReward",
---   "SetAbandonQuest",
---}
+function AQT:OnDisable()
+end
 
 local QuestCache = {}
 local HeaderCache = {}
@@ -1144,3 +1152,4 @@ function IsQuestWatched(index)
    local _,_,_,_,_,_,_,id = GetQuestLogTitle(index)
    return QuestCache[id] and QuestCache[id]:IsTracked()
 end
+
