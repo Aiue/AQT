@@ -771,7 +771,7 @@ function Quest:Untrack(override, noFade)
 
    if not self:IsTracked() then return end
 
-   if self.timer and st.cfg.autoTrackTimed then
+   if self.timer and st.cfg.autoTrackTimed and GetQuestLogIndexByID(self.id) > 0 then
       if override then print(L["Attempting to untrack timed quest while \"Always Show Timed\" is enabled."]) end
       return
    end
