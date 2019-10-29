@@ -355,7 +355,7 @@ function AQT:OnEnable()
 	 if not QuestCache[k] then st.db.char.tracked_quests[k] = nil
 	 elseif v == true then
 	    if not QuestCache[k]:IsTracked() then QuestCache[k]:Track(true) end
-	 elseif v.timer and st.cfg.autoTrackTimed then
+	 elseif QuestCache[k].timer and st.cfg.autoTrackTimed then
 	    if not QuestCache[k]:IsTracked() then QuestCache[k]:Track() end
 	 elseif v == false then
 	    if QuestCache[k]:IsTracked() then QuestCache[k]:Untrack(true) end
