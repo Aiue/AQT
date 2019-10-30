@@ -12,11 +12,11 @@ install: luarocks install --local luacheck
 jobs:
   include:
     - if: tag IS blank
-     - before_script: /home/travis/.luarocks/bin/luacheck . --no-color -q
-     - script: curl -s https://raw.githubusercontent.com/Aiue/AQT/master/localization_import.sh | bash
+      before_script: /home/travis/.luarocks/bin/luacheck . --no-color -q
+      script: curl -s https://raw.githubusercontent.com/Aiue/AQT/master/localization_import.sh | bash
     - if: tag IS present
-     - before_script: /home/travis/.luarocks/bin/luacheck . --no-color -q
-     - script:
+      before_script: /home/travis/.luarocks/bin/luacheck . --no-color -q
+      script:
         - curl -s https://raw.githubusercontent.com/Aiue/AQT/master/localization_import.sh | bash
       	- curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
 
