@@ -4,6 +4,7 @@ local AQT = LibStub("AceAddon-3.0"):GetAddon("AQT")
 local LSM = LibStub("LibSharedMedia-3.0")
 local Prism = LibStub("LibPrism-1.0")
 
+local difftime,time = difftime,time
 local tinsert,tremove,tsort = table.insert,table.remove,table.sort
 
 local animations = {
@@ -55,28 +56,28 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.scrollChild = CreateFrame("Frame", nil, gui.scrollFrame)
    gui.container = gui.scrollChild -- Hack to support new relational structure. Will make this the only reference after going through the code to make sure nothing else references it.
    gui.scrollFrame:SetScrollChild(gui.scrollChild)
-   gui.scrollFrame:SetScript("OnSizeChanged", function(self, width, height)
-				self:GetScrollChild():SetWidth(width)
+   gui.scrollFrame:SetScript("OnSizeChanged", function(s, width, height)
+				s:GetScrollChild():SetWidth(width)
    end)
    gui.scrollFrame:EnableMouseWheel(true)
-   gui.scrollFrame:SetScript("OnMOuseWheel", function(self, delta)
-				local pos = self:GetVerticalScroll()
+   gui.scrollFrame:SetScript("OnMOuseWheel", function(s, delta)
+				local pos = s:GetVerticalScroll()
 				local setpos
 				if pos-delta < 0 then setpos = 0
-				elseif pos-delta > self:GetVerticalScrollRange() then setpos = self:GetVerticalScrollRange()
+				elseif pos-delta > s:GetVerticalScrollRange() then setpos = s:GetVerticalScrollRange()
 				else setpos = pos-delta end
-				self:SetVerticalScroll(setpos)
+				s:SetVerticalScroll(setpos)
    end)
    gui.children = {}
 
    local function updateScroll() if gui.scrollFrame:GetVerticalScroll() > gui.scrollFrame:GetVerticalScrollRange() then gui.scrollFrame:SetVerticalScroll(gui.scrollFrame:GetVerticalScrollRange()) end end
 
-   function gui:UpdateSize(doChildren)
-      local width = self.title:CheckWidth()
-      if width < st.cfg.minWidth then self:SetWidth(st.cfg.minWidth)
-      elseif width > st.cfg.maxWidth then self:SetWidth(st.cfg.maxWidth)
-      else self:SetWidth(width) end
-      if doChildren then self.title:UpdateSize(false) end
+   function gui.UpdateSize(s, doChildren)
+      local width = s.title:CheckWidth()
+      if width < st.cfg.minWidth then s:SetWidth(st.cfg.minWidth)
+      elseif width > st.cfg.maxWidth then s:SetWidth(st.cfg.maxWidth)
+      else s:SetWidth(width) end
+      if doChildren then s.title:UpdateSize(false) end
 
       local h = gui.title:GetHeight() + (gui.title.container:IsShown() and gui.title.container:GetHeight() or 0)
       gui.scrollChild:SetHeight(h)
@@ -95,8 +96,8 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.title.optionsButton:SetPoint("TOPRIGHT", gui.title.counter, "TOPLEFT")
    gui.title.optionsButton:SetSize(st.cfg.font.size, st.cfg.font.size)
    gui.title.text:SetPoint("TOPRIGHT", gui.title.optionsButton, "TOPLEFT") -- Not really needed, but do it anyway. Because reaons.
-   gui.title.optionsButton:SetScript("OnClick", function(self, button, down)
-					if button == "LeftButton" then AQT:ToggleConfig() end 
+   gui.title.optionsButton:SetScript("OnClick", function(s, button, down)
+					if button == "LeftButton" then AQT:ToggleConfig() end
    end)
    gui:UpdateConfigButton()
    gui:Redraw(false)
@@ -186,8 +187,8 @@ function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an a
       elseif st.cfg.artwork.stretching == 3 then
 	 local l,r = "LEFT", "RIGHT"
 	 if st.cfg.artwork.anchor ~= "CENTER" then
-	    b = st.cfg.artwork.anchor .. l
-	    t = st.cfg.artwork.anchor .. r
+	    l = st.cfg.artwork.anchor .. l
+	    r = st.cfg.artwork.anchor .. r
 	 end
 
 	 gui.artwork:SetPoint(l, gui, l, st.cfg.artwork.offsetX, -st.cfg.artwork.offsetY)
@@ -233,11 +234,11 @@ function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an a
 end
 
 function gui:RedrawColor()
-   gui.font:SetTextColor(st.cfg.font.r, st.cfg.font.g, st.cfg.font.b, st.cfg.font.a)   
+   gui.font:SetTextColor(st.cfg.font.r, st.cfg.font.g, st.cfg.font.b, st.cfg.font.a)
    gui.barFont:SetTextColor(st.cfg.barFont.r, st.cfg.barFont.g, st.cfg.barFont.b, st.cfg.barFont.a)
    gui:SetBackdropColor(st.cfg.backdrop.background.r, st.cfg.backdrop.background.g, st.cfg.backdrop.background.b, st.cfg.backdrop.background.a)
    gui:SetBackdropBorderColor(st.cfg.backdrop.border.r, st.cfg.backdrop.border.g, st.cfg.backdrop.border.b, st.cfg.backdrop.border.a)
-   for k,v in ipairs(active_timers) do v:GetParent():UpdateTimer() end
+   for _,v in ipairs(active_timers) do v:GetParent():UpdateTimer() end
 end
 
 function gui:ToggleLock()
@@ -245,29 +246,29 @@ function gui:ToggleLock()
       self:EnableMouse(true)
       self:SetMovable(true)
       self:RegisterForDrag("LeftButton")
-      self:SetScript("OnDragStart", function(self, button)
-			if button == "LeftButton" then self:StartMoving() end
+      self:SetScript("OnDragStart", function(s, button)
+			if button == "LeftButton" then s:StartMoving() end
       end)
-      self:SetScript("OnDragStop", function(self)
+      self:SetScript("OnDragStop", function(s)
 			self:StopMovingOrSizing()
 --			local _,_,_,x,y = self:GetPoint(1) -- We should only have one point set.
 			local resX,resY = UIParent:GetSize()
 			local offsetX,offsetY
 
 			if st.cfg.anchorFrom:match("LEFT$") then
-			   offsetX = self:GetLeft()
+			   offsetX = s:GetLeft()
 			elseif st.cfg.anchorFrom:match("RIGHT$") then
-			   offsetX = self:GetRight()
+			   offsetX = s:GetRight()
 			else
-			   offsetX = (self:GetLeft()+self:GetRight())/2
+			   offsetX = (s:GetLeft()+s:GetRight())/2
 			end
 
 			if st.cfg.anchorFrom:match("^TOP") then
-			   offsetY = self:GetTop()
+			   offsetY = s:GetTop()
 			elseif st.cfg.anchorFrom:match("^BOTTOM") then
-			   offsetY = self:GetBottom()
+			   offsetY = s:GetBottom()
 			else
-			   offsetY = (self:GetBottom()+self:GetTop())/2
+			   offsetY = (s:GetBottom()+s:GetTop())/2
 			end
 
 			if st.cfg.anchorTo:match("RIGHT$") then
@@ -284,7 +285,7 @@ function gui:ToggleLock()
 
 			st.cfg.posX = offsetX
 			st.cfg.posY = offsetY
-			self:SetPoint(st.cfg.anchorFrom, UIParent, st.cfg.anchorTo, st.cfg.posX, st.cfg.posY)
+			s:SetPoint(st.cfg.anchorFrom, UIParent, st.cfg.anchorTo, st.cfg.posX, st.cfg.posY)
       end)
    else
       self:EnableMouse(false)
@@ -301,7 +302,7 @@ function guiFunc:CheckWidth(width, level)
    local w = 20 + st.cfg.font.size + (st.cfg.indent*level) + (st.cfg.padding*2) + self.text:GetStringWidth() + self.counter:GetStringWidth()
    if w > width then width = w end
    if self.container:IsShown() then
-      for k,v in ipairs(self.children) do
+      for _,v in ipairs(self.children) do
 	 width = v:CheckWidth(width, level + 1)
       end
    end
@@ -339,7 +340,7 @@ end
 
 function guiFunc:RecurseResort()
    if #self.children > 0 then
-      for k,v in ipairs(self.children) do
+      for _,v in ipairs(self.children) do
 	 v:RecurseResort()
       end
       self:Sort()
@@ -350,7 +351,7 @@ function guiFunc:Fade(fromAlpha, toAlpha, delay, target, onFinish)
    target = target or self
    target:StopAnimating()
    local fader
-   for k,v in ipairs(animations.faders) do
+   for _,v in ipairs(animations.faders) do
       if not v:IsPlaying() then
 	 fader = v
 	 break
@@ -420,7 +421,7 @@ function guiFunc:DelayedRelease(recursed)
    self.text:SetText("")
    self.counter:SetText("")
 
-   for k,v in pairs(self.scripts) do self:SetScript(k) end
+   for k in pairs(self.scripts) do self:SetScript(k) end
 
    for k,v in ipairs(active_objects) do
       if self == v then
@@ -476,7 +477,7 @@ end
 
 function guiFunc:UnlinkChildren()
    if self.timer and self.timer.sb then self.timer:ClearAllPoints() end
-   for k,v in ipairs(self.children) do v:ClearAllPoints() end
+   for _,v in ipairs(self.children) do v:ClearAllPoints() end
 end
 
 function guiFunc:RelinkChildren(recurse)
@@ -675,7 +676,7 @@ function guiFunc:ButtonCheck(recurse) -- May want to rewrite this later and simp
       end
    end
 
-   if recurse then for k,v in ipairs(self.children) do v:ButtonCheck(true) end end
+   if recurse then for _,v in ipairs(self.children) do v:ButtonCheck(true) end end
 end
 
 function guiFunc:Parent()
@@ -715,7 +716,7 @@ function guiFunc:Sort()
 	    elseif not st.cfg.sortFields[tostring(a.owner.type)] then -- b sortFields should be the same in this case
 	       return false
 	    else
-	       for i,v in ipairs(st.cfg.sortFields[tostring(a.owner.type)]) do
+	       for _,v in ipairs(st.cfg.sortFields[tostring(a.owner.type)]) do
 		  if a.owner[v.field] ~= b.owner[v.field] then
 		     if v.descending then
 			if not a.owner[v.field] then -- nil, so b is not
@@ -744,11 +745,12 @@ end
 function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for some of these things. Particularly useful for fontstrings. Which can't set that script, so uh. Still. Get back to this. Could solve some of my other issues. And FontStrings I can handle in UpdateText().
    -- Yes, definitely need to rewrite all of this. I mean, it MOSTLY works. But.. not as well as I'd like. I kind of need an onsizechanged scripts alongside a "manual" updater.
    if recurse == false then
-      for k,v in ipairs(self.children) do v:UpdateSize(false) end
+      for _,v in ipairs(self.children) do v:UpdateSize(false) end
    end
 
-   local h,w = 0,0 -- Do I need width? ...possibly
-   for k,v in ipairs(self.children) do
+   local h = 0
+
+   for _,v in ipairs(self.children) do
 --      local th,ch = v.text:GetHeight(),v.counter:GetHeight()
 --      h = h + (th > ch and th or ch) + (v.container:IsShown() and v.container:GetHeight() or 0)
       h = h + v:GetHeight() + (v.container:IsShown() and v.container:GetHeight() or 0)
@@ -773,7 +775,7 @@ function guiFunc:UpdateSize(recurse) --!!!RE!!! Should use OnSizeChanged() for s
 end
 
 function guiFunc:UpdateText(recurse)
-   local th,tw,ch,tw = self.text:GetStringHeight(),self.text:GetStringWidth(),self.counter:GetStringHeight(),self.counter:GetStringWidth()
+   local th,tw,ch,cw = self.text:GetStringHeight(),self.text:GetStringWidth(),self.counter:GetStringHeight(),self.counter:GetStringWidth()
    local titleText,counterText
 
    self.text:SetWordWrap(st.cfg.font.wrap)
@@ -798,12 +800,12 @@ function guiFunc:UpdateText(recurse)
    if counterText == "" then self.counter:Hide()
    else self.counter:Show() end
 
-   if th ~= self.text:GetStringHeight() or tw ~= self.text:GetStringWidth() or ch ~= self.counter:GetStringHeight() or tw ~= self.counter:GetStringWidth() then
+   if th ~= self.text:GetStringHeight() or tw ~= self.text:GetStringWidth() or ch ~= self.counter:GetStringHeight() or cw ~= self.counter:GetStringWidth() then
       self:UpdateSize(true)
    end
 
    if recurse then
-      for k,v in ipairs(self.children) do v:UpdateText(true) end
+      for _,v in ipairs(self.children) do v:UpdateText(true) end
    end
 end
 
@@ -948,18 +950,18 @@ end
 
 function guiFunc:UpdateTimers()
    self:UpdateTimer()
-   for k,v in ipairs(self.children) do v:UpdateTimers() end
+   for _,v in ipairs(self.children) do v:UpdateTimers() end
 end
 
 function gui:UpdateTimers()
-   for k,v in ipairs(self.children) do v:UpdateTimers() end
+   for _,v in ipairs(self.children) do v:UpdateTimers() end
 end
 
 function gui:IterateObjects(oType)
    if not oType then return ipairs(active_objects)
    else
       local cache = {}
-      for k,v in ipairs(active_objects) do
+      for _,v in ipairs(active_objects) do
 	 if v.owner.type == oType then
 	    tinsert(cache, v)
 	 end
@@ -979,11 +981,10 @@ function gui:UpdateScripts()
    end
 ]]--
 
-   for k,v in gui:IterateObjects() do v:UpdateScripts() end
+   for _,v in gui:IterateObjects() do v:UpdateScripts() end
 end
 
 local function onClick(self, button, down)
-   local oType = self.owner.type.name
    local c = st.cfg.mouse[self.owner.type.name]
    local func
 
@@ -1019,15 +1020,14 @@ local function onClick(self, button, down)
 	 end
 
 	 if v.func then
-	    entry.func = function(self, func, questObject)
-	       func = v.func
-	       if type(func) == "function" then func(questObject)
-	       elseif type(func) == "string" and questObject[func] then questObject[func](questObject) end
+	    entry.func = function(_, _, questObject)
+	       if type(v.func) == "function" then v.func(questObject)
+	       elseif type(v.func) == "string" and questObject[v.func] then questObject[v.func](questObject) end
 	    end
 	 else
 	    entry.disabled = true
 	 end
-	    
+
 	 tinsert(menu, entry)
       end
       tsort(menu, function(a,b)
@@ -1055,7 +1055,7 @@ local function onClick(self, button, down)
 
       tinsert(menu, {
 		 text = L.Close,
-		 func = function(self) L_CloseDropDownMenus() end,
+		 func = function() L_CloseDropDownMenus() end,
 		 notCheckable = true,
       })
       L_EasyMenu(menu, gui.menu, "cursor", 0, 0, "menu", 10)

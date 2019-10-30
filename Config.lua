@@ -463,13 +463,13 @@ local CFGHandler = {
       AddSortValuesOrNot = function(objType, returnastable)
 	 local values = {}
 	 local sfCache = {}
-	 for k,v in pairs(st.types[objType].sortFields) do tinsert(sfCache, k) end
-	 for k,v in ipairs(st.cfg.sortFields[objType]) do
+	 for k in pairs(st.types[objType].sortFields) do tinsert(sfCache, k) end
+	 for _,v in ipairs(st.cfg.sortFields[objType]) do
 	    for i = #sfCache, 1, -1 do
 	       if v.field == sfCache[i] then tremove(sfCache, i) end
 	    end
 	 end
-	 for k,v in ipairs(sfCache) do values[v] = st.types[objType].sortFields[v] end
+	 for _,v in ipairs(sfCache) do values[v] = st.types[objType].sortFields[v] end
 	 if sortcfg.field and not st.types[objType].sortFields[sortcfg.field] then
 	    sortcfg.field = nil
 	    sortcfg.descending = nil
@@ -485,7 +485,7 @@ local CFGHandler = {
 
 	 elseif info[#info] == "moveup" or info[#info] == "movedown" then
 	    local newindex = (info[#info] == "moveup" and (index - 1) or (index + 1))
-	    for k,v in pairs(info.options.args.sorting.args[obj].args) do
+	    for _,v in pairs(info.options.args.sorting.args[obj].args) do
 	       if v.order == newindex then v.order = index end
 	    end
 	    info.options.args.sorting.args[obj].args[info[#info-1]].order = newindex
@@ -498,19 +498,19 @@ local CFGHandler = {
 	 end
 	 st.gui:RecurseResort()
       end,
-   
+
       get = function(info) -- only for new stuff
 	 return sortcfg[info[#info]]
       end,
-   
+
       set = function(info, val) -- only for new stuff
 	 sortcfg[info[#info]] = val
       end,
-   
+
       addValidate = function(info)
 	 if not st.types[info[#info-2]].sortFields[info[#info-1]] then return "Unknown sort field." else return true end
       end,
-   
+
       addDisabled = function(info)
 	 if not sortcfg.field then return true end
       end,
@@ -525,7 +525,7 @@ end
 CFGHandler.sorting.AddSortValues = function(info)
    return CFGHandler.sorting.AddSortValuesOrNot(info[#info-2], true)
 end
-   
+
 CFGHandler.sorting.newDisabled = function(info)
    local objType
    if info[#info-1] == "_specialAddNew" then objType = info[#info-2] else objType = info[#info-1] end
@@ -1150,7 +1150,7 @@ local options = {
 				       softMax = 2,
 				       isPercent = true,
 				       order = 0,
-				       hidden = function(info) 
+				       hidden = function(info)
 					  if st.cfg.artwork.symmetricZoom then return false else return true end
 				       end,
 				    },
@@ -1213,7 +1213,7 @@ local options = {
 			   type = "select",
 			   values = CFGHandler.artwork.stretchValues,
 			   order = 5,
-			   hidden = function(info) 
+			   hidden = function(info)
 			      if st.cfg.artwork.stretching == 4 then return true else return false end
 			   end,
 			},
@@ -1550,7 +1550,7 @@ end
 local editSortOptions = {
    ascdesc = {
       name = function(info)
-	 for k,v in ipairs(st.cfg.sortFields[info[#info-2]]) do
+	 for _,v in ipairs(st.cfg.sortFields[info[#info-2]]) do
 	    if v.field == info[#info-1] then return v.descending and L.Descending or L.Ascending end
 	 end
       end,
@@ -1625,7 +1625,7 @@ end
 addSortOptions.add.func = CFGHandler.sorting.addExecute
 
 local function buildSortOptions()
-   for k,v in pairs(st.types) do
+   for _,v in pairs(st.types) do
       if v.sortFields then
 	 options.args.sorting.args[v.name] = {
 	    name = L[v.name],
@@ -1654,7 +1654,7 @@ local function getMouseDisabled(info)
    else return true end
 end
 
-buttonOptions = {
+local buttonOptions = {
    func = {
       type = "select",
       name = L["Unmodified Click"],
@@ -1708,7 +1708,7 @@ local mouseOptions = {
 -- options.args.mouse.args
 local function buildMouseOptions()
    local i = 0
-   for k,v in pairs(st.types) do
+   for _,v in pairs(st.types) do
       if v.clickScripts then
 	 i = i + 1
 	 options.args.mouse.args[v.name] = {
@@ -1734,7 +1734,7 @@ function st.initConfig()
    if st.cfg.sortFields then
       for oType,sortTable in pairs(st.cfg.sortFields) do
 	 local sfCache = {} -- Cache all indexes.
-	 for k,v in pairs(sortTable) do -- Using pairs rather than ipairs in case we have gaps.
+	 for k in pairs(sortTable) do -- Using pairs rather than ipairs in case we have gaps.
 	    tinsert(sfCache, k)
 	 end
 	 tsort(sfCache, function(a,b) return a<b end)

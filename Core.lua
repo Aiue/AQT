@@ -22,8 +22,6 @@ st.SOUND_OBJECTIVE_PROGRESS = 3
 -- Some strings that are of interest to us.
 local ERR_QUEST_OBJECTIVE_COMPLETE_S = ERR_QUEST_OBJECTIVE_COMPLETE_S:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)")
 local ERR_QUEST_UNKNOWN_COMPLETE = ERR_QUEST_UNKNOWN_COMPLETE
-local FACTION_STANDING_DECREASED = FACTION_STANDING_DECREASED:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)"):gsub("%%(d)", "(%%d+)")
-local FACTION_STANDING_INCREASED = FACTION_STANDING_INCREASED:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)"):gsub("%%(d)", "(%%d+)")
 local QUEST_COMPLETE = QUEST_COMPLETE
 local QUEST_FACTION_NEEDED = QUEST_FACTION_NEEDED:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)")
 local QUEST_ITEMS_NEEDED = QUEST_ITEMS_NEEDED:gsub("%%%d($)", "%%"):gsub("%%(s)", "(.+)"):gsub("%%(d)", "(%%d+)")
@@ -32,6 +30,7 @@ local QUEST_OBJECTS_FOUND = QUEST_OBJECTS_FOUND:gsub("%%%d($)", "%%"):gsub("%%(s
 
 local date,difftime,time = date,difftime,time
 local floor = math.floor
+local random = random
 local tinsert,tremove = table.insert,table.remove
 
 local events = {}
@@ -42,7 +41,7 @@ local factionCache = {}
 local QLU = QuestLog_Update
 local function QuestLog_Update(self)
    for i = 1, GetNumQuestLogEntries() do
-      local qTitle,qLevel,qTag,qHeader,qCollapsed,qComplete,qFreq,qID = GetQuestLogTitle(i)
+      local qTitle = GetQuestLogTitle(i)
       if not qTitle then
 	 print(L["Aborting call to QuestLog_Update() to avoid blame for a Blizzard error."])
 	 return
@@ -147,7 +146,7 @@ local Quest = baseObject:New(
 	       else
 		  local instanceGroup = IsInGroup(LE_PARTY_CATEGORY_INSTANCE) -- Shouldn't be relevant for classic, but put it here regardless.
 		  if instanceGroup then channel = "INSTANCE_CHAT"
-		  elseif IsInGroup() then channel = "PARTY" 
+		  elseif IsInGroup() then channel = "PARTY"
 		  else channel = "SAY" end
 	       end
 	       if channel then
@@ -161,7 +160,7 @@ local Quest = baseObject:New(
 		  end
 
 		  SendChatMessage(title .. ":", channel)
-		  for k,v in ipairs(self.objectives) do
+		  for _,v in ipairs(self.objectives) do
 		     SendChatMessage("- " .. v.text .. " (" .. tostring(v.have) .. "/" .. tostring(v.need) .. ")", channel)
 		  end
 	       end
@@ -203,7 +202,7 @@ local Quest = baseObject:New(
 		  elseif locale == "itIT" then prefix = "it."
 		  elseif locale == "ptBR" then prefix = "pt."
 		  elseif locale == "ruRU" then prefix = "ru."
-		  elseif lcoale == "zhCN" or locale == "zhTW" then prefix = "cn." end
+		  elseif locale == "zhCN" or locale == "zhTW" then prefix = "cn." end
 		  url = "https://" .. prefix .. "classic.wowhead.com/quest="
 	       end
 	       popup.editBox:SetText(url .. tostring(self.id))
@@ -322,12 +321,12 @@ function AQT:OnInitialize()
 end
 
 function AQT:OnEnable()
-   QuestTimerFrame:SetScript("OnShow", function(self)
-				if st.cfg.hideQuestTimerFrame then self:Hide() end
+   QuestTimerFrame:SetScript("OnShow", function(s)
+				if st.cfg.hideQuestTimerFrame then s:Hide() end
    end)
 
-   QuestWatchFrame:SetScript("OnShow", function(self)
-				if st.cfg.hideQuestWatch then self:Hide() end
+   QuestWatchFrame:SetScript("OnShow", function(s)
+				if st.cfg.hideQuestWatch then s:Hide() end
    end)
 
    if st.cfg.hideQuestTimerFrame then QuestTimerFrame:Hide() end
@@ -343,7 +342,7 @@ function AQT:OnEnable()
    self:SuppressionCheck()
 
    if ClassicQuestLog then
-      ClassicQuestLog.ToggleWatch = function(self, index)
+      ClassicQuestLog.ToggleWatch = function(s, index)
 	 if not index then index = GetQuestLogSelection() end
 	 local _,_,_,_,_,_,_,id = GetQuestLogTitle(index)
 	 if not QuestCache[id] then error("Unknown quest with id '" .. tostring(id) .. "'.") end
@@ -353,7 +352,7 @@ function AQT:OnEnable()
    end
 
    local icon = [[Interface\GossipFrame\AvailableQuestIcon]]
-   AQT.LDBObject = LDB:NewDataObject("AQT", {type = "launcher",icon = icon,OnClick = function(self, button) if button == "LeftButton" then AQT:ToggleConfig() end end,tocname = "AQT"})
+   AQT.LDBObject = LDB:NewDataObject("AQT", {type = "launcher",icon = icon,OnClick = function(s, button) if button == "LeftButton" then AQT:ToggleConfig() end end,tocname = "AQT"})
    self:UpdateLDBIcon()
    hooksecurefunc("QuestLogTitleButton_OnClick", QuestLogClick)
 
@@ -390,8 +389,8 @@ function Header:CounterText()
       local text
       local completed = 0
       local progress
- 
-      for k,v in ipairs(self.quests) do
+
+      for _,v in ipairs(self.quests) do
 	 if v.complete and v.complete > 0 then completed = completed + 1 end
       end
 
@@ -401,7 +400,7 @@ function Header:CounterText()
 	 progress = 1
       end
 
-      if st.cfg.useProgressColor then 
+      if st.cfg.useProgressColor then
 	 text = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, progress) .. tostring(completed) .. "/" .. tostring(#self.quests)
       else
 	 text = tostring(completed) .. "/" .. tostring(#self.quests)
@@ -419,7 +418,7 @@ function Header:CreateUIObject(noFade)
 end
 
 function Header:HasTimer()
-   for k,v in ipairs(self.trackedQuests) do
+   for _,v in ipairs(self.trackedQuests) do
       if v.timer then return true end
    end
    return false
@@ -445,7 +444,7 @@ end
 
 function Header:NumberCompleted()
    local completed = 0
-   for k,v in ipairs(self.quests) do
+   for _,v in ipairs(self.quests) do
       if v.complete and v.complete > 0 then completed = completed + 1 end
    end
 
@@ -590,7 +589,7 @@ function Objective:Update(qIndex, oIndex, noPour, retry)
    else
       print("AQT:CheckObjectives(): Unknown objective type '" .. oType .. "'. Falling back to default parsing with this debug info.")
       have,need = (complete and 1 or 0),1
-      text = "(" .. oType .. ")" .. cstring .. oText .. "|r"
+      text = "(" .. oType .. ")" .. oText .. "|r"
    end
 
    if not text or not have or not need then
@@ -654,7 +653,7 @@ function Quest:AverageCompletion()
    if #self.objectives == 0 then return 1 end
 
    local have,need = 0,0
-   for k,v in ipairs(self.objectives) do
+   for _,v in ipairs(self.objectives) do
       have = have + v.have
       need = need + v.need
    end
@@ -663,7 +662,7 @@ function Quest:AverageCompletion()
 end
 
 function Quest:HasTimer()
-   if v.timer then return true else return false end
+   if self.timer then return true else return false end
 end
 
 function Quest:IsTracked()
@@ -677,7 +676,7 @@ function Quest:New(o, noAuto)
    local header = o.header and o.header.name or "Unknown"
    if not HeaderCache[header] then o.header = Header:New({name = header, quests = {o}})
    else
-      o.header = HeaderCache[header] 
+      o.header = HeaderCache[header]
       tinsert(o.header.quests, o)
    end
    QuestCache[o.id] = o
@@ -712,7 +711,7 @@ function Quest:SetUntrackTimer(timer)
 					   self.untrackTimer = nil
 					   if self:IsTracked() then
 					      self:Untrack(time())
-					   end 
+					   end
    end)
 end
 
@@ -813,15 +812,14 @@ function Quest:Update(timer)
    local index = GetQuestLogIndexByID(self.id)
    if not index then error("Quest:Update(): Unable to find quest '" .. self.title .. "' in log.") end
 
-   local qTitle,qLevel,qTag,qHeader,qCollapsed,qComplete = GetQuestLogTitle(index)
+   local qTitle,qLevel,qTag,_,_,qComplete = GetQuestLogTitle(index)
    local sound = nil
    local update = nil
-   local title
 
    if timer then
       if self.timer then -- There already is a timer, update it if needed.
-	 self.timer.timeleft = timeleft -- this should only really be relevant for sorting purposes, and will not be needed in continuous updates beyond QLU
-	 if not(difftime(self.timer.expires, timer.expires) < 5 or diffctime(self.timer.expires, timer.expires) > 5) then -- unless expires-5<expires<expires+5 it's well outside of error margin, so the timer has changed
+	 self.timer.timeleft = timer.timeleft -- this should only really be relevant for sorting purposes, and will not be needed in continuous updates beyond QLU
+	 if not(difftime(self.timer.expires, timer.expires) < 5 or difftime(self.timer.expires, timer.expires) > 5) then -- unless expires-5<expires<expires+5 it's well outside of error margin, so the timer has changed
 	    self.timer.expires = timer.expires
 	    self.timer.started = timer.started
 	 end
@@ -836,7 +834,7 @@ function Quest:Update(timer)
 
    if qComplete then
       if st.cfg.hideQuestCompletedObjectives then
-	 for k,v in ipairs(self.objectives) do
+	 for _,v in ipairs(self.objectives) do
 	    if v.uiObject then
 	       v.uiObject:Release()
 	    end
@@ -878,7 +876,7 @@ end
 function Quest:UpdateScripts()
    if not self.uiObject then return end
    local ui = self.uiObject
-   if st.cfg.mouse.enabled then 
+   if st.cfg.mouse.enabled then
       ui:EnableMouse(true)
    else
       ui:EnableMouse(false)
@@ -913,20 +911,19 @@ function AQT:QuestLogUpdate(noAuto)
    local localQuestCache = {}
    local localHeaderCache = {}
    local currentHeader = nil
-   local count = 0
    local playSound = nil
    local sound
    local i = 1
    local timers = {GetQuestTimers()}
-   for k,v in ipairs(timers) do
+   for k in ipairs(timers) do
       local now = date("*t")
       now.sec = now.sec + timers[k] -- Yes, despite documentation stating this field is between 0--61, lua seems to actually support this. This table now represents the expiracy time.
       timers[k] = {timeleft = timers[k],index = GetQuestIndexForTimer(k), started = time(), expires = time(now)}
    end
-   while i do
-      local qTitle,qLevel,qTag,qHeader,qCollapsed,qComplete,qFreq,qID = GetQuestLogTitle(i)
+   while true do
+      local qTitle,qLevel,qTag,qHeader,_,qComplete,_,qID = GetQuestLogTitle(i)
 
-      if not qTitle then i = nil;break end
+      if not qTitle then break end
 
       if currentHeader and i > entries then currentHeader = nil end
       if qHeader then
@@ -935,18 +932,18 @@ function AQT:QuestLogUpdate(noAuto)
 	 if not HeaderCache[qTitle] then currentHeader = Header:New({name = qTitle}) else currentHeader = HeaderCache[qTitle] end
       else
 	 local timer
-	 for k,v in ipairs(timers) do
+	 for _,v in ipairs(timers) do
 	    if v.index == i then timer = v end
 	 end
 	 localQuestCache[qID] = true
 	 if not QuestCache[qID] then
 	    Quest:New({title = qTitle, level = qLevel, tag = qTag, complete = qComplete, id = qID, header = currentHeader, timer = timer}, noAuto)
-	 else 
+	 else
 	    local q = QuestCache[qID]
-	    local sound = q:Update(timer)
-	    if sound then
-	       if not playSound then playSound = sound
-	       elseif playSound > sound then playSound = sound end
+	    local hasSound = q:Update(timer)
+	    if hasSound then
+	       if not playSound then playSound = hasSound
+	       elseif playSound > hasSound then playSound = hasSound end
 	    end
 	 end
       end
@@ -987,7 +984,7 @@ function AQT:PlayerLevelUp(new_level)
    if new_level > UnitLevel("player") then C_Timer.After(1, function()
 							    self:PlayerLevelUp(new_level)
 							end)
-   else for k,v in pairs(QuestCache) do if v.uiObject then v.uiObject:UpdateText() end end end
+   else for _,v in pairs(QuestCache) do if v.uiObject then v.uiObject:UpdateText() end end end
 end
 
 function AQT:ZoneChangedNewArea()
@@ -1041,8 +1038,8 @@ function AQT:Event_UpdateFaction(arg1, arg2)
 
    local i = 1
    local otherfound
-   while i do
-      local faction,_,standing,offset,_,value = GetFactionInfo(i)
+   while true do
+      local faction,_,standing,_,_,value = GetFactionInfo(i)
       -- This looks really strange, but GetFactionInfo(i) will:
       -- * Return the "Other" entry at the proper place.
       -- * Eventually return the "Inactive"
@@ -1050,7 +1047,6 @@ function AQT:Event_UpdateFaction(arg1, arg2)
       -- So yes, this looks really strange. But there's a reason for it. I give you: The Blizzard WoW API.
       if not faction or faction == "Other" then
 	 if not faction or otherfound then
-	    i = nil
 	    break
 	 else
 	    otherfound = true
@@ -1073,19 +1069,19 @@ function AQT:Event_UpdateFaction(arg1, arg2)
 end
 
 function AQT:ExpandHeaders() -- While it seems to make more sense to stick this with the gui functions, this is where we have the iterator cache. So.. well, possibly make it accessible from elsewhere, or just keep this here.
-   for k,v in pairs(HeaderCache) do if v.uiObject then v.uiObject:ExpandHeader() end end
+   for _,v in pairs(HeaderCache) do if v.uiObject then v.uiObject:ExpandHeader() end end
 end
 
 function AQT:ToggleHeaders()
    local cache = {} -- Only iterate over the ones with uiObjects the second time around.
-   for k,v in pairs(QuestCache) do
+   for _,v in pairs(QuestCache) do
       if v.uiObject then
 	 tinsert(cache, v)
 	 v.uiObject:Orphan()
       end
    end
 
-   for k,v in ipairs(cache) do
+   for _,v in ipairs(cache) do
       local parent
       if st.cfg.showHeaders then
 	 if not v.header.uiObject then v.header:CreateUIObject() end
@@ -1100,7 +1096,7 @@ function AQT:ToggleHeaders()
 end
 
 function AQT:UpdateHeaders()
-   for k,v in pairs(HeaderCache) do v:Update() end
+   for _,v in pairs(HeaderCache) do v:Update() end
 end
 
 --[[
@@ -1134,9 +1130,9 @@ function AQT:Event(event, ...)
 end
 
 function AQT:TrackingUpdate()
-   if st.cfg.trackAll then for k,v in pairs(QuestCache) do v:Track(nil, true) end
+   if st.cfg.trackAll then for _,v in pairs(QuestCache) do v:Track(nil, true) end
    else
-      for k,v in pairs(QuestCache) do
+      for _,v in pairs(QuestCache) do
 	 if st.cfg.autoTrackZone then
 	    if not v.override or (type(v.override) == "number" and v.override == 0) then
 	       if v.header:IsCurrentZone() and not v:IsTracked() then v:Track(0, true)
