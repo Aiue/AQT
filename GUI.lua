@@ -505,12 +505,17 @@ function guiFunc:RelinkChildren(recurse)
 end
 
 function guiFunc:OnEnter(mouseMoved)
-   gui.highlight:SetAllPoints(self)
-   gui.highlight:SetColorTexture(st.cfg.highlightMouseColor.r, st.cfg.highlightMouseColor.g, st.cfg.highlightMouseColor.b, st.cfg.highlightMouseColor.a)
-   gui.highlight:Show()
+   local r,g,b = self.text:GetTextColor()
+   if st.cfg.highlightMouseText then self.text:SetText(Prism:AlterStringColor(self.text:GetText(), r, g, b, st.cfg.highlightMouseText, st.cfg.highlightMouseTextModifier, st.cfg.highlightMouseTextOperation)) end
+   if st.cfg.highlightMouseBG then
+      gui.highlight:SetAllPoints(self)
+      gui.highlight:SetColorTexture(st.cfg.highlightMouseBGColor.r, st.cfg.highlightMouseBGColor.g, st.cfg.highlightMouseBGColor.b, st.cfg.highlightMouseBGColor.a)
+      gui.highlight:Show()
+   end
 end
 
 function guiFunc:OnLeave(mouseMoved)
+   self:UpdateText()
    gui.highlight:ClearAllPoints()
    gui.highlight:Hide()
 end

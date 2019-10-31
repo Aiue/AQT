@@ -128,12 +128,16 @@ local defaults = {
       b = 0,
       a = 1,
    },
-   highlightMouseColor = {
+   highlightMouseBG = false,
+   highlightMouseBGColor = {
       r = .25,
       g = .25,
       b = .25,
       a = .75,
    },
+   highlightMouseText = "Darken",
+   highlightMouseTextModifier = .5,
+   highlightMouseTextOperation = "multi",
    indent = 0,
    LDBIcon = -1,
    maxHeight = 650,
@@ -360,8 +364,15 @@ local CFGHandler = {
 	    return st.cfg[info[#info]]
 	 end
       end,
-      set = function(info, val)
-	 st.cfg[info[#info]] = val
+      set = function(info, val, v2, v3, v4)
+	 if info.type == "color" then
+	    st.cfg[info[#info]].r = val
+	    st.cfg[info[#info]].g = v2
+	    st.cfg[info[#info]].b = v3
+	    st.cfg[info[#info]].a = v4
+	 else
+	    st.cfg[info[#info]] = val
+	 end
 	 if info[#info] == "showHeaders" then
 	    AQT:ToggleHeaders()
 	 elseif info[#info] == "showHeaderCount" or info[#info] == "showTags" then
@@ -383,7 +394,8 @@ local CFGHandler = {
 	 elseif info[#info] == "indent" then st.gui.title:RelinkChildren(true)
 	 elseif info[#info] == "objectivePrefix" then st.gui.title:UpdateText(true)
 	 elseif info[#info] == "showHeaderButton" then st.gui.title:ButtonCheck(true)
-	 elseif info[#info] == "trackAll" or info[#info] == "autoTrackTimed" then AQT:TrackingUpdate() end
+	 elseif info[#info] == "trackAll" or info[#info] == "autoTrackTimed" then AQT:TrackingUpdate()
+	 elseif info[#info] == "highlightMouseText" and val == "" then st.cfg.highlightMouseText = nil end
       end,
    },
    font = {
@@ -1015,6 +1027,56 @@ local options = {
 		     type = "toggle",
 		     name = L["Disable Animations"],
 		     order = 3,
+		  },
+		  mouseHighlight = {
+		     type = "group",
+		     name = L["Mouseover Highlight"],
+		     order = 4,
+		     inline = true,
+		     args = {
+			highlightMouseBG = {
+			   type = "toggle",
+			   order = 1,
+			   name = L["Highlight Background"],
+			},
+			highlightMouseBGColor = {
+			   type = "color",
+			   order = 2,
+			   hasAlpha = true,
+			   name = L.Color,
+			},
+			highlightMouseText = {
+			   type = "select",
+			   order = 3,
+			   name = L["Highlight Text"],
+			   values = {
+			      [""] = L.Disable,
+			      Darken = L.Darken,
+			      Lighten = L.Lighten,
+			      Saturate = L.Saturate,
+			      Desaturate = L.Desaturate,
+			   },
+			},
+			highlightMouseTextModifier = {
+			   type = "range",
+			   min = -1,
+			   max = 1,
+			   isPercent = true,
+			   step = .01,
+			   name = L.Modifier,
+			   order = 4,
+			},
+			highlightMouseTextOperation = {
+			   type = "select",
+			   style = "radio",
+			   name = L.Operation,
+			   order = 5,
+			   values = {
+			      add = L.Additive,
+			      multi = L.Multiplicative,
+			   },
+			},
+		     },
 		  },
 	       },
 	    },
