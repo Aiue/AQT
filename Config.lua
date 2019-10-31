@@ -361,6 +361,7 @@ local CFGHandler = {
 	 if info.type == "color" then
 	    return st.cfg[info[#info]].r, st.cfg[info[#info]].g, st.cfg[info[#info]].b
 	 else
+	    if info[#info] == "highlightMouseText" and not st.cfg.highlightMouseText then return "" end
 	    return st.cfg[info[#info]]
 	 end
       end,
