@@ -736,17 +736,20 @@ local options = {
 			},
 			autoTrackZone = {
 			   name = L["Zone-Based"],
+			   desc = L["Automatically tracks quests under a header matching the current zone name, and untracks others."],
 			   type = "toggle",
 			   order = 2,
 			},
 			autoTrackTimed = {
 			   name = L["Always Show Timed"],
+			   desc = L["Zealously attempts to always keep timed quests tracked."],
 			   type = "toggle",
 			   order = 3,
 			},
 			autoTrackTimer = {
 			   type = "range",
 			   name = L["Untrack After"] .. " (0 =" .. L.Disabled .. ")",
+			   desc = L["Delay until automatically tracked quests become untracked again."],
 			   min = 0,
 			   softMax = 60,
 			   order = 4,
@@ -778,11 +781,13 @@ local options = {
 		     type = "toggle",
 		     name = L["Hide Completed Objectives"],
 		     order = 3,
+		     width = "double",
 		  },
 		  hideQuestCompletedObjectives = {
 		     type = "toggle",
 		     name = L["Hide Objectives for Completed Quests"],
 		     order = 4,
+		     width = "double",
 		  },
 	       },
 	    },
@@ -1001,7 +1006,7 @@ local options = {
 			scrollEnabled = {
 			   type = "toggle",
 			   order = 0,
-			   name = L["Enabled Scroll Wheel"],
+			   name = L["Enable Scroll Wheel"],
 			},
 			scrollSpeed = {
 			   type = "range",
