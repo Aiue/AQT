@@ -595,6 +595,7 @@ local options = {
 		     args = {
 			unlocked = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Unlock Tracker"],
 			   order = 1,
 			},
@@ -606,8 +607,9 @@ local options = {
 			},
 			hideConfigButton = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Hide Cogwheel"],
-			   order = 4,
+			   order = 2,
 			},
 		     },
 		  },
@@ -619,17 +621,20 @@ local options = {
 		     args = {
 			showHeaders = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Show Headers"],
 			   order = 1,
 			},
 			showHeaderButton = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Show Header Button"],
 			   order = 2,
 			   hidden = function() return not st.cfg.showHeaders end,
 			},
 			showHeaderCount = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Show Header Count"],
 			   order = 3,
 			   hidden = function() return not st.cfg.showHeaders end,
@@ -637,12 +642,14 @@ local options = {
 			automaticCollapseExpand = {
 			   type = "toggle",
 			   name = L["Automated Collapse/Expand"],
-			   desc = L["Automatically collapse/expand headers to match your current zone."],
+			   desc = L["Automatically collapse/expand headers matching your current zone."],
 			   order = 4,
+			   width = "double",
 			   hidden = function() return not st.cfg.showHeaders end,
 			},
 			expandHeaders = {
 			   type = "execute",
+			   desc = L["Expand all headers, except those you have manually collapsed, or the main title."],
 			   name = L["Expand All Headers"], -- Except the main title one.
 			   func = AQT.ExpandHeaders,
 			   order = 5,
@@ -658,12 +665,14 @@ local options = {
 		     args = {
 			hideQuestWatch = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Hide Blizzard QuestWatchFrame"],
 			   width = "double",
 			   order = 5,
 			},
 			hideQuestTimerFrame = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Hide Blizzard Quest Timer Frame"],
 			   width = "double",
 			   order = 6,
@@ -679,12 +688,14 @@ local options = {
 			showTimers = {
 			   type = "toggle",
 			   name = L["Show Quest Timers"],
-			   order = 9,
+			   order = 1,
+			   descStyle = "inline",
 			},
 			timerType = {
 			   type = "select",
 			   name = L["Timer Style"],
-			   order = 10,
+			   order = 2,
+			   desc = L["Show timer as a statusbar below the quest title, or a counter on the same line as the title."],
 			   values = {L.Statusbar, L.Counter},
 			   style = "radio",
 			},
