@@ -7,12 +7,12 @@ local Prism = LibStub("LibPrism-1.0")
 
 local L = st.L
 
-LSM:Register("sound", "Peasant: Job's Done", [[Interface\AddOns\AQT\Sounds\Peasant_work_done.mp3]])
-LSM:Register("sound", "Peasant: More Work?", [[Sound\Creature\Peasant\PeasantWhat3.ogg]])
-LSM:Register("sound", "Peasant: Ready to Work", [[Sound\Creature\Peasant\PeasantReady1.ogg]])
-LSM:Register("sound", "Peon: Ready to Work", [[Sound\Creature\Peon\PeonReady1.ogg]])
-LSM:Register("sound", "Peon: Work Complete", [[Sound\Creature\Peon\PeonBuildingComplete1.ogg]])
-LSM:Register("sound", "Peon: Work Work", [[Sound\Creature\Peon\PeonYes3.ogg]])
+LSM:Register("sound", L["Peasant: Job's Done"], [[Interface\AddOns\AQT\Sounds\Peasant_work_done.mp3]])
+LSM:Register("sound", L["Peasant: More Work?"], [[Sound\Creature\Peasant\PeasantWhat3.ogg]])
+LSM:Register("sound", L["Peasant: Ready to Work"], [[Sound\Creature\Peasant\PeasantReady1.ogg]])
+LSM:Register("sound", L["Peon: Ready to Work"], [[Sound\Creature\Peon\PeonReady1.ogg]])
+LSM:Register("sound", L["Peon: Work Complete"], [[Sound\Creature\Peon\PeonBuildingComplete1.ogg]])
+LSM:Register("sound", L["Peon: Work Work"], [[Sound\Creature\Peon\PeonYes3.ogg]])
 
 -- Takes up a tiny bit more memory, but even if we consider that we don't have compiler substitutions, it will improve readability. Like what, a few bytes of memory at the most. Use shared table so it can be used in other files as well.
 st.SOUND_COMPLETE = 1
@@ -673,7 +673,7 @@ function Quest:New(o, noAuto)
    if not o.id then error("Quest:New() requires id to be set.") end
    setmetatable(o, self)
    if not o.objectives then o.objectives = {} end
-   local header = o.header and o.header.name or "Unknown"
+   local header = o.header and o.header.name or L.Unknown
    if not HeaderCache[header] then o.header = Header:New({name = header, quests = {o}})
    else
       o.header = HeaderCache[header]
@@ -842,7 +842,7 @@ function Quest:Update(timer)
       end
       if not self.complete and qComplete > 0 then
 	 sound = st.SOUND_COMPLETE
-	 AQT:PrePour("Quest Complete: " .. qTitle, st.cfg.progressColorMax.r, st.cfg.progressColorMax.g, st.cfg.progressColorMax.b)
+	 AQT:PrePour(L["Quest Complete:"] .. " " .. qTitle, st.cfg.progressColorMax.r, st.cfg.progressColorMax.g, st.cfg.progressColorMax.b)
       end
    end
    if GetNumQuestLeaderBoards(index) == 0 then qComplete = 1 end -- Special handling
@@ -954,23 +954,23 @@ function AQT:QuestLogUpdate(noAuto)
       if not localQuestCache[k] then v:Remove() end
    end
    for k,v in pairs(HeaderCache) do
-      if k ~= "Unknown" and not localHeaderCache[k] then v:Remove() end
+      if k ~= L.Unknown and not localHeaderCache[k] then v:Remove() end
    end
 
    if playSound == st.SOUND_COMPLETE and st.cfg.playCompletionSound then
       if st.cfg.useFactionCompletionSound then
-	 if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: Job's Done"
-	 else sound = "Peon: Work Complete" end -- Should only get here if the player is Horde. Otherwise, the horde is more awesome anyway.
+	 if UnitFactionGroup("player") == "Alliance" then sound = L["Peasant: Job's Done"]
+	 else sound = L["Peon: Work Complete"] end -- Should only get here if the player is Horde. Otherwise, the horde is more awesome anyway.
       else sound = st.cfg.completionSoundName end
    elseif playSound and playSound <= st.SOUND_OBJECTIVE_COMPLETE and st.cfg.playObjectiveSound then -- objective complete
       if st.cfg.useFactionObjectiveSound then
-	 if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: Ready to Work"
-	 else sound = "Peon: Ready to Work" end -- default to horde, as it should be!
+	 if UnitFactionGroup("player") == "Alliance" then sound = L["Peasant: Ready to Work"]
+	 else sound = L["Peon: Ready to Work"] end -- default to horde, as it should be!
       else sound = st.cfg.objectiveSoundName end
    elseif playSound and playSound <= st.SOUND_OBJECTIVE_PROGRESS and st.cfg.playObjectiveProgressSound then
       if st.cfg.useFactionObjectiveProgressSound then
-	 if UnitFactionGroup("player") == "Alliance" then sound = "Peasant: More Work?"
-	 else sound = "Peon: Work Work" end
+	 if UnitFactionGroup("player") == "Alliance" then sound = L["Peasant: More Work?"]
+	 else sound = L["Peon: Work Work"] end
       else sound = st.cfg.objectiveProgressSoundName end
    end
 
