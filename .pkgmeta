@@ -55,5 +55,6 @@ tools-used:
 license-output: LICENSE.md
 
 ignore:
+    - discord.sh
     - LocaleParser.lua
     - localization_import.sh
