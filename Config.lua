@@ -96,7 +96,7 @@ local defaults = {
       a = 1,
    },
    barTexture = "Blizzard",
-   completionSoundName = "Peon: Work Complete",
+   completionSoundName = L["Peon: Work Complete"],
    disableAnimations = false,
    fade = true,
    font = {
@@ -145,6 +145,8 @@ local defaults = {
    maxWidth = 250,
    mouse = {
       enabled = true,
+      scrollEnabled = true,
+      scrollSpeed = 5,
       Quest = {
 	 enabled = true,
 	 LeftButton = {
@@ -156,8 +158,8 @@ local defaults = {
       },
    },
    objectivePrefix = "· ",
-   objectiveProgressSoundName = "Peon: Work Work",
-   objectiveSoundName = "Peon: Ready to Work",
+   objectiveProgressSoundName = L["Peon: Work Work"],
+   objectiveSoundName = L["Peon: Ready to Work"],
    padding = 10,
    playCompletionSound = true,
    playObjectiveProgressSound = false,
@@ -440,7 +442,7 @@ local CFGHandler = {
    },
    mouse = {
       get = function(info)
-	 if #info == 2 then
+	 if #info == 2 or info[2] == "general" then
 	    return st.cfg.mouse[info[#info]]
 	 else
 	    if info[#info] == "enabled" then
@@ -458,8 +460,10 @@ local CFGHandler = {
       end,
       set = function(info, val)
 	 if val == "__unset__" then val = nil end
-	 if #info == 2 then
+	 if #info == 2 or info[2] == "general" then
 	    st.cfg.mouse[info[#info]] = val
+
+	    if info[#info] == "scrollEnabled" then st.gui.scrollFrame:EnableMouseWheel(val) end
 	 else
 	    if not st.cfg.mouse[info[2]] then st.cfg.mouse[info[2]] = {} end
 	    if not st.cfg.mouse[info[2]][info[3]] then st.cfg.mouse[info[2]][info[3]] = {} end
@@ -521,7 +525,7 @@ local CFGHandler = {
       end,
 
       addValidate = function(info)
-	 if not st.types[info[#info-2]].sortFields[info[#info-1]] then return "Unknown sort field." else return true end
+	 if not st.types[info[#info-2]].sortFields[info[#info-1]] then return L["Unknown sort field."] else return true end
       end,
 
       addDisabled = function(info)
@@ -937,17 +941,16 @@ local options = {
 	       min = 0,
 	       softMax = 1000,
 	       step = .5,
-	       validate = function(info, val) if st.cfg.maxWidth < val then return "Minimum width cannot exceed maximum." else return true end end,
+	       validate = function(info, val) if st.cfg.maxWidth < val then return L["Minimum width cannot exceed maximum."] else return true end end,
 	       order = 4,
 	    },
 	    maxWidth = {
 	       name = L["Maximum Width"],
-	       desc = "...current a fixed width, variable width coming soon.",
 	       type = "range",
 	       min = 0,
 	       softMax = 1000,
 	       step = .5,
-	       validate = function(info, val) if st.cfg.minWidth > val then return "Maximum width cannot be lower than minimum." else return true end end,
+	       validate = function(info, val) if st.cfg.minWidth > val then return L["Maximum width cannot be lower than minimum."] else return true end end,
 	       order = 5,
 	    },
 	    maxHeight = {
@@ -980,6 +983,91 @@ local options = {
 	       name = L["Enable Mouse"],
 	       type = "toggle",
 	       order = 0,
+	    },
+	    general = {
+	       type = "group",
+	       name = L.General,
+	       order = 1,
+	       disabled = function(info)
+		  return not st.cfg.mouse.enabled
+	       end,
+	       args = {
+		  scrolling = {
+		     type = "group",
+		     name = L.Scrolling,
+		     order = 1,
+		     inline = true,
+		     args = {
+			scrollEnabled = {
+			   type = "toggle",
+			   order = 0,
+			   name = L["Enabled Scroll Wheel"],
+			},
+			scrollSpeed = {
+			   type = "range",
+			   name = L["Scroll Speed"],
+			   min = 0,
+			   softMax = 10,
+			   step = 1,
+			   validate = function(info, val)
+			      if val <= 0 then return L["Value must be above 0."] else return true end
+			   end,
+			},
+		     },
+		  },
+		  mouseHighlight = {
+		     type = "group",
+		     name = L["Mouseover Highlight"],
+		     order = 2,
+		     get = CFGHandler.default.get,
+		     set = CFGHandler.default.set,
+		     inline = true,
+		     args = {
+			highlightMouseBG = {
+			   type = "toggle",
+			   order = 1,
+			   name = L["Highlight Background"],
+			},
+			highlightMouseBGColor = {
+			   type = "color",
+			   order = 2,
+			   hasAlpha = true,
+			   name = L.Color,
+			},
+			highlightMouseText = {
+			   type = "select",
+			   order = 3,
+			   name = L["Highlight Text"],
+			   values = {
+			      [""] = L.Disable,
+			      Darken = L.Darken,
+			      Lighten = L.Lighten,
+			      Saturate = L.Saturate,
+			      Desaturate = L.Desaturate,
+			   },
+			},
+			highlightMouseTextModifier = {
+			   type = "range",
+			   min = -1,
+			   max = 1,
+			   isPercent = true,
+			   step = .01,
+			   name = L.Modifier,
+			   order = 4,
+			},
+			highlightMouseTextOperation = {
+			   type = "select",
+			   style = "radio",
+			   name = L.Operation,
+			   order = 5,
+			   values = {
+			      add = L.Additive,
+			      multi = L.Multiplicative,
+			   },
+			},
+		     },
+		  },
+	       },
 	    },
 	 },
       },
@@ -1028,56 +1116,6 @@ local options = {
 		     type = "toggle",
 		     name = L["Disable Animations"],
 		     order = 3,
-		  },
-		  mouseHighlight = {
-		     type = "group",
-		     name = L["Mouseover Highlight"],
-		     order = 4,
-		     inline = true,
-		     args = {
-			highlightMouseBG = {
-			   type = "toggle",
-			   order = 1,
-			   name = L["Highlight Background"],
-			},
-			highlightMouseBGColor = {
-			   type = "color",
-			   order = 2,
-			   hasAlpha = true,
-			   name = L.Color,
-			},
-			highlightMouseText = {
-			   type = "select",
-			   order = 3,
-			   name = L["Highlight Text"],
-			   values = {
-			      [""] = L.Disable,
-			      Darken = L.Darken,
-			      Lighten = L.Lighten,
-			      Saturate = L.Saturate,
-			      Desaturate = L.Desaturate,
-			   },
-			},
-			highlightMouseTextModifier = {
-			   type = "range",
-			   min = -1,
-			   max = 1,
-			   isPercent = true,
-			   step = .01,
-			   name = L.Modifier,
-			   order = 4,
-			},
-			highlightMouseTextOperation = {
-			   type = "select",
-			   style = "radio",
-			   name = L.Operation,
-			   order = 5,
-			   values = {
-			      add = L.Additive,
-			      multi = L.Multiplicative,
-			   },
-			},
-		     },
 		  },
 	       },
 	    },
@@ -1770,7 +1808,7 @@ local mouseOptions = {
 
 -- options.args.mouse.args
 local function buildMouseOptions()
-   local i = 0
+   local i = 1
    for _,v in pairs(st.types) do
       if v.clickScripts then
 	 i = i + 1

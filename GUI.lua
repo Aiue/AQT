@@ -59,13 +59,13 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.scrollFrame:SetScript("OnSizeChanged", function(s, width, height)
 				s:GetScrollChild():SetWidth(width)
    end)
-   gui.scrollFrame:EnableMouseWheel(true)
+   gui.scrollFrame:EnableMouseWheel(st.cfg.mouse.scrollEnabled)
    gui.scrollFrame:SetScript("OnMOuseWheel", function(s, delta)
 				local pos = s:GetVerticalScroll()
 				local setpos
-				if pos-delta < 0 then setpos = 0
-				elseif pos-delta > s:GetVerticalScrollRange() then setpos = s:GetVerticalScrollRange()
-				else setpos = pos-delta end
+				if pos-(delta*st.cfg.mouse.scrollSpeed) < 0 then setpos = 0
+				elseif pos-(delta*st.cfg.mouse.scrollSpeed) > s:GetVerticalScrollRange() then setpos = s:GetVerticalScrollRange()
+				else setpos = pos-(delta*st.cfg.mouse.scrollSpeed) end
 				s:SetVerticalScroll(setpos)
    end)
    gui.children = {}
