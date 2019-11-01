@@ -19,6 +19,8 @@ jobs:
       script:
        - curl -s https://raw.githubusercontent.com/Aiue/AQT/master/localization_import.sh | bash
        - curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
+       - curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"Release\", \"content\": \"New release: [AQT-${TRAVIS_TAG}](<https://github.com/Aiue/AQT/releases/tag/${TRAVIS_TAG}>). Get it on [CurseForge](<https://www.curseforge.com/wow/addons/aqt>) or [WoWInterface](<https://www.wowinterface.com/downloads/fileinfo.php?id=25280>)\\\!\"}" $WEBHOOK
+
 
 after_failure: curl -s https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh | bash -s -- failure $WEBHOOK
 
