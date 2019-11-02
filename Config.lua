@@ -1011,6 +1011,7 @@ local options = {
 	    enabled = {
 	       name = L["Enable Mouse"],
 	       type = "toggle",
+	       descStyle = "inline",
 	       order = 0,
 	    },
 	    general = {
@@ -1030,11 +1031,13 @@ local options = {
 			scrollEnabled = {
 			   type = "toggle",
 			   order = 0,
+			   descStyle = "inline",
 			   name = L["Enable Scroll Wheel"],
 			},
 			scrollSpeed = {
 			   type = "range",
 			   name = L["Scroll Speed"],
+			   desc = L["By which factor each mouse scroll should be amplified."],
 			   min = 0,
 			   softMax = 10,
 			   step = 1,
@@ -1055,17 +1058,20 @@ local options = {
 			highlightMouseBG = {
 			   type = "toggle",
 			   order = 1,
+			   descStyle = "inline",
 			   name = L["Highlight Background"],
 			},
 			highlightMouseBGColor = {
 			   type = "color",
 			   order = 2,
+			   descStyle = "inline",
 			   hasAlpha = true,
 			   name = L.Color,
 			},
 			highlightMouseText = {
 			   type = "select",
 			   order = 3,
+			   desc = L["Which type of modification should apply to the text color."],
 			   name = L["Highlight Text"],
 			   values = {
 			      [""] = L.Disable,
@@ -1081,6 +1087,8 @@ local options = {
 			   max = 1,
 			   isPercent = true,
 			   step = .01,
+			   bigStep = .1,
+			   desc = L["How many percent or percentage units color should be modified."],
 			   validate = function(info, val) if val == 0 then return L["Value cannot be 0."] else return true end end,
 			   name = L.Modifier,
 			   order = 4,
@@ -1089,6 +1097,7 @@ local options = {
 			   type = "select",
 			   style = "radio",
 			   name = L.Operation,
+			   desc = L["Whether to use percentage or percentage units for the option. Multiplicative means percentage is used, additive means percentage units are used."],
 			   order = 5,
 			   values = {
 			      add = L.Additive,
@@ -1144,6 +1153,7 @@ local options = {
 		  },
 		  disableAnimations = {
 		     type = "toggle",
+		     descStyle = "inline",
 		     name = L["Disable Animations"],
 		     order = 3,
 		  },
@@ -1178,6 +1188,7 @@ local options = {
 			},
 			tile = {
 			   name = L.Tile,
+			   descStyle = "inline",
 			   order = 2,
 			   type = "toggle",
 			},
@@ -1259,11 +1270,13 @@ local options = {
 			      zoom = {
 				 name = L.Zoom,
 				 type = "toggle",
+				 descStyle = "inline",
 				 order = 0,
 			      },
 			      symmetricZoom = {
 				 name = L["Symmetric Zoom"],
 				 type = "toggle",
+				 descStyle = "inline",
 				 order = 1,
 				 hidden = function(info) return not st.cfg.artwork.zoom end,
 			      },
@@ -1429,6 +1442,7 @@ local options = {
 			tile = {
 			   name = L.Tile,
 			   order = 2,
+			   descStyle = "inline",
 			   type = "toggle",
 			},
 			tileSize = {
@@ -1531,23 +1545,27 @@ local options = {
 		     args = {
 			highlightCurrentZoneText = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Highlight Current Zone Text"],
 			   width = "double",
 			   order = 0,
 			},
 			highlightCurrentZoneTextColor = {
 			   type = "color",
+			   descStyle = "inline",
 			   name = L.Color,
 			   order = 1,
 			},
 			highlightCurrentZoneBackground = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Highlight Current Zone Background"],
 			   width = "double",
 			   order = 2,
 			},
 			highlightCurrentZoneBackgroundColor = {
 			   type = "color",
+			   descStyle = "inline",
 			   name = L.Color,
 			   order = 3,
 			},
@@ -1556,12 +1574,14 @@ local options = {
 		  useDifficultyColor = {
 		     name = L["Quest Difficulty Coloring"],
 		     type = "toggle",
+		     descStyle = "inline",
 		     order = 1,
 		     width = "double",
 		  },
 		  useProgressColor = {
 		     name = L["Progress-based Objective Coloring"],
 		     type = "toggle",
+		     descStyle = "inline",
 		     order = 2,
 		     width = "double",
 		  },
@@ -1587,6 +1607,7 @@ local options = {
 			useHSVGradient = {
 			   name = L["Use HSV Gradient"],
 			   type = "toggle",
+			   descStyle = "inline",
 			   order = 2,
 			},
 			progressionSample = {
@@ -1652,6 +1673,7 @@ local options = {
 		     name = L["Wrap Long Lines"],
 		     type = "toggle",
 		     order = 5,
+		     descStyle = "inline",
 		  },
 	       },
 	    },
@@ -1685,11 +1707,13 @@ local editSortOptions = {
 	    if v.field == info[#info-1] then return v.descending and L.Descending or L.Ascending end
 	 end
       end,
+      desc = L["Toggle between ascending and descending sorting."],
       type = "execute",
       order = 0,
    },
    moveup = {
       name = L["Move Up"],
+      desc = L["Gives this sorting rule a higher priority."],
       type = "execute",
       order = 1,
       disabled = function(info)
@@ -1698,6 +1722,7 @@ local editSortOptions = {
     },
    movedown = {
       name = L["Move Down"],
+      desc = L["Gives this sorting rule a lower priority."],
       type = "execute",
       order = 2,
       disabled = function(info)
@@ -1706,6 +1731,7 @@ local editSortOptions = {
    },
    remove = {
       name = L.Remove,
+      desc = L["Removes this from the active sorting rules."],
       type = "execute",
       order = 3,
    },
@@ -1714,6 +1740,7 @@ local editSortOptions = {
 local addSortOptions = {
    field = {
       name = L.Field,
+      desc = L["Which sort field to add to the active sorting rules."],
       type = "select",
       values = CFGHandler.sorting.AddSortValues,
       disabled = CFGHandler.sorting.AddHasSortValues,
@@ -1721,11 +1748,13 @@ local addSortOptions = {
    },
    descending = {
       name = L.Descending,
+      descStyle = "inline",
       type = "toggle",
       order = 1,
    },
    add = {
       name = L.Add,
+      desc = L["Add to the active sorting rules."],
       type = "execute",
       order = 2,
       validate = CFGHandler.sorting.addValidate,
@@ -1816,6 +1845,7 @@ local mouseOptions = {
    enabled = {
       type = "toggle",
       name = L.Enabled,
+      descStyle = "inline",
       order = 0,
    },
    LeftButton = {
