@@ -38,6 +38,7 @@ Localization\ruRU.lua
 Localization\zhCN.lua
 Localization\zhTW.lua
 
+QLU.lua
 Core.lua
 GUI.lua
 Config.lua

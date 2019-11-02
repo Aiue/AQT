@@ -36,21 +36,6 @@ local tinsert,tremove = table.insert,table.remove
 local events = {}
 local factionCache = {}
 
--- We can't fix Blizzard's code (the hack I tried resulted in infinite iterations/recursions).
--- Instead, we can take steps to ensure not taking the blame.
-local QLU = QuestLog_Update
-local function QuestLog_Update(self)
-   for i = 1, GetNumQuestLogEntries() do
-      local qTitle = GetQuestLogTitle(i)
-      if not qTitle then
-	 print(L["Aborting call to QuestLog_Update() to avoid blame for a Blizzard error."])
-	 return
-      end
-   end
-
-   QLU(self)
-end
-
 function AQT:OnDisable()
 end
 
