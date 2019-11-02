@@ -437,6 +437,7 @@ function guiFunc:DelayedRelease(recursed)
    self.container:Show()
    self:SetParent(nil)
    self:StopAnimating()
+   self.container:StopAnimating()
    self:SetAlpha(1)
    self:Hide()
 
@@ -553,6 +554,7 @@ function guiFunc:New(owner, noFade)
    tinsert(self.children, object)
    object.owner = owner
    object.owner.uiObject = object
+   object.container:SetAlpha(1)
    object:UpdateScripts()
    object:Show()
    if self == st.gui.title then AQTParent:Show() end
