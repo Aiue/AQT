@@ -19,13 +19,13 @@ function QuestLog_Update(self)
 
 	-- ScrollFrame update
 	FauxScrollFrame_Update(QuestLogListScrollFrame, numEntries, QUESTS_DISPLAYED, QUESTLOG_QUEST_HEIGHT, nil, nil, nil, QuestLogHighlightFrame, 293, 316 )
-	
+
 	-- Update the quest listing
 	QuestLogHighlightFrame:Hide();
-	
+
 	local questIndex, questLogTitle, questTitleTag, questNumGroupMates, questNormalText, questHighlight, questCheck;
 	local questLogTitleText, level, questTag, isHeader, isCollapsed, isComplete, color;
-	local numPartyMembers, partyMembersOnQuest, tempWidth, textWidth;
+	local partyMembersOnQuest, tempWidth, textWidth;
 	for i=1, QUESTS_DISPLAYED, 1 do
 		questIndex = i + FauxScrollFrame_GetOffset(QuestLogListScrollFrame);
 		questLogTitle = _G["QuestLogTitle"..i];
@@ -35,18 +35,18 @@ function QuestLog_Update(self)
 		questNormalText = _G["QuestLogTitle"..i.."NormalText"];
 		questHighlight = _G["QuestLogTitle"..i.."Highlight"];
 		if ( questIndex <= numEntries ) then
-			questLogTitleText, level, questTag, isHeader, isCollapsed, isComplete, frequency, questID, startEvent, displayQuestID, isOnMap, hasLocalPOI, isTask, isBounty, isStory, isHidden, isScaling = GetQuestLogTitle(questIndex);
+			questLogTitleText, level, questTag, isHeader, isCollapsed, isComplete = GetQuestLogTitle(questIndex);
 			if ( isHeader ) then
 				if ( questLogTitleText ) then
 					questLogTitle:SetText(questLogTitleText);
 				else
 					questLogTitle:SetText("");
 				end
-				
+
 				if ( isCollapsed ) then
 					questLogTitle:SetNormalTexture("Interface\\Buttons\\UI-PlusButton-Up");
 				else
-					questLogTitle:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-Up"); 
+					questLogTitle:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-Up");
 				end
 				questHighlight:SetTexture("Interface\\Buttons\\UI-PlusButton-Hilight");
 				questNumGroupMates:SetText("");
@@ -85,15 +85,15 @@ function QuestLog_Update(self)
 				questTitleTag:SetText("("..questTag..")");
 				-- Shrink text to accomdate quest tags without wrapping
 				tempWidth = 275 - 15 - questTitleTag:GetWidth();
-				
+
 				if ( QuestLogDummyText:GetWidth() > tempWidth ) then
 					textWidth = tempWidth;
 				else
 					textWidth = QuestLogDummyText:GetWidth();
 				end
-				
+
 				questNormalText:SetWidth(tempWidth);
-				
+
 				-- If there's quest tag position check accordingly
 				questCheck:Hide();
 				if ( IsQuestWatched(questIndex) ) then
@@ -124,7 +124,6 @@ function QuestLog_Update(self)
 			end
 
 			-- Color the quest title and highlight according to the difficulty level
-			local playerLevel = UnitLevel("player");
 			if ( isHeader ) then
 				color = QuestDifficultyColors["header"];
 			else
@@ -160,11 +159,10 @@ function QuestLog_Update(self)
 	local notExpanded = 0;
 	-- Somewhat redundant loop, but cleaner than the alternatives
 	for i=1, numEntries, 1 do
-		local index = i;
-		local questLogTitleText, level, questTag, isHeader, isCollapsed = GetQuestLogTitle(i);
-		if ( questLogTitleText and isHeader ) then
+		local qLogTitleText, _, _, bIsHeader, bIsCollapsed = GetQuestLogTitle(i);
+		if ( qLogTitleText and bIsHeader ) then
 			numHeaders = numHeaders + 1;
-			if ( isCollapsed ) then
+			if ( bIsCollapsed ) then
 				notExpanded = notExpanded + 1;
 			end
 		end

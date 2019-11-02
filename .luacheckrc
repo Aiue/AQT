@@ -86,6 +86,32 @@ globals = {
    "UnitClass",
    "UnitFactionGroup",
    "UnitLevel",
+
+   -- Use by Blizzard code we're fixing.
+   "COMPLETE",
+   "EmptyQuestLogFrame",
+   "FAILED",
+   "FauxScrollFrame_Update",
+   "format",
+   "GetNumSubgroupMembers",
+   "GetQuestLogPushable",
+   "HIGHLIGHT_FONT_COLOR",
+   "IsUnitOnQuest",
+   "QUEST_LOG_COUNT_TEMPLATE",
+   "QUESTLOG_QUEST_HEIGHT",
+   "QuestDifficultyColors",
+   "QuestFramePushQuestButton",
+   "QuestLog_SetFirstValidSelection",
+   "QuestLogCollapseAll",
+   "QuestLogCollapseAllButton",
+   "QuestLogCountMiddle",
+   "QuestLogDetailScrollFrame",
+   "QuestLogDummyText",
+   "QuestLogExpandButtonFrame",
+   "QuestLogFrameAbandonButton",
+   "QuestLogHighlightFrame",
+   "QuestLogQuestCount",
+   "QuestLogSkillHighlight",
 }
 
 ignore = {
