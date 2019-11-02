@@ -710,6 +710,7 @@ local options = {
 	       args = {
 		  suppressErrorFrame = {
 		     type = "toggle",
+		     L["Suppress standard Blizzard ErrorFrame updates."] .. " " .. L["Currently works on most, however, some will still get through."],
 		     name = L["Suppress Blizzard Quest Updates"],
 		     width = "double",
 		     order = 0,
@@ -724,6 +725,7 @@ local options = {
 	       args = {
 		  trackAll = {
 		     type = "toggle",
+		     desc = L["Shows all quests in the tracker. You may override this by manually untracking quests, in which case no automation will apply to them, except \"Always Show Timed\"."],
 		     name = L["Track All Quests"],
 		     width = "full",
 		     order = 0,
@@ -737,11 +739,13 @@ local options = {
 		     args = {
 			autoTrackNew = {
 			   name = L["New Quests"],
+			   descStyle = "inline",
 			   type = "toggle",
 			   order = 0,
 			},
 			autoTrackUpdated = {
 			   name = L["On Update"],
+			   descStyle = "inline",
 			   type = "toggle",
 			   order = 1,
 			},
@@ -785,17 +789,20 @@ local options = {
 		  },
 		  showTags = {
 		     type = "toggle",
+		     descStyle = "inline",
 		     name = L["Show Quest Tags"],
 		     order = 2,
 		  },
 		  hideCompletedObjectives = {
 		     type = "toggle",
+		     descStyle = "inline";
 		     name = L["Hide Completed Objectives"],
 		     order = 3,
 		     width = "double",
 		  },
 		  hideQuestCompletedObjectives = {
 		     type = "toggle",
+		     descStyle = "inline",
 		     name = L["Hide Objectives for Completed Quests"],
 		     order = 4,
 		     width = "double",
@@ -815,11 +822,13 @@ local options = {
 		     args = {
 			playCompletionSound = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Play Quest Completion Sound"],
 			   order = 4,
 			},
 			useFactionCompletionSound = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Use Faction Sound"],
 			   order = 5,
 			   disabled = function(info) return not st.cfg.playCompletionSound end,
@@ -842,11 +851,13 @@ local options = {
 		     args = {
 			playObjectiveSound = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Play Objective Completion Sound"],
 			   order = 0,
 			},
 			useFactionObjectiveSound = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Use Faction Sound"],
 			   order = 1,
 			   disabled = function(info) return not st.cfg.playObjectiveSound end,
@@ -869,11 +880,13 @@ local options = {
 		     args = {
 			playObjectiveProgressSound = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Play Objective Progress Sound"],
 			   order = 0,
 			},
 			useFactionObjectiveProgressSound = {
 			   type = "toggle",
+			   descStyle = "inline",
 			   name = L["Use Faction Sound"],
 			   order = 1,
 			   disabled = function(info) return not st.cfg.playObjectiveProgressSound end,
