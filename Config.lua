@@ -570,7 +570,7 @@ end
 
 local options = {
    type = "group",
-   name = "AQT",
+   name = "AQT-@project-version@",
    handler = CFGHandler, -- Possibly redundant, since I'll be using direct function references.
    childGroups = "tree",
    get = CFGHandler.default.get,
@@ -710,7 +710,7 @@ local options = {
 	       args = {
 		  suppressErrorFrame = {
 		     type = "toggle",
-		     L["Suppress standard Blizzard ErrorFrame updates."] .. " " .. L["Currently works on most, however, some will still get through."],
+		     desc = L["Suppress standard Blizzard ErrorFrame updates."] .. " " .. L["Currently works on most, however, some will still get through."],
 		     name = L["Suppress Blizzard Quest Updates"],
 		     width = "double",
 		     order = 0,
