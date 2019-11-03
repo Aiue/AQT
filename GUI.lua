@@ -608,8 +608,8 @@ function guiFunc:UpdateTooltip()
 
       local func
 
-      if type(self.owner.type.tooltips[funcref].func) == "function" then func = self.owner.type.tooltips[funcref].func
-      elseif type(self.owner.type.tooltips[funcref].func) == "string" then func = self.owner.type[funcref]
+      if funcref and type(self.owner.type.tooltips[funcref].func) == "function" then func = self.owner.type.tooltips[funcref].func
+      elseif funcref and type(self.owner.type.tooltips[funcref].func) == "string" then func = self.owner.type[funcref]
       else GameTooltip:SetText(L["Error fetching tooltip."]) end
 
       if func then
@@ -628,7 +628,6 @@ function guiFunc:UpdateTooltip()
 end
 
 function guiFunc:ClearTooltip()
-   if GameTooltip:GetOwner() ~= self then return end
    GameTooltip:Hide()
    self:UnregisterEvent("MODIFIER_STATE_CHANGED")
 end
