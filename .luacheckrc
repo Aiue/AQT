@@ -29,6 +29,7 @@ globals = {
    "FACTION_STANDING_LABEL8",
    "FauxScrollFrame_GetOffset",
    "FauxScrollFrame_SetOffset",
+   "GameTooltip",
    "GetAbandonQuestItems",
    "GetAbandonQuestName",
    "GetLocale",

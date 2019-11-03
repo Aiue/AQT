@@ -433,6 +433,7 @@ function guiFunc:DelayedRelease(recursed)
    self:ReleaseButton()
    self:ReleaseIcon()
    self:ReleaseTimer()
+   self:ClearTooltip()
 
    self.container:Show()
    self:SetParent(nil)
@@ -513,12 +514,96 @@ function guiFunc:OnEnter(mouseMoved)
       gui.highlight:SetColorTexture(st.cfg.highlightMouseBGColor.r, st.cfg.highlightMouseBGColor.g, st.cfg.highlightMouseBGColor.b, st.cfg.highlightMouseBGColor.a)
       gui.highlight:Show()
    end
+
+   if st.cfg.mouse.tooltip then
+      self:UpdateTooltip()
+      self:RegisterEvent("MODIFIER_STATE_CHANGED")
+      self:SetScript("OnEvent", function(key, down) self:UpdateTooltip() end)
+   end
+end
+
+function guiFunc:UpdateTooltip()
+   local c = st.cfg.mouse[self.owner.type.name]
+   local funcref
+   if not c or not c.tooltip then return end
+   GameTooltip:SetOwner(self, st.cfg.mouse.tooltipAnchor)
+   if IsAltKeyDown() and c.tooltip.alt then funcref = c.tooltip.alt
+   elseif IsControlKeyDown() and c.tooltip.control then funcref = c.tooltip.control
+   elseif IsShiftKeyDown() and c.tooltip.shift then funcref = c.tooltip.shift
+   elseif c.tooltip.func then funcref = c.tooltip.func
+   else GameTooltip:Hide() end
+
+   if funcref == "__default__" then
+      if not self.owner.type.clickScripts or not(c.LeftButton or c.LeftButton.func or c.LeftButton.alt or c.LeftButton.control or c.LeftButton.shift) or not c.RightButton or not(c.RightButton.func or c.RightButton.alt or c.RightButton.control or c.RightButton.shift) then
+	 GameTooltip:SetText(L["No click functionality currently enabled."])
+      else
+	 GameTooltip:SetText(L["Current Clickability:"])
+	 GameTooltip:AddLine(" ")
+	 local added = false
+
+	 local function getDesc(func)
+	    return func and func.desc or L["Show Menu"]
+	 end
+
+	 if c.LeftButton then
+	    if c.LeftButton.func and c.LeftButton.func == "__menu__" or self.owner.clickScripts[c.LeftButton.func] then
+	       added = true
+	       GameTooltip:AddDoubleLine(L["Left Click"], getDesc(self.owner.clickScripts[c.LeftButton.func]))
+	    end
+	    if c.LeftButton.Alt and self.owner.clickScripts[c.LeftButton.Alt] then
+	       added = true
+	       GameTooltip:AddDoubleLine(L["Left + Alt"], getDesc(self.owner.clickScripts[c.LeftButton.Alt]))
+	    end
+	    if c.LeftButton.Control and self.owner.clickScripts[c.LeftButton.Control] then
+	       added = true
+	       GameTooltip:AddDoubleLine(L["Left + Control"], getDesc(self.owner.clickScripts[c.LeftButton.Control]))
+	    end
+	    if c.LeftButton.Shift and self.owner.clickScripts[c.LeftButton.Shift] then
+	       added = true
+	       GameTooltip:AddDoubleLine(L["Left + Shift"], getDesc(self.owner.clickScripts[c.LeftButton.Shift]))
+	    end
+	    if not added then GameTooltip:AddDoubleLine(L["Left Click"], L["Show Menu"]) end
+	    GameTooltip:AddLine(" ")
+	 end
+	 if c.RightButton then
+	    if c.RightButton.func and c.RightButton.func == "__menu__" or self.owner.clickScripts[c.RightButton.func] then
+	       added = true
+	       GameTooltip:AddDoubleLine(L["Right Click"], getDesc(self.owner.clickScripts[c.RightButton.func]))
+	    end
+	    if c.RightButton.Alt and self.owner.clickScripts[c.RightButton.Alt] then
+	       added = true
+	       GameTooltip:AddDoubleLine(L["Right + Alt"], getDesc(self.owner.clickScripts[c.RightButton.Alt]))
+	    end
+	    if c.RightButton.Control and self.owner.clickScripts[c.RightButton.Control] then
+	       added = true
+	       GameTooltip:AddDoubleLine(L["Right + Control"], getDesc(self.owner.clickScripts[c.RightButton.Control]))
+	    end
+	    if c.RightButton.Shift and self.owner.clickScripts[c.RightButton.Shift] then
+	       added = true
+	       GameTooltip:AddDoubleLine(L["Right + Shift"], getDesc(self.owner.clickScripts[c.RightButton.Shift]))
+	    end
+	 end
+	 if not added then GameTooltip:Addline(L["No click functionality currently enabled."]) end
+      end
+   else
+      if self.type.tooltips[funcref].func == "function" then self.type.tooltips[funcref].func(self.owner)
+      elseif self.type.tooltips[funcref].func == "string" then self.type[funcref](self.owner)
+      else GameTooltip:SetText(L["Error fetching tooltip."]) end
+   end
+   GameTooltip:Show()
+end
+
+function guiFunc:ClearTooltip()
+   if GameTooltip:GetOwner() ~= self then return end
+   GameTooltip:Hide()
+   self:UnregisterEvent("MODIFIER_STATE_CHANGED")
 end
 
 function guiFunc:OnLeave(mouseMoved)
    self:UpdateText()
    gui.highlight:ClearAllPoints()
    gui.highlight:Hide()
+   self:ClearTooltip()
 end
 
 function guiFunc:New(owner, noFade)
