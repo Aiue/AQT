@@ -117,6 +117,22 @@ local Objective = baseObject:New(
 local Quest = baseObject:New(
    {
       name = "Quest", -- L.Quest
+      tooltips = {
+	 summary = {
+	    desc = L["Short Summary"],
+	    func = function(self)
+	       local _,summary = GetQuestLogQuestText(GetQuestLogIndexByID(self.id))
+	       return self:TitleText(), summary
+	    end,
+	 },
+	 description = {
+	    desc = L["Long Description"],
+	    func = function(self)
+	       local text = GetQuestLogQuestText(GetQuestLogIndexByID(self.id))
+	       return self:TitleText(), text
+	    end,
+	 },
+      },
       clickScripts = {
 	 __blank1 = {
 	    desc = "",

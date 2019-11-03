@@ -526,7 +526,7 @@ function guiFunc:UpdateTooltip()
    local c = st.cfg.mouse[self.owner.type.name]
    local funcref
    if not c or not c.tooltip then return end
-   GameTooltip:SetOwner(self, st.cfg.mouse.tooltipAnchor)
+   GameTooltip:SetOwner(self, st.cfg.mouse.tooltipAnchor, st.cfg.mouse.tooltipAnchorX, st.cfg.mouse.tooltipAnchorY)
    if IsAltKeyDown() and c.tooltip.alt then funcref = c.tooltip.alt
    elseif IsControlKeyDown() and c.tooltip.control then funcref = c.tooltip.control
    elseif IsShiftKeyDown() and c.tooltip.shift then funcref = c.tooltip.shift
@@ -550,19 +550,18 @@ function guiFunc:UpdateTooltip()
 	       added = true
 	       GameTooltip:AddDoubleLine(L["Left Click"], getDesc(self.owner.clickScripts[c.LeftButton.func]))
 	    end
-	    if c.LeftButton.Alt and self.owner.clickScripts[c.LeftButton.Alt] then
+	    if c.LeftButton.Alt and c.LeftButton.Alt == "__menu__" or  self.owner.clickScripts[c.LeftButton.Alt] then
 	       added = true
 	       GameTooltip:AddDoubleLine(L["Left + Alt"], getDesc(self.owner.clickScripts[c.LeftButton.Alt]))
 	    end
-	    if c.LeftButton.Control and self.owner.clickScripts[c.LeftButton.Control] then
+	    if c.LeftButton.Control and c.LeftButton.Control == "__menu__" or self.owner.clickScripts[c.LeftButton.Control] then
 	       added = true
 	       GameTooltip:AddDoubleLine(L["Left + Control"], getDesc(self.owner.clickScripts[c.LeftButton.Control]))
 	    end
-	    if c.LeftButton.Shift and self.owner.clickScripts[c.LeftButton.Shift] then
+	    if c.LeftButton.Shift and c.LeftButton.Shift == "__menu__" or self.owner.clickScripts[c.LeftButton.Shift] then
 	       added = true
 	       GameTooltip:AddDoubleLine(L["Left + Shift"], getDesc(self.owner.clickScripts[c.LeftButton.Shift]))
 	    end
-	    if not added then GameTooltip:AddDoubleLine(L["Left Click"], L["Show Menu"]) end
 	    GameTooltip:AddLine(" ")
 	 end
 	 if c.RightButton then
@@ -570,25 +569,60 @@ function guiFunc:UpdateTooltip()
 	       added = true
 	       GameTooltip:AddDoubleLine(L["Right Click"], getDesc(self.owner.clickScripts[c.RightButton.func]))
 	    end
-	    if c.RightButton.Alt and self.owner.clickScripts[c.RightButton.Alt] then
+	    if c.RightButton.Alt and c.RightButton.Alt == "__menu__" or self.owner.clickScripts[c.RightButton.Alt] then
 	       added = true
 	       GameTooltip:AddDoubleLine(L["Right + Alt"], getDesc(self.owner.clickScripts[c.RightButton.Alt]))
 	    end
-	    if c.RightButton.Control and self.owner.clickScripts[c.RightButton.Control] then
+	    if c.RightButton.Control and c.RightButton.Control == "__menu__" or self.owner.clickScripts[c.RightButton.Control] then
 	       added = true
 	       GameTooltip:AddDoubleLine(L["Right + Control"], getDesc(self.owner.clickScripts[c.RightButton.Control]))
 	    end
-	    if c.RightButton.Shift and self.owner.clickScripts[c.RightButton.Shift] then
+	    if c.RightButton.Shift and c.RightButton.Shift == "__menu__" or  self.owner.clickScripts[c.RightButton.Shift] then
 	       added = true
 	       GameTooltip:AddDoubleLine(L["Right + Shift"], getDesc(self.owner.clickScripts[c.RightButton.Shift]))
+	    end
+	    GameTooltip:AddLine(" ")
+	 end
+	 if c.tooltip then
+	    if c.tooltip.func and c.tooltip.func == "__default__" or self.owner.tooltips[c.tooltip.func] then
+	       added = true
+	       GameTooltip:AddDoubleLine(L.Tooltip, getDesc(self.owner.tooltips[c.tooltip.func]))
+	    end
+	    if c.tooltip.alt and c.tooltip.alt == "__default__" or self.owner.tooltips[c.tooltip.alt] then
+	       added = true
+	       GameTooltip:AddDoubleLine(L.Alt, getDesc(self.owner.tooltips[c.tooltip.alt]))
+	    end
+	    if c.tooltip.control and c.tooltip.control == "__default__" or self.owner.tooltips[c.tooltip.control] then
+	       added = true
+	       GameTooltip:AddDoubleLine(L.Control, getDesc(self.owner.tooltips[c.tooltip.control]))
+	    end
+	    if c.tooltip.shift and c.tooltip.shift == "__default__" or self.owner.tooltips[c.tooltip.shift] then
+	       added = true
+	       GameTooltip:AddDoubleLine(L.Shift, getDesc(self.owner.tooltips[c.tooltip.shift]))
 	    end
 	 end
 	 if not added then GameTooltip:Addline(L["No click functionality currently enabled."]) end
       end
    else
-      if self.type.tooltips[funcref].func == "function" then self.type.tooltips[funcref].func(self.owner)
-      elseif self.type.tooltips[funcref].func == "string" then self.type[funcref](self.owner)
+      GameTooltip:SetText(self.text:GetText())
+
+      local func
+
+      if type(self.owner.type.tooltips[funcref].func) == "function" then func = self.owner.type.tooltips[funcref].func
+      elseif type(self.owner.type.tooltips[funcref].func) == "string" then func = self.owner.type[funcref]
       else GameTooltip:SetText(L["Error fetching tooltip."]) end
+
+      if func then
+	 local lines = {func(self.owner)}
+
+	 if #lines == 0 then GameTooltip:SetText(L["Error fetching tooltip."])
+	 else
+	    for i,v in ipairs(lines) do
+	       if i == 1 then GameTooltip:SetText(v, 1, 1, 1, 1)
+	       else GameTooltip:AddLine(v, 1, 1, 1, 1) end
+	    end
+	 end
+      end
    end
    GameTooltip:Show()
 end

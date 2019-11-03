@@ -148,7 +148,9 @@ local defaults = {
       scrollEnabled = true,
       scrollSpeed = 5,
       tooltip = true,
-      tooltipAnchor = "ANCHOR_LEFT",
+      tooltipAnchor = "ANCHOR_CURSOR",
+      tooltipAnchorX = 0,
+      tooltipAnchorY = 0,
       Quest = {
 	 enabled = true,
 	 LeftButton = {
@@ -459,6 +461,11 @@ local CFGHandler = {
 	 local funcList = {__unset__ = "|cffff0000" .. L.Unset .. "|r",__menu__ = L["Show Menu"]}
 	 for k,v in pairs(st.types[info[#info-2]].clickScripts) do if v.func then funcList[k] = v.desc end end
 	 return funcList
+      end,
+      getTooltips = function(info)
+	 local ttList = {__unset__ = "|cffff0000" .. L.Unset .. "|r",__default__ = L["Active Click Commands"]}
+	 for k,v in pairs(st.types[info[#info-2]].tooltips) do if v.func then ttList[k] = v.desc end end
+	 return ttList
       end,
       set = function(info, val)
 	 if val == "__unset__" then val = nil end
@@ -1027,7 +1034,7 @@ local options = {
 		  scrolling = {
 		     type = "group",
 		     name = L.Scrolling,
-		     order = 1,
+		     order = 0,
 		     inline = true,
 		     args = {
 			scrollEnabled = {
@@ -1046,6 +1053,52 @@ local options = {
 			   validate = function(info, val)
 			      if val <= 0 then return L["Value must be above 0."] else return true end
 			   end,
+			},
+		     },
+		  },
+		  tooltip = {
+		     type = "group",
+		     name = L.Tooltip,
+		     order = 1,
+		     inline = true,
+		     args = {
+			tooltip = {
+			   type = "toggle",
+			   name = L.Enable,
+			   order = 0,
+			   descStyle = "inline",
+			},
+			tooltipAnchor = {
+			   type = "select",
+			   name = L.Anchor,
+			   order = 1,
+			   values = {
+			      ANCHOR_BOTTOM = L.Bottom,
+			      ANCHOR_BOTTOMLEFT = L["Bottom Left"],
+			      ANCHOR_BOTTOMRIGHT = L["Bottom Right"],
+			      ANCHOR_CURSOR = L.Cursor,
+			      ANCHOR_LEFT = L.Left,
+			      ANCHOR_RIGHT = L.Right,
+			      ANCHOR_TOP = L.Top,
+			      ANCHOR_TOPLEFT = L["Top Left"],
+			      ANCHOR_TOPRIGHT = L["Top Right"],
+			   },
+			},
+			tooltipAnchorX = {
+			   type = "range",
+			   order = 2,
+			   name = L["X Offset"],
+			   softMin = -25,
+			   softMax = 25,
+			   step = 1,
+			},
+			tooltipAnchorY = {
+			   type = "range",
+			   order = 3,
+			   name = L["Y Offset"],
+			   softMin = -25,
+			   softMax = 25,
+			   step = 1,
 			},
 		     },
 		  },
@@ -1865,6 +1918,39 @@ local mouseOptions = {
       inline = true,
       disabled = getMouseDisabled,
       args = buttonOptions,
+   },
+   tooltip = {
+      type = "group",
+      name = L.Tooltip,
+      order = 3,
+      inline = true,
+      disabled = getMouseDisabled,
+      args = {
+	 func = {
+	    type = "select",
+	    name = L.Normal,
+	    values = CFGHandler.mouse.getTooltips,
+	    order = 0,
+	 },
+	 alt = {
+	    type = "select",
+	    name = L.Alt,
+	    values = CFGHandler.mouse.getTooltips,
+	    order = 1,
+	 },
+	 control = {
+	    type = "select",
+	    name = L.Control,
+	    values = CFGHandler.mouse.getTooltips,
+	    order = 2,
+	 },
+	 shift = {
+	    type = "select",
+	    name = L.Shift,
+	    values = CFGHandler.mouse.getTooltips,
+	    order = 3,
+	 },
+      },
    },
 }
 
