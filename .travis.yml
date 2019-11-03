@@ -14,14 +14,14 @@ jobs:
     - if: tag IS blank
       before_script: /home/travis/.luarocks/bin/luacheck . --no-color -q
       script: curl -s https://raw.githubusercontent.com/Aiue/AQT/master/localization_import.sh | bash
+      after_failure: curl -s https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh | bash -s -- failure $WEBHOOK
     - if: tag IS present
       before_script: /home/travis/.luarocks/bin/luacheck . --no-color -q
       script:
        - curl -s https://raw.githubusercontent.com/Aiue/AQT/master/localization_import.sh | bash
        - curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
        - curl -s https://raw.githubusercontent.com/Aiue/AQT/master/discord.sh | bash
-
-after_failure: curl -s https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh | bash -s -- failure $WEBHOOK
+       after_failure: curl -s https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh | bash -s -- failure $WEBHOOK 
 
 branches:
   only:
