@@ -54,7 +54,7 @@ function QuestLog_Update(self)
 			else
 				questLogTitle:SetText("  "..(questLogTitleText or ""));
 				--Set Dummy text to get text width *SUPER HACK*
-				QuestLogDummyText:SetText("  "..questLogTitleText);
+				QuestLogDummyText:SetText("  "..tostring(questLogTitleText));
 
 				questLogTitle:SetNormalTexture("");
 				questHighlight:SetTexture("");
