@@ -463,9 +463,13 @@ local CFGHandler = {
 	 return funcList
       end,
       getTooltips = function(info)
+	 if not st.types[info[2]].tooltips then return {} end
 	 local ttList = {__unset__ = "|cffff0000" .. L.Unset .. "|r",__default__ = L["Active Click Commands"]}
 	 for k,v in pairs(st.types[info[#info-2]].tooltips) do if v.func then ttList[k] = v.desc end end
 	 return ttList
+      end,
+      getTTHidden = function(info)
+	 return not st.types[info[2]].tooltips and true or false
       end,
       set = function(info, val)
 	 if val == "__unset__" then val = nil end
@@ -1924,6 +1928,7 @@ local mouseOptions = {
       name = L.Tooltip,
       order = 3,
       inline = true,
+      hidden = CFGHandler.mouse.getTTHidden,
       disabled = getMouseDisabled,
       args = {
 	 func = {
