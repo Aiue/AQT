@@ -243,6 +243,7 @@ local Quest = baseObject:New(
 	       if ClassicQuestLog then
 		  frame:SelectQuestIndex(index)
 		  frame:UpdateLogList()
+	       elseif QuestLogEx then QuestLogEx:QuestLog_SetSelection(index)
 	       elseif QuestLogFrame:IsShown() then
 		  QuestLog_SetSelection(index)
 		  local offset
