@@ -66,6 +66,7 @@ globals = {
    "QUEST_OBJECTS_FOUND",
    "QuestLog_SetSelection",
    "QuestLog_Update",
+   "QuestLogEx",
    "QuestLogExFrame",
    "QuestLogFrame",
    "QuestLogListScrollFrame",
