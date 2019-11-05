@@ -7,6 +7,9 @@ externals:
     libs/AceDB-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDB-3.0
         tag: latest
+    libs/AceComm-3.0:
+        url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceComm-3.0
+        tag: latest
     libs/AceConfig-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConfig-3.0
         tag: latest
@@ -21,6 +24,9 @@ externals:
         tag: latest
     libs/AceGUI-3.0-SharedMediaWidgets:
         url: svn://svn.wowace.com/wow/ace-gui-3-0-shared-media-widgets/trunk/AceGUI-3.0-SharedMediaWidgets
+        tag: latest
+    libs/AceSerializer-3.0:
+        url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceSerializer-3.0
         tag: latest
     libs/CallBackHandler-1.0:
         url: svn://svn.wowace.com/wow/callbackhandler/mainline/trunk/CallbackHandler-1.0

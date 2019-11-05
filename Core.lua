@@ -1,6 +1,6 @@
 ﻿local _,st = ...
 
-local AQT = LibStub("AceAddon-3.0"):NewAddon("AQT", "AceEvent-3.0", "LibSink-2.0")
+local AQT = LibStub("AceAddon-3.0"):NewAddon("AQT", "AceComm-3.0", "AceEvent-3.0", "AceSerializer-3.0", "LibSink-2.0")
 local LDB = LibStub("LibDataBroker-1.1")
 local LSM = LibStub("LibSharedMedia-3.0")
 local Prism = LibStub("LibPrism-1.0")
