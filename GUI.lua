@@ -618,7 +618,15 @@ function guiFunc:UpdateTooltip()
 	 if #lines == 0 then GameTooltip:SetText(L["Error fetching tooltip."])
 	 else
 	    for i,v in ipairs(lines) do
-	       if i == 1 then GameTooltip:SetText(v, 1, 1, 1, 1)
+	       if type(v) == "table" then
+		  if v.double then
+		     GameTooltip:AddDoubleLine(v[1],v[2])
+		  else
+		     local buf = ""
+		     for k,v in ipairs(v) do buf = buf .. tostring(v) end
+		     v = buf
+		  end
+	       elseif i == 1 then GameTooltip:SetText(v, 1, 1, 1, 1)
 	       else GameTooltip:AddLine(v, 1, 1, 1, 1) end
 	    end
 	 end

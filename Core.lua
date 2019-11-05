@@ -32,6 +32,7 @@ local date,difftime,time = date,difftime,time
 local floor = math.floor
 local random = random
 local tinsert,tremove = table.insert,table.remove
+local unpack = unpack
 
 local events = {}
 local factionCache = {}
@@ -161,6 +162,21 @@ local Quest = baseObject:New(
 	    func = function(self)
 	       local text = GetQuestLogQuestText(GetQuestLogIndexByID(self.id))
 	       return self:TitleText(), text
+	    end,
+	 },
+	 objectives = {
+	    desc = L["Show Objectives"],
+	    func = function(self)
+	       local returns = {}
+	       if #self.objectives > 0 then
+		  for i,v in ipairs(self.objectives) do
+		     tinsert(returns, {double = true, v:TitleText(), v:CounterText()})
+		  end
+	       else
+		  returns[1] = L["No objectives found."]
+	       end
+
+	       return self:TitleText(), unpack(returns)
 	    end,
 	 },
       },
@@ -880,7 +896,7 @@ function Quest:Update(timer)
 	 update = true
 	 self.lastUpdate = time()
       end
-   elseif not st.cfg.hideQuestCompletedObjectives then self:UpdateObjectives(true) end
+   else self:UpdateObjectives(true) end
    if self.timer and self.uiObject then self.uiObject:UpdateTimer() end
    if update then
       self.lastUpdate = time()
@@ -1171,4 +1187,3 @@ function IsQuestWatched(index)
    local _,_,_,_,_,_,_,id = GetQuestLogTitle(index)
    return QuestCache[id] and QuestCache[id]:IsTracked()
 end
-
