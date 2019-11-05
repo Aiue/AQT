@@ -623,8 +623,8 @@ function guiFunc:UpdateTooltip()
 		     GameTooltip:AddDoubleLine(v[1],v[2])
 		  else
 		     local buf = ""
-		     for k,v in ipairs(v) do buf = buf .. tostring(v) end
-		     v = buf
+		     for _,t in ipairs(v) do buf = buf .. tostring(t) end
+		     GameTooltip:AddLine(buf, 1, 1, 1, 1)
 		  end
 	       elseif i == 1 then GameTooltip:SetText(v, 1, 1, 1, 1)
 	       else GameTooltip:AddLine(v, 1, 1, 1, 1) end

@@ -135,7 +135,6 @@ local Objective = baseObject:New(
 	    end,
 	 },
       },
-	       
       name = "Objective", -- L.Objective
       sortFields = {
 	 index = L.Index,
@@ -169,7 +168,7 @@ local Quest = baseObject:New(
 	    func = function(self)
 	       local returns = {}
 	       if #self.objectives > 0 then
-		  for i,v in ipairs(self.objectives) do
+		  for _,v in ipairs(self.objectives) do
 		     tinsert(returns, {double = true, v:TitleText(), v:CounterText()})
 		  end
 	       else
