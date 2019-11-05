@@ -4,6 +4,7 @@ local AQT = LibStub("AceAddon-3.0"):NewAddon("AQT", "AceEvent-3.0", "LibSink-2.0
 local LDB = LibStub("LibDataBroker-1.1")
 local LSM = LibStub("LibSharedMedia-3.0")
 local Prism = LibStub("LibPrism-1.0")
+local CTL = _G.ChatThrottleLib
 
 local L = st.L
 
@@ -112,7 +113,7 @@ local function announce(text)
       elseif IsInGroup() then channel = "PARTY"
       else channel = "SAY" end
    end
-   SendChatMessage(text, channel)
+   CTL:SendChatMessage("NORMAL", "AQTAnnounce", text, channel)
 end
 
 local Objective = baseObject:New(

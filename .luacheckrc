@@ -77,7 +77,6 @@ globals = {
    "QuestWatchFrame",
    "random",
    "RemoveQuestWatch",
-   "SendChatMessage",
    "SetAbandonQuest",
    "StaticPopup_Hide",
    "StaticPopup_Show",
