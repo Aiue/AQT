@@ -102,8 +102,39 @@ local Header = baseObject:New(
    }
 )
 
+local function announce(text)
+   local channel
+   if IsInRaid() then channel = "RAID"
+   else
+      local instanceGroup = IsInGroup(LE_PARTY_CATEGORY_INSTANCE) -- Shouldn't be relevant for classic, but put it here regardless.
+      if instanceGroup then channel = "INSTANCE_CHAT"
+      elseif IsInGroup() then channel = "PARTY"
+      else channel = "SAY" end
+   end
+   SendChatMessage(text, channel)
+end
+
 local Objective = baseObject:New(
    {
+      clickScripts = {
+	 AnnounceProgress = {
+	    desc = L["Announce Progress"],
+	    order = 1,
+	    func = function(self)
+	       local title
+
+	       if st.cfg.showTags then
+		  local tag = self.quest.tag and self.quest.tag:sub(1,1) or ""
+		  title = "[" .. tostring(self.quest.level) .. tag .. "] " .. self.quest.title
+	       else
+		  title = self.quest.title
+	       end
+
+	       announce(title..": "..self.text.." ("..tostring(self.have).."/"..tostring(self.need)..")")
+	    end,
+	 },
+      },
+	       
       name = "Objective", -- L.Objective
       sortFields = {
 	 index = L.Index,
@@ -142,28 +173,18 @@ local Quest = baseObject:New(
 	    desc = L["Announce Progress"],
 	    order = 6,
 	    func = function(self)
-	       local channel
-	       if IsInRaid() then channel = "RAID"
+	       local title
+
+	       if st.cfg.showTags then
+		  local tag = self.tag and self.tag:sub(1,1) or ""
+		  title = "[" .. tostring(self.level) .. tag .. "] " .. self.title
 	       else
-		  local instanceGroup = IsInGroup(LE_PARTY_CATEGORY_INSTANCE) -- Shouldn't be relevant for classic, but put it here regardless.
-		  if instanceGroup then channel = "INSTANCE_CHAT"
-		  elseif IsInGroup() then channel = "PARTY"
-		  else channel = "SAY" end
+		  title = self.title
 	       end
-	       if channel then
-		  local title
 
-		  if st.cfg.showTags then
-		     local tag = self.tag and self.tag:sub(1,1) or ""
-		     title = "[" .. tostring(self.level) .. tag .. "] " .. self.title
-		  else
-		     title = self.title
-		  end
-
-		  SendChatMessage(title .. ":", channel)
-		  for _,v in ipairs(self.objectives) do
-		     SendChatMessage("- " .. v.text .. " (" .. tostring(v.have) .. "/" .. tostring(v.need) .. ")", channel)
-		  end
+	       announce(title .. ":")
+	       for _,v in ipairs(self.objectives) do
+		  announce("- " .. v.text .. " (" .. tostring(v.have) .. "/" .. tostring(v.need) .. ")")
 	       end
 	    end,
 	 },
@@ -512,7 +533,7 @@ function Objective:CounterText()
 end
 
 function Objective:New(o)
-   if not o.quest then error("Objective:New() requires quest id to be set.") end
+   if not o.quest then error("Objective:New() requires quest to be set.") end
    setmetatable(o, self)
    return o
 end
@@ -642,8 +663,8 @@ function Objective:Update(qIndex, oIndex, noPour, retry)
 	 self.uiObject:Release()
 	 update = false -- just in case
       end
-   elseif not self.uiObject and QuestCache[self.quest].uiObject then
-      self.uiObject = QuestCache[self.quest].uiObject:New(self, true)
+   elseif not self.uiObject and QuestCache[self.quest.id].uiObject then
+      self.uiObject = QuestCache[self.quest.id].uiObject:New(self, true)
       update = true
    end
 
@@ -893,7 +914,7 @@ function Quest:UpdateObjectives(noPour)
    local sound
 
    for i = 1, GetNumQuestLeaderBoards(index) do
-      if not self.objectives[i] then self.objectives[i] = Objective:New({quest = self.id, index = i, new = true}) end
+      if not self.objectives[i] then self.objectives[i] = Objective:New({quest = self, index = i, new = true}) end
       local check = self.objectives[i]:Update(index, i, noPour)
 
       if check then
