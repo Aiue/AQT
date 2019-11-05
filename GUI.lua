@@ -99,6 +99,7 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.title.optionsButton:SetScript("OnClick", function(s, button, down)
 					if button == "LeftButton" then AQT:ToggleConfig() end
    end)
+   gui:Hide()
    gui:UpdateConfigButton()
    gui:Redraw(false)
    gui.title:Update()
