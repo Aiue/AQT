@@ -32,7 +32,7 @@ local QUEST_OBJECTS_FOUND = QUEST_OBJECTS_FOUND:gsub("%%%d($)", "%%"):gsub("%%(s
 local date,difftime,time = date,difftime,time
 local floor = math.floor
 local random = random
-local tinsert,tremove = table.insert,table.remove
+local tinsert,tremove,tsort = table.insert,table.remove,table.sort
 local unpack = unpack
 
 local events = {}
@@ -159,20 +159,31 @@ local Quest = baseObject:New(
 	       for k,v in pairs(PartyLog) do
 		  if v[self.id] then
 		     tinsert(returns, "")
-		     tinsert(returns, k .. ":")
-		     for i,o in ipairs(v.objectives) do
+		     local color
+		     local _,cfn = UnitClass(k)
+		     if cfn and RAID_CLASS_COLORS[cfn] then color = "|c" .. RAID_CLASS_COLORS[cfn].colorStr else color = "|cffffffff" end
+		     tinsert(returns, color .. k .. st.loc.comma .. "|r")
+		     local objectives = {}
+		     for i,o in pairs(v[self.id].objectives) do
+			-- Build a temporary index.
+			tinsert(objectives, {index=i,have=o[1],need=o[2],complete=o[3]})
+		     end
+		     tsort(objectives, function(a,b) return a.index < b.index end)
+
+		     for i,o in ipairs(objectives) do
 			local cstring
-			if st.cfg.useProgressColor then cstring = Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, o[1]/o[2]) end
+			if st.cfg.useProgressColor then cstring = "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, o.have/o.need) end
 			local text,countertext
 
 			text = (cstring and cstring or "") .. (QuestCache[self.id] and QuestCache[self.id].objectives and QuestCache[self.id].objectives[i] and QuestCache[self.id].objectives[i].text or ("Q" .. tostring(self.id) .. "O" .. tostring(i))) .. (cstring and "|r" or "")
-			countertext = (cstring and cstring or "") .. tostring(o[1]) .. "/" .. tostring(o[2]) .. (cstring and "|r" or "")
-			tinsert(returns, {text, countertext})
+			countertext = (cstring and cstring or "") .. tostring(o.have) .. "/" .. tostring(o.need) .. (cstring and "|r" or "")
+			--tinsert(returns, {text, countertext})
+			tinsert(returns, {double = true, text, countertext})
 		     end
 		  end
 	       end
 
-	       return self:TitleText(), returns
+	       return self:TitleText(), unpack(returns)
 	    end,
 	 },
 	 summary = {
@@ -431,8 +442,6 @@ function AQT:OnEnable()
 
    local channel = getChannel()
    if channel ~= "SAY" then self:SendCommMessage("AQTHANDSHAKE", self:Serialize("AQT","@project-version@",true), channel) end
-   -- debug
-   AQTCFG.PartyLog = PartyLog
 end
 
 function AQT:UpdateLDBIcon()
@@ -1189,7 +1198,6 @@ function AQT:Event(event, ...)
    elseif event == "ZONE_CHANGED_NEW_AREA" then func = "ZoneChangedNewArea"
    elseif event == "GROUP_ROSTER_UPDATE" then
       func = "GroupRosterUpdate"
-      delay = 5
    else return end
 
    if not events[func] then
@@ -1239,7 +1247,6 @@ function AQT:GroupRosterUpdate()
 end
 
 function AQT:OnCommReceived(prefix, message, channel, sender)
-   print(prefix..":"..message)
    if sender == UnitName("player") then return end
    if prefix == "AQTHANDSHAKE" then
       local success,addon,version,resync = self:Deserialize(message)
@@ -1270,7 +1277,7 @@ function AQT:OnCommReceived(prefix, message, channel, sender)
 	    objectives = {}
 	 }
 	 for k,v in pairs(objectives) do -- may have missing indices even here
-	    PartyLog[sender][id][k] = {v[1],v[2],v[3]}
+	    PartyLog[sender][id].objectives[k] = {v[1],v[2],v[3]}
 	 end
       else
 	 if PartyLog[sender][id].complete ~= complete and complete and st.cfg.partyUpdates then
