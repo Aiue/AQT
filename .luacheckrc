@@ -75,6 +75,7 @@ globals = {
    "QUESTS_DISPLAYED",
    "QuestTimerFrame",
    "QuestWatchFrame",
+   "RAID_CLASS_COLORS",
    "random",
    "RemoveQuestWatch",
    "SetAbandonQuest",
