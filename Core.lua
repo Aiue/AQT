@@ -759,8 +759,6 @@ end
 
 function Quest:Remove()
    local channel = getChannel()
-   print(self.id)
-   print(channel)
    if channel ~= "SAY" then AQT:SendCommMessage("AQTQREMOVE", tostring(self.id), channel) end
    if self.uiObject then self:Untrack(true) end
    for i,v in ipairs(self.header.quests) do
