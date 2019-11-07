@@ -4,7 +4,7 @@ local _,st = ...
 
 st.loc = {
    colon = ":",
-   whurl = "http://wow.inven.co.kr/dataninfo/wdb/endb_quest/detail.php?id=",
+   whurl = "http://wow.inven.co.kr/dataninfo/wdb/edb_quest/detail.php?id=",
 }
 
 local L = st.L
