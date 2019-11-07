@@ -1,6 +1,9 @@
--- This file doesn't really do much more than set up the localization metatable.
-
 local _,st = ...
+
+st.loc = {
+   comma = ":",
+   whurl = "https://classic.wowhead.com/quest=",
+}
 
 st.L = {}
 

@@ -959,7 +959,7 @@ local function timer_OnUpdate(self)
       timestring = tostring(math.floor(timeleft/86400))
       timeleft = timeleft%86400
    end
-   local fmt = ":%02d"
+   local fmt = st.loc.comma .. "%02d"
    if timeleft >= 3600 or timestring ~= "" then -- Hours
       local hours = math.floor(timeleft/3600)
       timeleft = timeleft%3600

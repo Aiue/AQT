@@ -223,7 +223,7 @@ local Quest = baseObject:New(
 		  title = self.title
 	       end
 
-	       announce(title .. ":")
+	       announce(title .. st.loc.comma)
 	       for _,v in ipairs(self.objectives) do
 		  announce("- " .. v.text .. " (" .. tostring(v.have) .. "/" .. tostring(v.need) .. ")")
 	       end
@@ -253,22 +253,7 @@ local Quest = baseObject:New(
 	    order = 8,
 	    func = function(self)
 	       local popup = StaticPopup_Show("AQTCopy")
-	       local url
-	       local locale = GetLocale()
-	       if locale == "koKR" then
-		  url = "http://wow.inven.co.kr/dataninfo/wdb/edb_quest/detail.php?id="
-	       else
-		  local prefix = ""
-		  if locale == "deDE" then prefix = "de."
-		  elseif locale == "esES" or locale == "esMX" then prefix = "es."
-		  elseif locale == "frFR" then prefix = "fr."
-		  elseif locale == "itIT" then prefix = "it."
-		  elseif locale == "ptBR" then prefix = "pt."
-		  elseif locale == "ruRU" then prefix = "ru."
-		  elseif locale == "zhCN" or locale == "zhTW" then prefix = "cn." end
-		  url = "https://" .. prefix .. "classic.wowhead.com/quest="
-	       end
-	       popup.editBox:SetText(url .. tostring(self.id))
+	       popup.editBox:SetText(st.loc.whurl .. tostring(self.id))
 	    end,
 	 },
 	 AbandonQuest = {
@@ -627,7 +612,7 @@ function Objective:Update(qIndex, oIndex, noPour, retry)
    if oType == "monster" then
       text,have,need = string.match(oText, "^" .. QUEST_MONSTERS_KILLED .. "$")
       if not have then -- Some of these objectives apparently do not follow this string pattern.
-	 text,have,need = string.match(oText, "^(.+): (%d+)/(%d+)$")
+	 text,have,need = string.match(oText, "^(.+)" .. st.loc.comma .. " (%d+)/(%d+)$")
       end
    elseif oType == "item" then
       text,have,need = string.match(oText, "^" .. QUEST_ITEMS_NEEDED .. "$")
@@ -696,7 +681,7 @@ function Objective:Update(qIndex, oIndex, noPour, retry)
 	 _,r,g,b = Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, have/need)
       end
 
-      if pour and not noPour then AQT:PrePour(text .. ": " .. tostring(have) .. "/" .. tostring(need), r, g, b) end
+      if pour and not noPour then AQT:PrePour(text .. st.loc.comma .. " " .. tostring(have) .. "/" .. tostring(need), r, g, b) end
    end
 
    self.new = nil
@@ -1297,7 +1282,7 @@ function AQT:OnCommReceived(prefix, message, channel, sender)
 	    if PartyLog[sender][id].objectives[k] then
 	       if st.cfg.PartyUpdates then
 		  local text = QuestCache[id] and QuestCache[id].objectives[k] and QuestCache[id].objectives[k].text or ("Q" .. tostring(id) .. "O" .. tostring(k))
-		  if PartyLog[sender][id].objectives[k][1] ~= v[1] and not complete then self:PrePour("(" .. sender .. ")" .. text .. ": " .. tostring(v[1]) .. "/" .. tostring(v[2])) end
+		  if PartyLog[sender][id].objectives[k][1] ~= v[1] and not complete then self:PrePour("(" .. sender .. ")" .. text .. st.loc.comma .. " " .. tostring(v[1]) .. "/" .. tostring(v[2])) end
 	       end
 	       PartyLog[sender][id].objectives[k][1] = v[1]
 	       PartyLog[sender][id].objectives[k][2] = v[2]
