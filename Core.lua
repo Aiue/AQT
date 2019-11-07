@@ -1282,14 +1282,15 @@ function AQT:OnCommReceived(prefix, message, channel, sender)
       else
 	 if PartyLog[sender][id].complete ~= complete and complete and st.cfg.partyUpdates then
 	    local title = QuestCache[id] and QuestCache[id].title or ("Q" .. tostring(id))
-	    self:PrePour("(" .. sender .. ")" .. L["Quest Complete:"] .. " " .. title, st.cfg.progressColorMax.r, st.cfg.progressColorMax.g, st.cfg.progressColorMax.b)
+	    self:PrePour("(" .. sender .. ") " .. L["Quest Complete:"] .. " " .. title, st.cfg.progressColorMax.r, st.cfg.progressColorMax.g, st.cfg.progressColorMax.b)
 	 end
 
 	 for k,v in pairs(objectives) do -- use pairs rather than ipairs because we may have missing indices
 	    if PartyLog[sender][id].objectives[k] then
-	       if st.cfg.PartyUpdates then
+	       if st.cfg.partyUpdates then
 		  local text = QuestCache[id] and QuestCache[id].objectives[k] and QuestCache[id].objectives[k].text or ("Q" .. tostring(id) .. "O" .. tostring(k))
-		  if PartyLog[sender][id].objectives[k][1] ~= v[1] and not complete then self:PrePour("(" .. sender .. ")" .. text .. st.loc.comma .. " " .. tostring(v[1]) .. "/" .. tostring(v[2])) end
+		  local _,r,g,b = Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, v[1]/v[2])
+		  if PartyLog[sender][id].objectives[k][1] ~= v[1] and complete < 1 then self:PrePour("(" .. sender .. ") " .. text .. st.loc.comma .. " " .. tostring(v[1]) .. "/" .. tostring(v[2]), r, g, b) end
 	       end
 	       PartyLog[sender][id].objectives[k][1] = v[1]
 	       PartyLog[sender][id].objectives[k][2] = v[2]
