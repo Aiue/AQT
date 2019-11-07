@@ -3,7 +3,7 @@ if GetLocale() ~= "deDE" then return end
 local _,st = ...
 
 st.loc = {
-   comma = ":",
+   colon = ":",
    whurl = "https://de.classic.wowhead.com/quest=",
 }
 

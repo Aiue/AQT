@@ -3,7 +3,7 @@ if GetLocale() ~= "ptBR" then return end
 local _,st = ...
 
 st.loc = {
-   comma = ":",
+   colon = ":",
    whurl = "https://pt.classic.wowhead.com/quest=",
 }
 

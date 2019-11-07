@@ -3,7 +3,7 @@ if GetLocale() ~= "koKR" then return end
 local _,st = ...
 
 st.loc = {
-   comma = ":",
+   colon = ":",
    whurl = "http://wow.inven.co.kr/dataninfo/wdb/endb_quest/detail.php?id=",
 }
 

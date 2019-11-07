@@ -162,7 +162,7 @@ local Quest = baseObject:New(
 		     local color
 		     local _,cfn = UnitClass(k)
 		     if cfn and RAID_CLASS_COLORS[cfn] then color = "|c" .. RAID_CLASS_COLORS[cfn].colorStr else color = "|cffffffff" end
-		     tinsert(returns, color .. k .. st.loc.comma .. "|r")
+		     tinsert(returns, color .. k .. st.loc.colon .. "|r")
 		     local objectives = {}
 		     for i,o in pairs(v[self.id].objectives) do
 			-- Build a temporary index.
@@ -234,7 +234,7 @@ local Quest = baseObject:New(
 		  title = self.title
 	       end
 
-	       announce(title .. st.loc.comma)
+	       announce(title .. st.loc.colon)
 	       for _,v in ipairs(self.objectives) do
 		  announce("- " .. v.text .. " (" .. tostring(v.have) .. "/" .. tostring(v.need) .. ")")
 	       end
@@ -621,7 +621,7 @@ function Objective:Update(qIndex, oIndex, noPour, retry)
    if oType == "monster" then
       text,have,need = string.match(oText, "^" .. QUEST_MONSTERS_KILLED .. "$")
       if not have then -- Some of these objectives apparently do not follow this string pattern.
-	 text,have,need = string.match(oText, "^(.+)" .. st.loc.comma .. " (%d+)/(%d+)$")
+	 text,have,need = string.match(oText, "^(.+)" .. st.loc.colon .. " (%d+)/(%d+)$")
       end
    elseif oType == "item" then
       text,have,need = string.match(oText, "^" .. QUEST_ITEMS_NEEDED .. "$")
@@ -690,7 +690,7 @@ function Objective:Update(qIndex, oIndex, noPour, retry)
 	 _,r,g,b = Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, have/need)
       end
 
-      if pour and not noPour then AQT:PrePour(text .. st.loc.comma .. " " .. tostring(have) .. "/" .. tostring(need), r, g, b) end
+      if pour and not noPour then AQT:PrePour(text .. st.loc.colon .. " " .. tostring(have) .. "/" .. tostring(need), r, g, b) end
    end
 
    self.new = nil
@@ -1290,7 +1290,7 @@ function AQT:OnCommReceived(prefix, message, channel, sender)
 	       if st.cfg.partyUpdates then
 		  local text = QuestCache[id] and QuestCache[id].objectives[k] and QuestCache[id].objectives[k].text or ("Q" .. tostring(id) .. "O" .. tostring(k))
 		  local _,r,g,b = Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, v[1]/v[2])
-		  if PartyLog[sender][id].objectives[k][1] ~= v[1] and complete < 1 then self:PrePour("(" .. sender .. ") " .. text .. st.loc.comma .. " " .. tostring(v[1]) .. "/" .. tostring(v[2]), r, g, b) end
+		  if PartyLog[sender][id].objectives[k][1] ~= v[1] and complete < 1 then self:PrePour("(" .. sender .. ") " .. text .. st.loc.colon .. " " .. tostring(v[1]) .. "/" .. tostring(v[2]), r, g, b) end
 	       end
 	       PartyLog[sender][id].objectives[k][1] = v[1]
 	       PartyLog[sender][id].objectives[k][2] = v[2]
