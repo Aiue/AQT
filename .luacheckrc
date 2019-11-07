@@ -87,6 +87,9 @@ globals = {
    "UIParent",
    "UnitClass",
    "UnitFactionGroup",
+   "UnitInParty",
+   "UnitInRaid",
+   "UnitName",
    "UnitLevel",
 
    -- Use by Blizzard code we're fixing.

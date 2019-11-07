@@ -165,6 +165,7 @@ local defaults = {
    objectiveProgressSoundName = L["Peon: Work Work"],
    objectiveSoundName = L["Peon: Ready to Work"],
    padding = 10,
+   partyUpdates = true,
    playCompletionSound = true,
    playObjectiveProgressSound = false,
    playObjectiveSound = true,
@@ -726,6 +727,12 @@ local options = {
 		     desc = L["Suppress standard Blizzard ErrorFrame updates."] .. " " .. L["Currently works on most, however, some will still get through."],
 		     name = L["Suppress Blizzard Quest Updates"],
 		     width = "double",
+		     order = 0,
+		  },
+		  partyUpdates = {
+		     type = "toggle",
+		     name = L["Show Party Updates"],
+		     descStyle = "inline",
 		     order = 0,
 		  },
 		  sink = AQT:GetSinkAce3OptionsDataTable(),
@@ -1741,7 +1748,7 @@ local options = {
    },
 }
 
-options.args.general.args.output.args.sink.order = 1
+options.args.general.args.output.args.sink.order = 10
 options.args.general.args.output.args.sink.inline = true
 
 do -- More unexploding emacs.

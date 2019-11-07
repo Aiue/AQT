@@ -37,12 +37,14 @@ local unpack = unpack
 
 local events = {}
 local factionCache = {}
+local grouped
 
 function AQT:OnDisable()
 end
 
 local QuestCache = {}
 local HeaderCache = {}
+local PartyLog = {}
 
 StaticPopupDialogs["AQTCopy"] = {
    text = "",
@@ -104,16 +106,15 @@ local Header = baseObject:New(
    }
 )
 
+local function getChannel()
+   if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then return "INSTANCE_CHAT"
+   elseif IsInRaid() then return "RAID"
+   elseif IsInGroup() then return "PARTY"
+   else return "SAY" end
+end
+
 local function announce(text)
-   local channel
-   if IsInRaid() then channel = "RAID"
-   else
-      local instanceGroup = IsInGroup(LE_PARTY_CATEGORY_INSTANCE) -- Shouldn't be relevant for classic, but put it here regardless.
-      if instanceGroup then channel = "INSTANCE_CHAT"
-      elseif IsInGroup() then channel = "PARTY"
-      else channel = "SAY" end
-   end
-   CTL:SendChatMessage("NORMAL", "AQTAnnounce", text, channel)
+   CTL:SendChatMessage("NORMAL", "AQTAnnounce", text, getChannel())
 end
 
 local Objective = baseObject:New(
@@ -150,6 +151,30 @@ local Quest = baseObject:New(
    {
       name = "Quest", -- L.Quest
       tooltips = {
+	 partylog = {
+	    desc = L["Party Log"],
+	    func = function(self)
+	       if getChannel() == "SAY" then return false end -- Use this as a simple hack to tell whether we're in a group or not.
+	       local returns = {}
+	       for k,v in pairs(PartyLog) do
+		  if v[self.id] then
+		     tinsert(returns, "")
+		     tinsert(returns, k .. ":")
+		     for i,o in ipairs(v.objectives) do
+			local cstring
+			if st.cfg.useProgressColor then cstring = Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, o[1]/o[2]) end
+			local text,countertext
+
+			text = (cstring and cstring or "") .. (QuestCache[self.id] and QuestCache[self.id].objectives and QuestCache[self.id].objectives[i] and QuestCache[self.id].objectives[i].text or ("Q" .. tostring(self.id) .. "O" .. tostring(i))) .. (cstring and "|r" or "")
+			countertext = (cstring and cstring or "") .. tostring(o[1]) .. "/" .. tostring(o[2]) .. (cstring and "|r" or "")
+			tinsert(returns, {text, countertext})
+		     end
+		  end
+	       end
+
+	       return self:TitleText(), returns
+	    end,
+	 },
 	 summary = {
 	    desc = L["Short Summary"],
 	    func = function(self)
@@ -373,7 +398,11 @@ function AQT:OnEnable()
 
    st.gui:OnEnable()
 
+   self:RegisterComm("AQTHANDSHAKE")
+   self:RegisterComm("AQTQUPDATE")
+   self:RegisterComm("AQTQREMOVE")
    self:RegisterEvent("BAG_UPDATE_DELAYED", "Event")
+   self:RegisterEvent("GROUP_ROSTER_UPDATE", "Event")
    self:RegisterEvent("UPDATE_FACTION", "Event")
    self:RegisterEvent("PLAYER_LEVEL_UP", "Event")
    self:RegisterEvent("QUEST_LOG_UPDATE", "Event")
@@ -414,6 +443,11 @@ function AQT:OnEnable()
    end
 
    self:ZoneChangedNewArea()
+
+   local channel = getChannel()
+   if channel ~= "SAY" then self:SendCommMessage("AQTHANDSHAKE", self:Serialize("AQT","@project-version@",true), channel) end
+   -- debug
+   AQTCFG.PartyLog = PartyLog
 end
 
 function AQT:UpdateLDBIcon()
@@ -679,8 +713,8 @@ function Objective:Update(qIndex, oIndex, noPour, retry)
 	 self.uiObject:Release()
 	 update = false -- just in case
       end
-   elseif not self.uiObject and QuestCache[self.quest.id].uiObject then
-      self.uiObject = QuestCache[self.quest.id].uiObject:New(self, true)
+   elseif not self.uiObject and self.quest.uiObject then
+      self.uiObject = self.quest.uiObject:New(self, true)
       update = true
    end
 
@@ -730,6 +764,8 @@ function Quest:New(o, noAuto)
 end
 
 function Quest:Remove()
+   local channel = getChannel()
+   if channel ~= "SAY" then AQT:SendCommMessage("AQTQREMOVE", self.id) end
    if self.uiObject then self:Untrack(true) end
    for i,v in ipairs(self.header.quests) do
       if self == v then tremove(self.header.quests, i) end
@@ -905,6 +941,15 @@ function Quest:Update(timer)
 	 if st.cfg.autoTrackUpdated and self.untrackTimer then self:SetUntrackTimer(time()) end
       elseif st.cfg.autoTrackUpdated then
 	 self:Track(time())
+      end
+
+      local channel = getChannel()
+      if channel ~= "SAY" then
+	 local objectives = {}
+	 for _,v in ipairs(self.objectives) do
+	    tinsert(objectives, {v.have,v.need,v.complete})
+	 end
+	 AQT:SendCommMessage("AQTQUPDATE", AQT:Serialize(self.id,self.complete,objectives), channel)
       end
    end
    self.header:Update()
@@ -1157,6 +1202,9 @@ function AQT:Event(event, ...)
       func = "PlayerLevelUp"
       delay = 1
    elseif event == "ZONE_CHANGED_NEW_AREA" then func = "ZoneChangedNewArea"
+   elseif event == "GROUP_ROSTER_UPDATE" then
+      func = "GroupRosterUpdate"
+      delay = 5
    else return end
 
    if not events[func] then
@@ -1179,6 +1227,89 @@ function AQT:TrackingUpdate()
 	    end
 	 elseif v.override == 0 then v:Untrack(0, true) end
       end
+   end
+end
+
+function AQT:GroupRosterUpdate()
+   local channel = getChannel()
+   local groupType = nil
+
+   if channel == "INSTANCE_CHAT" then groupType = 3
+   elseif channel == "RAID" then groupType = 2
+   elseif channel == "PARTY" then groupType = 1 end
+
+   if (not grouped and groupType) or (grouped and groupType and grouped ~= groupType) then
+      self:SendCommMessage("AQTHANDSHAKE", self:Serialize("AQT","@project-version@"), channel)
+   end
+
+   grouped = groupType
+
+   if not grouped then
+      PartyLog = {}
+   else
+      for k in ipairs(PartyLog) do
+	 if not UnitInRaid(k) and not UnitInParty(k) then PartyLog[k] = nil end
+      end
+   end
+end
+
+function AQT:OnCommReceived(prefix, message, channel, sender)
+   print(prefix..":"..message)
+   if sender == UnitName("player") then return end
+   if prefix == "AQTHANDSHAKE" then
+      local success,addon,version,resync = self:Deserialize(message)
+      if not success then
+	 print(addon)
+	 return
+      end
+      if resync or not PartyLog[sender] or not PartyLog[sender].addon then
+	 PartyLog[sender] = {addon=addon,version=version}
+	 self:SendCommMessage("AQTHANDSHAKE", self:Serialize("AQT", "@project-version@"), channel)
+	 for id,q in pairs(QuestCache) do
+	    local objectives = {}
+	    for _,o in ipairs(q.objectives) do tinsert(objectives, {o.have,o.need,o.complete}) end
+	    self:SendCommMessage("AQTQUPDATE", self:Serialize(id,q.complete,objectives), channel)
+	 end
+      end
+   elseif prefix == "AQTQUPDATE" then
+      local success,id,complete,objectives = self:Deserialize(message)
+      if not success then
+	 print(id)
+	 return
+      end
+
+      if not PartyLog[sender] then PartyLog[sender] = {} end
+      if not PartyLog[sender][id] then
+	 PartyLog[sender][id] = {
+	    complete = complete,
+	    objectives = {}
+	 }
+	 for k,v in pairs(objectives) do -- may have missing indices even here
+	    PartyLog[sender][id][k] = {v[1],v[2],v[3]}
+	 end
+      else
+	 if PartyLog[sender][id].complete ~= complete and complete and st.cfg.partyUpdates then
+	    local title = QuestCache[id] and QuestCache[id].title or ("Q" .. tostring(id))
+	    self:PrePour("(" .. sender .. ")" .. L["Quest Complete:"] .. " " .. title, st.cfg.progressColorMax.r, st.cfg.progressColorMax.g, st.cfg.progressColorMax.b)
+	 end
+
+	 for k,v in pairs(objectives) do -- use pairs rather than ipairs because we may have missing indices
+	    if PartyLog[sender][id].objectives[k] then
+	       if st.cfg.PartyUpdates then
+		  local text = QuestCache[id] and QuestCache[id].objectives[k] and QuestCache[id].objectives[k].text or ("Q" .. tostring(id) .. "O" .. tostring(k))
+		  if PartyLog[sender][id].objectives[k][1] ~= v[1] and not complete then self:PrePour("(" .. sender .. ")" .. text .. ": " .. tostring(v[1]) .. "/" .. tostring(v[2])) end
+	       end
+	       PartyLog[sender][id].objectives[k][1] = v[1]
+	       PartyLog[sender][id].objectives[k][2] = v[2]
+	       PartyLog[sender][id].objectives[k][3] = v[3]
+	    else
+	       PartyLog[sender][id].objectives[k] = v
+	    end
+	 end
+	 PartyLog[sender][id].complete = complete
+      end
+   elseif prefix == "AQTQREMOVE" then
+      if PartyLog[sender] then PartyLog[sender][message] = nil end
    end
 end
 

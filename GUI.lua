@@ -605,8 +605,6 @@ function guiFunc:UpdateTooltip()
 	 if not added then GameTooltip:Addline(L["No click functionality currently enabled."]) end
       end
    else
-      GameTooltip:SetText(self.text:GetText())
-
       local func
 
       if funcref and type(self.owner.type.tooltips[funcref].func) == "function" then func = self.owner.type.tooltips[funcref].func
@@ -617,6 +615,7 @@ function guiFunc:UpdateTooltip()
 	 local lines = {func(self.owner)}
 
 	 if #lines == 0 then GameTooltip:SetText(L["Error fetching tooltip."])
+	 elseif lines[1] == false then GameTooltip:Hide()
 	 else
 	    for i,v in ipairs(lines) do
 	       if type(v) == "table" then
