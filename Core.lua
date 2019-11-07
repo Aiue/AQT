@@ -759,7 +759,9 @@ end
 
 function Quest:Remove()
    local channel = getChannel()
-   if channel ~= "SAY" then AQT:SendCommMessage("AQTQREMOVE", self.id, channel) end
+   print(self.id)
+   print(channel)
+   if channel ~= "SAY" then AQT:SendCommMessage("AQTQREMOVE", tostring(self.id), channel) end
    if self.uiObject then self:Untrack(true) end
    for i,v in ipairs(self.header.quests) do
       if self == v then tremove(self.header.quests, i) end
@@ -1301,7 +1303,7 @@ function AQT:OnCommReceived(prefix, message, channel, sender)
 	 PartyLog[sender][id].complete = complete
       end
    elseif prefix == "AQTQREMOVE" then
-      if PartyLog[sender] then PartyLog[sender][message] = nil end
+      if PartyLog[sender] then PartyLog[sender][tonumber(message)] = nil end
    end
 end
 
