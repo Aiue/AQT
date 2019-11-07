@@ -759,7 +759,7 @@ end
 
 function Quest:Remove()
    local channel = getChannel()
-   if channel ~= "SAY" then AQT:SendCommMessage("AQTQREMOVE", self.id) end
+   if channel ~= "SAY" then AQT:SendCommMessage("AQTQREMOVE", self.id, channel) end
    if self.uiObject then self:Untrack(true) end
    for i,v in ipairs(self.header.quests) do
       if self == v then tremove(self.header.quests, i) end
