@@ -158,11 +158,11 @@ local Quest = baseObject:New(
 	       local returns = {}
 	       for k,v in pairs(PartyLog) do
 		  if v[self.id] then
-		     tinsert(returns, "")
+		     tinsert(returns, " ")
 		     local color
 		     local _,cfn = UnitClass(k)
 		     if cfn and RAID_CLASS_COLORS[cfn] then color = "|c" .. RAID_CLASS_COLORS[cfn].colorStr else color = "|cffffffff" end
-		     tinsert(returns, color .. k .. st.loc.colon .. "|r")
+		     tinsert(returns, {double = true, color .. k .. st.loc.colon .. "|r", tostring(v.addon).."-"..tostring(v.version)})
 		     local objectives = {}
 		     for i,o in pairs(v[self.id].objectives) do
 			-- Build a temporary index.
@@ -181,6 +181,10 @@ local Quest = baseObject:New(
 			tinsert(returns, {double = true, text, countertext})
 		     end
 		  end
+	       end
+
+	       if #returns == 0 then
+		  tinsert(returns, L["No party member information found."])
 	       end
 
 	       return self:TitleText(), unpack(returns)
@@ -397,6 +401,9 @@ function AQT:OnEnable()
    self:RegisterComm("AQTHANDSHAKE")
    self:RegisterComm("AQTQUPDATE")
    self:RegisterComm("AQTQREMOVE")
+   -- Only for listening.
+   self:RegisterComm("questie")
+   -- End listening comm registration.
    self:RegisterEvent("BAG_UPDATE_DELAYED", "Event")
    self:RegisterEvent("GROUP_ROSTER_UPDATE", "Event")
    self:RegisterEvent("UPDATE_FACTION", "Event")
@@ -1303,6 +1310,10 @@ function AQT:OnCommReceived(prefix, message, channel, sender)
       end
    elseif prefix == "AQTQREMOVE" then
       if PartyLog[sender] then PartyLog[sender][tonumber(message)] = nil end
+   elseif not PartyLog[sender] or PartyLog[sender] and PartyLog[sender].addon ~= "AQT" then -- Yeah, we want to continue even if the sender is not indexed, but we don't want to try to index it if it's not. Yeah. That sentence makes sense. Sort of.
+      if prefix == "questie" then
+	 if string.find("@project-version@", "@") then tinsert(AQTCFG.questie, message) end -- Just a silly hack to make sure only I get the debug output.
+      end
    end
 end
 

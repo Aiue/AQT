@@ -127,7 +127,7 @@ function QuestLog_Update(self)
 			if ( isHeader ) then
 				color = QuestDifficultyColors["header"];
 			else
-				color = GetQuestDifficultyColor(level);
+				color = GetQuestDifficultyColor(level or 1);
 			end
 			questLogTitle:SetNormalFontObject(color.font);
 			questTitleTag:SetTextColor(color.r, color.g, color.b);
