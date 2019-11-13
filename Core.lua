@@ -124,16 +124,7 @@ local Objective = baseObject:New(
 	    desc = L["Announce Progress"],
 	    order = 1,
 	    func = function(self)
-	       local title
-
-	       if st.cfg.showTags then
-		  local tag = self.quest.tag and self.quest.tag:sub(1,1) or ""
-		  title = "[" .. tostring(self.quest.level) .. tag .. "] " .. self.quest.title
-	       else
-		  title = self.quest.title
-	       end
-
-	       announce(title..": "..self.text.." ("..tostring(self.have).."/"..tostring(self.need)..")")
+	       announce(self.quest:GetTaggedTitle()..": "..self.text.." ("..tostring(self.have).."/"..tostring(self.need)..")")
 	    end,
 	 },
       },
@@ -229,16 +220,7 @@ local Quest = baseObject:New(
 	    desc = L["Announce Progress"],
 	    order = 6,
 	    func = function(self)
-	       local title
-
-	       if st.cfg.showTags then
-		  local tag = self.tag and self.tag:sub(1,1) or ""
-		  title = "[" .. tostring(self.level) .. tag .. "] " .. self.title
-	       else
-		  title = self.title
-	       end
-
-	       announce(title .. st.loc.colon)
+	       announce(self:GetTaggedTitle() .. st.loc.colon)
 	       for _,v in ipairs(self.objectives) do
 		  announce("- " .. v.text .. " (" .. tostring(v.have) .. "/" .. tostring(v.need) .. ")")
 	       end
@@ -248,16 +230,7 @@ local Quest = baseObject:New(
 	    desc = L["Send to Chat"],
 	    order = 7,
 	    func = function(self)
-	       local title
-
-	       if st.cfg.showTags then
-		  local tag = self.tag and self.tag:sub(1,1) or ""
-		  title = "[" .. tostring(self.level) .. tag .. "] " .. self.title
-	       else
-		  title = self.title
-	       end
-
-	       ChatEdit_InsertLink(title)
+	       ChatEdit_InsertLink(GetTaggedTitle())
 	    end,
 	    disabled = function(self)
 	       return not ChatEdit_GetActiveWindow()
@@ -735,6 +708,16 @@ function Quest:AverageCompletion()
    return have/need
 end
 
+function Quest:GetTaggedTitle()
+   if not st.cfg.showTags then return self.title end
+   local tag
+   if self.tag == RAID then tag = "R"
+   elseif self.tag == ELITE then tag = "+"
+   elseif self.tag == TRACKER_HEADER_DUNGEON then tag = "D" -- A few globals to pick from that is "Dungeon" in English. Hopefully this one will be accurate for other locales as well.
+   else tag = "" end
+   return "[" .. tostring(self.level) .. tag .. "] " .. self.title
+end
+
 function Quest:HasTimer()
    if self.timer then return true else return false end
 end
@@ -792,14 +775,7 @@ function Quest:SetUntrackTimer(timer)
 end
 
 function Quest:TitleText()
-   local text
-
-   if st.cfg.showTags then
-      local tag = self.tag and self.tag:sub(1,1) or ""
-      text = "[" .. tostring(self.level) .. tag .. "] " .. self.title
-   else
-      text = self.title
-   end
+   local text = self:GetTaggedTitle()
 
    if st.cfg.useDifficultyColor then
       local c = GetQuestDifficultyColor(self.level)
