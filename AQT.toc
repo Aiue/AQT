@@ -28,6 +28,7 @@ libs\LibPrism-1.0\lib.xml
 libs\LibSink-2.0\lib.xml
 libs\LibUIDropDownMenu\LibUIDropDownMenu.xml
 libs\LibUIDropDownMenu\LibUIDropDownMenuTemplates.xml
+libs\utf8.lua
 
 Localization\enUS.lua
 Localization\deDE.lua

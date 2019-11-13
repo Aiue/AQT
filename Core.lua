@@ -612,7 +612,7 @@ function Objective:Update(qIndex, oIndex, noPour, retry)
    elseif oType == "reputation" then
       text,have,need = string.match(oText, "^" .. QUEST_FACTION_NEEDED .. "$")
       if not factionCache[text] then
-	 countertext = have:sub(1,1) .. "/" .. need:sub(1,1)
+	 countertext = have:utf8sub(1,1) .. "/" .. need:utf8sub(1,1)
 	 have,need = (complete and 1 or 0),1
       else
 	 have = factionCache[text].reputation or 0
