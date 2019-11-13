@@ -230,7 +230,7 @@ local Quest = baseObject:New(
 	    desc = L["Send to Chat"],
 	    order = 7,
 	    func = function(self)
-	       ChatEdit_InsertLink(GetTaggedTitle())
+	       ChatEdit_InsertLink(self:GetTaggedTitle())
 	    end,
 	    disabled = function(self)
 	       return not ChatEdit_GetActiveWindow()
