@@ -2,6 +2,7 @@ std = "lua51"
 max_line_length = false
 exclude_files = {
    "LocaleParser.lua",
+   "libs/utf8.lua",
 }
 
 globals = {
