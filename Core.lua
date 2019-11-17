@@ -1288,7 +1288,7 @@ function AQT:OnCommReceived(prefix, message, channel, sender)
       end
    elseif prefix == "AQTQREMOVE" then
       if PartyLog[sender] then PartyLog[sender][tonumber(message)] = nil end
-   elseif not PartyLog[sender] or PartyLog[sender] and PartyLog[sender].addon ~= "AQT" then -- Yeah, we want to continue even if the sender is not indexed, but we don't want to try to index it if it's not. Yeah. That sentence makes sense. Sort of.
+--   elseif not PartyLog[sender] or PartyLog[sender] and PartyLog[sender].addon ~= "AQT" then -- Yeah, we want to continue even if the sender is not indexed, but we don't want to try to index it if it's not. Yeah. That sentence makes sense. Sort of.
 --      if prefix == "questie" then
 --	 if string.find("@project-version@", "@") then tinsert(AQTCFG.questie, message) end -- Just a silly hack to make sure only I get the debug output.
 --      end
