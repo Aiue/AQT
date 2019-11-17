@@ -642,7 +642,9 @@ function Objective:Update(qIndex, oIndex, noPour, retry)
    if not text or not have or not need then
       print("Failed to parse data for objective in quest '" .. self.quest.title .. "'. Please notify Aiue, along with the following information:")
       print("Locale: " .. GetLocale())
+      print("Objective index: " .. tostring(oIndex))
       print("Objective type: " .. tostring(oType))
+      print("Objective text: " .. tostring(oText))
       print("QUEST_MONSTERS_KILLED: " .. tostring(_G["QUEST_MONSTERS_KILLED"]))
       print("QUEST_ITEMS_NEEDED: " .. tostring(_G["QUEST_ITEMS_NEEDED"]))
       print("QUEST_OBJECTS_FOUND: " .. tostring(_G["QUEST_OBJECTS_FOUND"]))
@@ -1287,9 +1289,9 @@ function AQT:OnCommReceived(prefix, message, channel, sender)
    elseif prefix == "AQTQREMOVE" then
       if PartyLog[sender] then PartyLog[sender][tonumber(message)] = nil end
    elseif not PartyLog[sender] or PartyLog[sender] and PartyLog[sender].addon ~= "AQT" then -- Yeah, we want to continue even if the sender is not indexed, but we don't want to try to index it if it's not. Yeah. That sentence makes sense. Sort of.
-      if prefix == "questie" then
-	 if string.find("@project-version@", "@") then tinsert(AQTCFG.questie, message) end -- Just a silly hack to make sure only I get the debug output.
-      end
+--      if prefix == "questie" then
+--	 if string.find("@project-version@", "@") then tinsert(AQTCFG.questie, message) end -- Just a silly hack to make sure only I get the debug output.
+--      end
    end
 end
 
