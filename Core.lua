@@ -601,7 +601,7 @@ function Objective:Update(qIndex, oIndex, noPour, retry)
    if oType == "monster" then
       text,have,need = string.match(oText, "^" .. QUEST_MONSTERS_KILLED .. "$")
       if not have then -- Some of these objectives apparently do not follow this string pattern.
-	 text,have,need = string.match(oText, "^(.+)" .. st.loc.colon .. " (%d+)/(%d+)$")
+	 text,have,need = string.match(oText, "^(.+)" .. st.loc.colon .. "(%d+)/(%d+)$")
       end
    elseif oType == "item" then
       text,have,need = string.match(oText, "^" .. QUEST_ITEMS_NEEDED .. "$")
@@ -672,7 +672,7 @@ function Objective:Update(qIndex, oIndex, noPour, retry)
 	 _,r,g,b = Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, have/need)
       end
 
-      if pour and not noPour then AQT:PrePour(text .. st.loc.colon .. " " .. tostring(have) .. "/" .. tostring(need), r, g, b) end
+      if pour and not noPour then AQT:PrePour(text .. st.loc.colon .. tostring(have) .. "/" .. tostring(need), r, g, b) end
    end
 
    self.new = nil
@@ -1275,7 +1275,7 @@ function AQT:OnCommReceived(prefix, message, channel, sender)
 	       if st.cfg.partyUpdates then
 		  local text = QuestCache[id] and QuestCache[id].objectives[k] and QuestCache[id].objectives[k].text or ("Q" .. tostring(id) .. "O" .. tostring(k))
 		  local _,r,g,b = Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, v[1]/v[2])
-		  if PartyLog[sender][id].objectives[k][1] ~= v[1] and complete < 1 then self:PrePour("(" .. sender .. ") " .. text .. st.loc.colon .. " " .. tostring(v[1]) .. "/" .. tostring(v[2]), r, g, b) end
+		  if PartyLog[sender][id].objectives[k][1] ~= v[1] and complete < 1 then self:PrePour("(" .. sender .. ") " .. text .. st.loc.colon .. tostring(v[1]) .. "/" .. tostring(v[2]), r, g, b) end
 	       end
 	       PartyLog[sender][id].objectives[k][1] = v[1]
 	       PartyLog[sender][id].objectives[k][2] = v[2]

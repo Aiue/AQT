@@ -3,7 +3,7 @@ if GetLocale() ~= "esMX" then return end
 local _,st = ...
 
 st.loc = {
-   colon = ":",
+   colon = ": ",
    whurl = "https://es.classic.wowhead.com/quest=",
 }
 

@@ -1,7 +1,7 @@
 local _,st = ...
 
 st.loc = {
-   colon = ":",
+   colon = ": ",
    whurl = "https://classic.wowhead.com/quest=",
 }
 

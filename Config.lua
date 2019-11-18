@@ -1678,7 +1678,7 @@ local options = {
 			},
 			progressionSample = {
 			   name = function()
-			      local output = L.Sample .. st.loc.colon .. " "
+			      local output = L.Sample .. st.loc.colon
 			      if st.cfg.useProgressColor then
 				 for i = 0, 10 do
 				    output = output .. "|cff" .. Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, i/10) .. tostring(i*10) .. "%|r" .. (i < 10 and " -> " or "")
