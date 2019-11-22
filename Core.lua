@@ -592,8 +592,8 @@ function Objective:Update(qIndex, oIndex, noPour, retry)
    local sound
 
    if not oText and not retry or retry and retry < 10 then -- Don't keep retrying forever.
-      print("nil objective text")
       if not retry then retry = 0 end
+      print("nil objective text for " .. self.quest.title .. " (attempt #" .. tostring(retry + 1) .. ")")
       C_Timer.After(5, function() self.Update(self, qIndex, oIndex, noPour, retry + 1) end)
       return
    end
