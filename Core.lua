@@ -1275,7 +1275,7 @@ function AQT:OnCommReceived(prefix, message, channel, sender)
 	       if st.cfg.partyUpdates then
 		  local text = QuestCache[id] and QuestCache[id].objectives[k] and QuestCache[id].objectives[k].text or ("Q" .. tostring(id) .. "O" .. tostring(k))
 		  local _,r,g,b = Prism:Gradient(st.cfg.useHSVGradient and "hsv" or "rgb", st.cfg.progressColorMin.r, st.cfg.progressColorMax.r, st.cfg.progressColorMin.g, st.cfg.progressColorMax.g, st.cfg.progressColorMin.b, st.cfg.progressColorMax.b, v[1]/v[2])
-		  if PartyLog[sender][id].objectives[k][1] ~= v[1] and complete < 1 then self:PrePour("(" .. sender .. ") " .. text .. st.loc.colon .. tostring(v[1]) .. "/" .. tostring(v[2]), r, g, b) end
+		  if PartyLog[sender][id].objectives[k][1] ~= v[1] and complete and complete < 1 or not complete then self:PrePour("(" .. sender .. ") " .. text .. st.loc.colon .. tostring(v[1]) .. "/" .. tostring(v[2]), r, g, b) end
 	       end
 	       PartyLog[sender][id].objectives[k][1] = v[1]
 	       PartyLog[sender][id].objectives[k][2] = v[2]
