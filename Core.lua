@@ -285,7 +285,7 @@ local Quest = baseObject:New(
 		  local entries = GetNumQuestLogEntries()
 
 		  if index - floor(QUESTS_DISPLAYED/2) < 0 then offset = 0
-		  elseif index + floor(QUESTS_DISPLAYED/2) > entries then offset = entries-QUESTS_DISPLAYED
+		  elseif index + floor(QUESTS_DISPLAYED/2) > entries then offset = QUESTS_DISPLAYED-entries
 		  else offset = index - floor(QUESTS_DISPLAYED/2) end
 
 		  QuestLogListScrollFrameScrollBar:SetValue(offset*16)
