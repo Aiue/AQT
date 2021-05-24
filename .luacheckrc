@@ -9,6 +9,7 @@ globals = {
    "AceGUIWidgetLSMlists",
    "AQTCFG",
    "AQTParent",
+   "BackdropTemplateMixin",
    "C_Timer",
    "ChatEdit_GetActiveWindow",
    "ChatEdit_InsertLink",
