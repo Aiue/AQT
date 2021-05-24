@@ -1045,7 +1045,7 @@ function guiFunc:NewTimer()
 	 timer = tremove(recycler.statusbars)
 	 timer:SetParent(self)
       else
-	 timer = CreateFrame("Frame", nil, self)
+	 timer = CreateFrame("Frame", nil, self, BackdropTemplateMixin and "BackdropTemplate")
 	 timer.sb = CreateFrame("StatusBar", nil, timer)
 	 timer.sb:SetPoint("TOPLEFT", st.cfg.barBackdrop.insets+1, -(st.cfg.barBackdrop.insets+1))
 	 timer.sb:SetPoint("BOTTOMRIGHT", -(st.cfg.barBackdrop.insets+1), st.cfg.barBackdrop.insets+1)
