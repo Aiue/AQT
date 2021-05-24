@@ -30,7 +30,7 @@ local function getAvailableName(name) -- JUST removed this, because a recursive 
    end
 end
 
-local gui = CreateFrame("Frame", getAvailableName("AQTParent"), UIParent)
+local gui = CreateFrame("Frame", getAvailableName("AQTParent"), UIParent, BackdropTemplateMixin and "BackdropTemplate")
 st.gui = gui
 
 local guiFunc = {}
