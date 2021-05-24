@@ -3,6 +3,7 @@
 local AQT = LibStub("AceAddon-3.0"):GetAddon("AQT")
 local LSM = LibStub("LibSharedMedia-3.0")
 local Prism = LibStub("LibPrism-1.0")
+local DDM = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 
 local difftime,time = difftime,time
 local tinsert,tremove,tsort = table.insert,table.remove,table.sort
@@ -44,7 +45,7 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    gui.highlight:SetDrawLayer("artwork")
    gui.zoneHighlight = gui:CreateTexture(nil) -- Put this here instead of reusinc the recycler each time.
    gui.zoneHighlight:SetDrawLayer("artwork") -- May want another layer, but use this for now.
-   gui.menu = L_Create_UIDropDownMenu(getAvailableName("AQTMenu"), gui)
+   gui.menu = DDM:Create_UIDropDownMenu(getAvailableName("AQTMenu"), gui)
 
    gui.font = CreateFont(getAvailableName("AQTFont"))
    gui.font:SetJustifyV("TOP")
@@ -1188,10 +1189,10 @@ local function onClick(self, button, down)
 
       tinsert(menu, {
 		 text = L.Close,
-		 func = function() L_CloseDropDownMenus() end,
+		 func = function() DDM:CloseDropDownMenus() end,
 		 notCheckable = true,
       })
-      L_EasyMenu(menu, gui.menu, "cursor", 0, 0, "menu", 10)
+      DDM:EasyMenu(menu, gui.menu, "cursor", 0, 0, "menu", 10)
       return
    end
 
