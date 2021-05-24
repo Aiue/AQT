@@ -1,4 +1,4 @@
-## Interface: 11307
+## Interface: 20501
 ## Title: Aiue's Quest Tracker
 ## Notes: Quest Tracking Frame
 ## Author: Aiue
