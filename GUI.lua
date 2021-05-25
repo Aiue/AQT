@@ -102,7 +102,8 @@ function gui:OnEnable() -- Might want to attach this one elsewhere.
    end)
    gui:Hide()
    gui:UpdateConfigButton()
-   gui:Redraw(false)
+   gui:Redraw()
+   C_Timer.After(10, function() gui:RedrawColor() end) -- This is a very bad hack, but for some reason I have to delay setting the backdrop alpha.
    gui.title:Update()
    gui:ToggleLock()
    gui:UpdateScripts()
@@ -129,7 +130,7 @@ function gui:RecurseResort()
    st.gui.title:RecurseResort()
 end
 
-function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an argument for recursing.. yet it's never used. Damn, that's silly of me.
+function gui:Redraw()
    gui:ClearAllPoints()
    gui:SetPoint(st.cfg.anchorFrom, UIParent, st.cfg.anchorTo, st.cfg.posX, st.cfg.posY)
 
@@ -159,7 +160,7 @@ function gui:Redraw(recurse) -- So, I'm looking this over, and I see it has an a
 
    gui:UpdateSize(true)
 
-   gui:RedrawColor(false)
+   gui:RedrawColor()
    gui:SetAlpha(st.cfg.alpha)
 
    local c = st.cfg.highlightCurrentZoneBackgroundColor
