@@ -288,6 +288,8 @@ local Quest = baseObject:New(
 		  elseif (index-1) + floor(QUESTS_DISPLAYED/2) > entries then offset = entries - QUESTS_DISPLAYED
 		  else offset = (index-1) - floor(QUESTS_DISPLAYED/2) end
 
+		  if offset < 0 then offset = 0 end -- This can happen with AddOns that modify the size of the questlog without adjusting the value of QUESTS_DISPLAYED.
+
 		  QuestLogListScrollFrameScrollBar:SetValue(offset*16)
 		  FauxScrollFrame_SetOffset(QuestLogListScrollFrame, offset)
 		  QuestLog_Update()
